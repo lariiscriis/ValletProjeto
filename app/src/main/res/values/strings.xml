@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">ValletProjeto</string>
+    <string name="bemvindo">BemVindo(a) VALLET</string>
+    <string name="imagem">imagem</string>
 </resources>
