@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "871428058139",
+    "project_id": "valletprojeto-ce6f6",
+    "storage_bucket": "valletprojeto-ce6f6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:871428058139:android:2ce0ea6ada532049addcbe",
+        "android_client_info": {
+          "package_name": "br.edu.fatecpg.valletprojeto"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB0IRYXyYN5HDqxOgwT2aPju3TQKhg_9nM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
