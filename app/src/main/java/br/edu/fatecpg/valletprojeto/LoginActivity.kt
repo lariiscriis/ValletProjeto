@@ -9,15 +9,17 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import br.edu.fatecpg.valletprojeto.databinding.ActivityIntroBinding
+import br.edu.fatecpg.valletprojeto.databinding.ActivityLoginBinding
 
-class MainActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityIntroBinding
+class LoginActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityLoginBinding
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        binding = ActivityIntroBinding.inflate(layoutInflater)
+        binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -26,8 +28,8 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        binding.btnIniciar.setOnClickListener {
-            val intent = Intent(this, LoginActivity::class.java)
+        binding.botaoCadastro.setOnClickListener {
+            val intent = Intent(this, CadastroActivity::class.java)
             startActivity(intent)
         }
     }

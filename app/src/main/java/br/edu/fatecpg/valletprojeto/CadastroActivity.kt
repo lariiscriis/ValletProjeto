@@ -8,16 +8,17 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import br.edu.fatecpg.valletprojeto.databinding.ActivityIntroBinding
+import br.edu.fatecpg.valletprojeto.databinding.ActivityCadastroBinding
 
-class MainActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityIntroBinding
+class CadastroActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityCadastroBinding
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        binding = ActivityIntroBinding.inflate(layoutInflater)
+        binding = ActivityCadastroBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -26,7 +27,7 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        binding.btnIniciar.setOnClickListener {
+        binding.botaoLogin.setOnClickListener {
             val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)
         }
