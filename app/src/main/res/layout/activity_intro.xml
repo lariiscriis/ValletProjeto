@@ -17,6 +17,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/homemfundo2"
         tools:ignore="ContentDescription,VisualLintBounds" />
 
@@ -30,6 +31,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView3"
+        app:layout_constraintVertical_bias="0.823"
         app:srcCompat="@drawable/bottom_white"
         tools:ignore="ContentDescription" />
 
@@ -37,10 +40,11 @@
         android:id="@+id/imageView"
         android:layout_width="207dp"
         android:layout_height="238dp"
-        android:layout_marginStart="100dp"
-        android:layout_marginBottom="64dp"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/imageView11"
+        app:layout_constraintVertical_bias="0.345"
         app:srcCompat="@drawable/vallet"
         tools:ignore="ContentDescription" />
 
@@ -48,11 +52,12 @@
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="128dp"
-        android:layout_marginTop="92dp"
+        android:layout_marginTop="72dp"
         android:text="Bem Vindo(a) ao"
         android:textColor="#121212"
         android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/imageView11"
         tools:ignore="HardcodedText" />
@@ -61,31 +66,35 @@
         android:id="@+id/textView"
         android:layout_width="237dp"
         android:layout_height="77dp"
-        android:layout_marginBottom="64dp"
+        android:layout_marginBottom="24dp"
         android:text="Estacione sem esforço.\n
 O Vallet já pensou por você."
         android:textAlignment="center"
         android:textColor="#777777"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/imageView"
-        app:layout_constraintHorizontal_bias="0.375"
-        app:layout_constraintStart_toStartOf="@+id/imageView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/imageView11"
+        app:layout_constraintVertical_bias="0.906"
         tools:ignore="HardcodedText,TextSizeCheck,TextContrastCheck" />
 
     <TextView
         android:id="@+id/btnIniciar"
         android:layout_width="175dp"
         android:layout_height="65dp"
+        android:layout_marginTop="220dp"
         android:background="@drawable/background_button_intro"
         android:gravity="center"
         android:text="Iniciar"
         android:textColor="#F5F5F5"
         android:textSize="18sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="@+id/imageView11"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/imageView11"
+        app:layout_constraintVertical_bias="1.0"
         tools:ignore="HardcodedText" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

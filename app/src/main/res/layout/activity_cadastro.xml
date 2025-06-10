@@ -8,36 +8,72 @@
     android:background="#F5F5F5"
 >
 
-    <ImageView
-        android:id="@+id/imageView4"
-        android:layout_width="435dp"
-        android:layout_height="425dp"
-        android:layout_marginBottom="516dp"
-        android:scaleType="fitCenter"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="@drawable/background_login_cadastro3"
-        tools:ignore="ContentDescription,VisualLintBounds" />
-
-    <TextView
-        android:id="@+id/textView3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="116dp"
-        android:layout_marginTop="116dp"
-        android:fontFamily="@font/poppins_semibold"
-        android:text="Cadastre-se!"
-        android:textColor="#000"
-        android:textSize="25sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="HardcodedText" />
 
     <LinearLayout
-        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <View
+            android:id="@+id/view2"
+            android:layout_width="wrap_content"
+            android:layout_height="1dp"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:background="#121212" />
+
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:fontFamily="@font/poppins_semibold"
+            android:text="Cadastre-se!"
+            android:textColor="#000"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="HardcodedText" />
+
+
+        <View
+            android:id="@+id/view"
+            android:layout_width="wrap_content"
+            android:layout_height="1dp"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:background="#121212" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/switchTipoCadastro"
+        android:layout_width="181dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center|center_horizontal"
+        android:layout_marginTop="104dp"
+        android:background="@drawable/edittext_backgroud"
+        android:ems="10"
+        android:gravity="center|center_vertical"
+        android:padding="12dp"
+        android:text="Sou administrador"
+        android:textAlignment="center"
+        android:textColor="#046C4E"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <LinearLayout
+        android:id="@+id/layout_cadastro_usuario"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="4dp"
@@ -46,7 +82,7 @@
         android:textAlignment="center"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent">
 
         <TextView
@@ -59,83 +95,147 @@
             android:textStyle="bold"
             tools:ignore="HardcodedText" />
 
-        <EditText
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/edittext_backgroud"
-            android:ems="10"
-            android:hint="Digite seu Email"
-            android:inputType="text"
-            android:padding="12dp"
-            android:textColor="#8A8A8A"
-            tools:ignore="Autofill,HardcodedText,TextContrastCheck,VisualLintTextFieldSize" />
+            android:layout_height="70dp">
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/edittext_backgroud"
+                android:ems="10"
+                android:hint="Digite seu Email"
+                android:inputType="text"
+                android:padding="12dp"
+                android:textColor="#8A8A8A"
+                tools:ignore="Autofill,HardcodedText,TextContrastCheck,VisualLintTextFieldSize" />
+
+            <ImageView
+                android:id="@+id/emailimg"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginEnd="12dp"
+                android:src="@drawable/email"
+                app:srcCompat="@drawable/email"
+                tools:ignore="ContentDescription" />
+
+        </FrameLayout>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="10dp"
             android:text="Nome"
             android:textColor="#121212"
             android:textSize="18sp"
             android:textStyle="bold"
             tools:ignore="HardcodedText" />
 
-        <EditText
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/edittext_backgroud"
-            android:ems="10"
-            android:hint="Digite seu Nome"
-            android:inputType="text"
-            android:padding="12dp"
-            android:textColor="#8A8A8A"
-            tools:ignore="Autofill,HardcodedText,TextContrastCheck" />
+            android:layout_height="70dp">
+
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/edittext_backgroud"
+                android:ems="10"
+                android:hint="Digite seu Nome"
+                android:inputType="text"
+                android:padding="12dp"
+                android:textColor="#8A8A8A"
+                tools:ignore="Autofill,HardcodedText,TextContrastCheck" />
+
+            <ImageView
+                android:id="@+id/nomeimg"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginEnd="12dp"
+                android:src="@drawable/nome"
+                app:srcCompat="@drawable/nome"
+                tools:ignore="ContentDescription" />
+        </FrameLayout>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="10dp"
             android:text="CNH"
             android:textColor="#121212"
             android:textSize="18sp"
             android:textStyle="bold"
             tools:ignore="HardcodedText" />
 
-        <EditText
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/edittext_backgroud"
-            android:ems="10"
-            android:hint="Digite sua CNH"
-            android:inputType="text"
-            android:padding="12dp"
-            android:textColor="#8A8A8A"
-            tools:ignore="Autofill,HardcodedText,TextContrastCheck,VisualLintTextFieldSize" />
+            android:layout_height="70dp">
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/edittext_backgroud"
+                android:ems="10"
+                android:hint="Digite sua CNH"
+                android:inputType="text"
+                android:padding="12dp"
+                android:textColor="#8A8A8A"
+                tools:ignore="Autofill,HardcodedText,TextContrastCheck,VisualLintTextFieldSize" />
+
+            <ImageView
+                android:id="@+id/cnhimg"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginEnd="12dp"
+                android:src="@drawable/cnh"
+                app:srcCompat="@drawable/cnh"
+                tools:ignore="ContentDescription" />
+
+        </FrameLayout>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="10dp"
             android:text="Senha"
             android:textColor="#121212"
             android:textSize="18sp"
             android:textStyle="bold"
             tools:ignore="HardcodedText" />
 
-        <EditText
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/edittext_backgroud"
-            android:ems="10"
-            android:hint="Digite sua Senha"
-            android:inputType="text"
-            android:padding="12dp"
-            android:textColor="#8A8A8A"
-            tools:ignore="Autofill,HardcodedText,TextContrastCheck,VisualLintTextFieldSize" />
+            android:layout_height="70dp">
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/edittext_backgroud"
+                android:ems="10"
+                android:hint="Digite sua Senha"
+                android:inputType="text"
+                android:padding="12dp"
+                android:textColor="#8A8A8A"
+                tools:ignore="Autofill,HardcodedText,TextContrastCheck,VisualLintTextFieldSize" />
+
+            <ImageView
+                android:id="@+id/senhaimg"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginEnd="12dp"
+                android:src="@drawable/senha"
+                app:srcCompat="@drawable/senha"
+                tools:ignore="ContentDescription" />
+
+        </FrameLayout>
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/button"
@@ -160,5 +260,203 @@
             android:text="Já tem uma conta? Faça Login!"
             android:textAlignment="center"
             tools:ignore="HardcodedText" />
+
+
     </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/layout_cadastro_admin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:orientation="vertical"
+        android:layout_marginBottom="4dp"
+        android:padding="32dp"
+        android:textAlignment="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent">
+
+
+        <TextView
+            android:id="@+id/textView11_admin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Email"
+            android:textColor="#121212"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            tools:ignore="HardcodedText" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="70dp">
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/edittext_backgroud"
+                android:ems="10"
+                android:hint="Digite seu Email"
+                android:inputType="text"
+                android:padding="12dp"
+                android:textColor="#8A8A8A"
+                tools:ignore="Autofill,HardcodedText,TextContrastCheck,VisualLintTextFieldSize" />
+
+            <ImageView
+                android:id="@+id/emailimg_admin"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginEnd="12dp"
+                android:src="@drawable/email"
+                app:srcCompat="@drawable/email"
+                tools:ignore="ContentDescription" />
+
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Nome da Empresa"
+            android:textColor="#121212"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            tools:ignore="HardcodedText" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="70dp">
+
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/edittext_backgroud"
+                android:ems="10"
+                android:hint="Digite o nome"
+                android:inputType="text"
+                android:padding="12dp"
+                android:textColor="#8A8A8A"
+                tools:ignore="Autofill,HardcodedText,TextContrastCheck" />
+
+            <ImageView
+                android:id="@+id/nomeimg_admin"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginEnd="12dp"
+                android:src="@drawable/nome"
+                app:srcCompat="@drawable/nome"
+                tools:ignore="ContentDescription" />
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Cargo"
+            android:textColor="#121212"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            tools:ignore="HardcodedText" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="70dp">
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/edittext_backgroud"
+                android:ems="10"
+                android:hint="Digite seu cargo na empresa"
+                android:inputType="text"
+                android:padding="12dp"
+                android:textColor="#8A8A8A"
+                tools:ignore="Autofill,HardcodedText,TextContrastCheck,VisualLintTextFieldSize" />
+
+            <ImageView
+                android:id="@+id/cnhimg_admin"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginEnd="12dp"
+                android:src="@drawable/cnh"
+                app:srcCompat="@drawable/cnh"
+                tools:ignore="ContentDescription" />
+
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Senha"
+            android:textColor="#121212"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            tools:ignore="HardcodedText" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="70dp">
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/edittext_backgroud"
+                android:ems="10"
+                android:hint="Digite sua Senha"
+                android:inputType="text"
+                android:padding="12dp"
+                android:textColor="#8A8A8A"
+                tools:ignore="Autofill,HardcodedText,TextContrastCheck,VisualLintTextFieldSize" />
+
+            <ImageView
+                android:id="@+id/senhaimg_admin"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginEnd="12dp"
+                android:src="@drawable/senha"
+                app:srcCompat="@drawable/senha"
+                tools:ignore="ContentDescription" />
+
+        </FrameLayout>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/button_admin"
+            style="@android:style/Widget.Button"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="22dp"
+            android:background="@drawable/button_background"
+            android:minHeight="48dp"
+            android:text="Cadastrar Administrador"
+            android:textColor="#fff"
+            android:textSize="20sp"
+
+            android:textStyle="bold"
+            tools:ignore="HardcodedText,VisualLintButtonSize" />
+
+        <TextView
+            android:id="@+id/botaoLogin_admin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:text="Já tem uma conta? Faça Login como administrador!"
+            android:textAlignment="center"
+            tools:ignore="HardcodedText" />
+
+
+    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

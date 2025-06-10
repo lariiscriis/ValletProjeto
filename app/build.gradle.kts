@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.google.gms.google.services)
+    id ("kotlin-kapt")
 }
 
 android {
@@ -46,6 +47,14 @@ android {
 
 }
 
+kapt {
+    correctErrorTypes = true
+    useBuildCache = true
+    javacOptions {
+        option("-Xlanguage-version", "2.0")
+    }
+
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -54,7 +63,15 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.firebase.auth)
+    implementation ("androidx.cardview:cardview:1.0.0")
+
+
+    implementation( "com.github.bumptech.glide:glide:4.16.0")
+    kapt ( "com.github.bumptech.glide:compiler:4.16.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    }
 }

@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Vallet</string>
+    <string name="cadastro_de_carros">Cadastro de Carros</string>
+    <string name="adicionar_carro">+ Adicionar Carro</string>
+    <string name="finalizar_cadastro">Finalizar Cadastro</string>
 </resources>
