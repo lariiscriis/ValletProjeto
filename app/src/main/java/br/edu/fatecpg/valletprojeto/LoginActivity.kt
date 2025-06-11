@@ -27,6 +27,7 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Inicializa o Firebase Auth
         auth = Firebase.auth
 
         setupLoginType()
@@ -38,14 +39,13 @@ class LoginActivity : AppCompatActivity() {
         if (isAdmin) {
             binding.layoutLoginUsuario.visibility = android.view.View.GONE
             binding.layoutLoginAdmin.visibility = android.view.View.VISIBLE
-            binding.switchTipoLogin.text = "Sou motorista"
+            binding.switchTipoLogin.text = "Sou usuário comum"
         } else {
             binding.layoutLoginUsuario.visibility = android.view.View.VISIBLE
             binding.layoutLoginAdmin.visibility = android.view.View.GONE
             binding.switchTipoLogin.text = "Sou administrador"
         }
     }
-
 
     private fun setupWindowInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
