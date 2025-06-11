@@ -2,29 +2,30 @@ package br.edu.fatecpg.valletprojeto
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
-import android.widget.TextView
+import android.view.View
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import br.edu.fatecpg.valletprojeto.LoginActivity
 import br.edu.fatecpg.valletprojeto.databinding.ActivityCadastroBinding
-import com.google.firebase.firestore.firestore
+import br.edu.fatecpg.valletprojeto.model.Usuario
+import br.edu.fatecpg.valletprojeto.viewmodel.CadastroViewModel
 
 class CadastroActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCadastroBinding
+    private val viewModel: CadastroViewModel by viewModels()
     private var isAdmin = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
         binding = ActivityCadastroBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val tipoCadastro = intent.getStringExtra("tipoCadastro")
-        isAdmin = tipoCadastro == "admin"
-
+        isAdmin = intent.getStringExtra("tipoCadastro") == "admin"
         atualizarLayoutCadastro()
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -38,7 +39,6 @@ class CadastroActivity : AppCompatActivity() {
             atualizarLayoutCadastro()
         }
 
-        // Botões de login
         binding.botaoLogin.setOnClickListener {
             val intent = Intent(this, LoginActivity::class.java)
             intent.putExtra("tipoCadastro", "usuario")
@@ -51,136 +51,58 @@ class CadastroActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // Botões de cadastro
         binding.btnCadastrar.setOnClickListener {
-            cadastrarMotorista(
-                email = binding.edtEmail.text.toString(),
-                cnh = binding.edtCnh.text.toString(),
-                nome = binding.edtNome.text.toString(),
-                senha = binding.edtSenha.text.toString()
+            val usuario = Usuario(
+                email = binding.edtEmail.text.toString().trim(),
+                cnh = binding.edtCnh.text.toString().trim(),
+                nome = binding.edtNome.text.toString().trim(),
+                senha = binding.edtSenha.text.toString().trim(),
+                tipo_user = "motorista"
             )
+            cadastrar(usuario)
         }
 
         binding.btnCadastrarAdmin.setOnClickListener {
-            cadastrarAdmin(
-                email = binding.edtEmailAdmin.text.toString(),
-                nomeEmpresa = binding.edtNomeEmpresa.text.toString(),
-                cargo = binding.edtCargoAdmin.text.toString(),
-                senha = binding.edtSenhaAdmin.text.toString()
+            val usuario = Usuario(
+                email = binding.edtEmailAdmin.text.toString().trim(),
+                nome = binding.edtNomeEmpresa.text.toString().trim(),
+                senha = binding.edtSenhaAdmin.text.toString().trim(),
+                tipo_user = "admin",
+                nome_empresa = binding.edtNomeEmpresa.text.toString().trim(),
+                cargo = binding.edtCargoAdmin.text.toString().trim()
             )
+            cadastrar(usuario)
         }
     }
+
+    private fun cadastrar(usuario: Usuario) {
+        viewModel.cadastrarUsuario(
+            usuario,
+            onSuccess = {
+                Toast.makeText(this, "Cadastro realizado com sucesso!", Toast.LENGTH_SHORT).show()
+
+                val intent = Intent(this, LoginActivity::class.java)
+                intent.putExtra("tipoCadastro", usuario.tipo_user)
+                startActivity(intent)
+                finish()
+            },
+            onError = { msg ->
+                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
+
+
     private fun atualizarLayoutCadastro() {
         if (isAdmin) {
-            binding.layoutCadastroUsuario.visibility = android.view.View.GONE
-            binding.layoutCadastroAdmin.visibility = android.view.View.VISIBLE
-            binding.switchTipoCadastro.text = "Sou usuário comum"
+            binding.layoutCadastroUsuario.visibility = View.GONE
+            binding.layoutCadastroAdmin.visibility = View.VISIBLE
+            binding.switchTipoCadastro.text = "Sou motorista"
         } else {
-            binding.layoutCadastroUsuario.visibility = android.view.View.VISIBLE
-            binding.layoutCadastroAdmin.visibility = android.view.View.GONE
+            binding.layoutCadastroUsuario.visibility = View.VISIBLE
+            binding.layoutCadastroAdmin.visibility = View.GONE
             binding.switchTipoCadastro.text = "Sou administrador"
         }
-    }
-    private fun cadastrarMotorista(email: String, cnh: String, nome: String, senha: String) {
-        val db = com.google.firebase.Firebase.firestore
-        val emailTrim = email.trim()
-        val cnhTrim = cnh.trim()
-        val nomeTrim = nome.trim()
-
-        if (emailTrim.isEmpty() || cnhTrim.isEmpty() || nomeTrim.isEmpty() || senha.isEmpty()) {
-            showAlertDialog("Campo vazio", "Preencha todos os campos")
-            return
-        }
-
-        if (cnhTrim.length != 11 || !cnhTrim.all { it.isDigit() }) {
-            showAlertDialog("CNH inválida", "A CNH deve conter exatamente 11 dígitos numéricos.")
-            return
-        }
-
-        db.collection("usuario").whereEqualTo("email", emailTrim).get()
-            .addOnSuccessListener { result ->
-                if (!result.isEmpty) {
-                    showAlertDialog("Erro", "Esse e-mail já está cadastrado.")
-                } else {
-                    val user = hashMapOf(
-                        "email" to emailTrim,
-                        "cnh" to cnhTrim,
-                        "nome" to nomeTrim,
-                        "senha" to senha,
-                        "tipo_user" to "comum",
-                        "data_criacao" to com.google.firebase.firestore.FieldValue.serverTimestamp()
-                    )
-                    db.collection("usuario").add(user)
-                        .addOnSuccessListener {
-                            showAlertDialog("Sucesso", "Usuário cadastrado com sucesso!") {
-                                val intent = Intent(this, LoginActivity::class.java)
-                                intent.putExtra("tipoCadastro", "comum")
-                                startActivity(intent)
-                                finish()
-                            }
-                        }
-                        .addOnFailureListener {
-                            showAlertDialog("Erro", "Erro ao cadastrar: ${it.message}")
-                        }
-                }
-            }
-            .addOnFailureListener {
-                showAlertDialog("Erro", "Erro ao verificar e-mail: ${it.message}")
-            }
-    }
-    private fun cadastrarAdmin(email: String, nomeEmpresa: String, cargo: String, senha: String) {
-        val db = com.google.firebase.Firebase.firestore
-        val emailTrim = email.trim()
-        val nomeEmpresaTrim = nomeEmpresa.trim()
-        val cargoTrim = cargo.trim()
-
-        if (emailTrim.isEmpty() || nomeEmpresaTrim.isEmpty() || cargoTrim.isEmpty() || senha.isEmpty()) {
-            showAlertDialog("Campo vazio", "Preencha todos os campos")
-            return
-        }
-
-        db.collection("usuario").whereEqualTo("email", emailTrim).get()
-            .addOnSuccessListener { result ->
-                if (!result.isEmpty) {
-                    showAlertDialog("Erro", "Esse e-mail já está cadastrado.")
-                } else {
-                    val user = hashMapOf(
-                        "email" to emailTrim,
-                        "nome_empresa" to nomeEmpresaTrim,
-                        "cargo" to cargoTrim,
-                        "senha" to senha,
-                        "tipo_user" to "admin",
-                        "data_criacao" to com.google.firebase.firestore.FieldValue.serverTimestamp()
-                    )
-                    db.collection("usuario").add(user)
-                        .addOnSuccessListener {
-                            showAlertDialog("Sucesso", "Administrador cadastrado com sucesso!") {
-                                val intent = Intent(this, LoginActivity::class.java)
-                                intent.putExtra("tipoCadastro", "admin")
-                                startActivity(intent)
-                                finish()
-                            }
-                        }
-                        .addOnFailureListener {
-                            showAlertDialog("Erro", "Erro ao cadastrar: ${it.message}")
-                        }
-                }
-            }
-            .addOnFailureListener {
-                showAlertDialog("Erro", "Erro ao verificar e-mail: ${it.message}")
-            }
-    }
-
-
-    private fun showAlertDialog(title: String, message: String, onDismiss: (() -> Unit)? = null) {
-        val builder = androidx.appcompat.app.AlertDialog.Builder(this)
-        builder.setTitle(title)
-            .setMessage(message)
-            .setPositiveButton("OK") { dialog, _ ->
-                dialog.dismiss()
-                onDismiss?.invoke()
-            }
-        builder.create().show()
     }
 
 }

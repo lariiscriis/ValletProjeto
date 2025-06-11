@@ -35,18 +35,17 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun setupLoginType() {
-        isAdmin = intent.getStringExtra("tipoCadastro") == "admin"
-
         if (isAdmin) {
             binding.layoutLoginUsuario.visibility = android.view.View.GONE
             binding.layoutLoginAdmin.visibility = android.view.View.VISIBLE
-            binding.switchTipoLogin.text = "Sou usuário comum"
+            binding.switchTipoLogin.text = "Sou motorista"
         } else {
             binding.layoutLoginUsuario.visibility = android.view.View.VISIBLE
             binding.layoutLoginAdmin.visibility = android.view.View.GONE
             binding.switchTipoLogin.text = "Sou administrador"
         }
     }
+
 
     private fun setupWindowInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -146,7 +145,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun redirectUser(isAdmin: Boolean) {
         val intent = if (isAdmin) {
-            Intent(this, Carro::class.java)
+            Intent(this, CadastroCarro::class.java)
         } else {
             Intent(this, IntroCadastroCarro::class.java)
         }

@@ -22,7 +22,7 @@
         app:layout_constraintEnd_toEndOf="parent">
 
         <EditText
-            android:id="@+id/editPlaca"
+            android:id="@+id/edt_placa"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:hint="Placa"
@@ -31,7 +31,7 @@
             android:textColorHint="#AAAAAA"/>
 
         <EditText
-            android:id="@+id/editMarca"
+            android:id="@+id/edt_marca"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:layout_marginTop="12dp"
@@ -41,7 +41,7 @@
             android:textColorHint="#AAAAAA"/>
 
         <EditText
-            android:id="@+id/editModelo"
+            android:id="@+id/edt_modelo"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:layout_marginTop="12dp"
@@ -51,7 +51,7 @@
             android:textColorHint="#AAAAAA"/>
 
         <Button
-            android:id="@+id/btnConfirmar"
+            android:id="@+id/btn_confirmar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Confirmar"

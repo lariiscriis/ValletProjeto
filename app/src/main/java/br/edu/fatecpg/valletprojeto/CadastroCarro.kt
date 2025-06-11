@@ -4,19 +4,23 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import br.edu.fatecpg.valletprojeto.R
 import br.edu.fatecpg.valletprojeto.databinding.ActivityCadastroCarroBinding
 import br.edu.fatecpg.valletprojeto.databinding.FormCarroBinding
 import br.edu.fatecpg.valletprojeto.databinding.ItemCardCarroBinding
-import  br.edu.fatecpg.valletprojeto.Carro
+import br.edu.fatecpg.valletprojeto.model.Carro
+import br.edu.fatecpg.valletprojeto.viewmodel.CarroViewModel
 
 class CadastroCarro : AppCompatActivity() {
 
     private lateinit var binding: ActivityCadastroCarroBinding
     private val listaForms = mutableListOf<FormCarroBinding>()
     private val carrosCadastrados = mutableListOf<Carro>()
+    private val viewModel: CarroViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,7 +42,7 @@ class CadastroCarro : AppCompatActivity() {
 
         binding.btnFinalizar.setOnClickListener {
             Toast.makeText(this, "Cadastro finalizado com ${carrosCadastrados.size} carro(s)!", Toast.LENGTH_SHORT).show()
-            // Aqui você pode fazer algo com a lista de carros, como enviar para outra tela
+            // Enviar para outra tela ou finalizar
         }
     }
 
@@ -48,18 +52,27 @@ class CadastroCarro : AppCompatActivity() {
         listaForms.add(novoFormularioBinding)
 
         novoFormularioBinding.btnConfirmar.setOnClickListener {
-            val placa = novoFormularioBinding.editPlaca.text.toString().trim()
-            val marca = novoFormularioBinding.editMarca.text.toString().trim()
-            val modelo = novoFormularioBinding.editModelo.text.toString().trim()
+            val placa = novoFormularioBinding.edtPlaca.text.toString().trim()
+            val marca = novoFormularioBinding.edtMarca.text.toString().trim()
+            val modelo = novoFormularioBinding.edtModelo.text.toString().trim()
 
             if (placa.isNotEmpty() && marca.isNotEmpty() && modelo.isNotEmpty()) {
                 val novoCarro = Carro(placa, marca, modelo)
-                carrosCadastrados.add(novoCarro)
 
-                mostrarCardCarro(novoCarro)
-                binding.layoutForms.removeView(novoFormularioBinding.root)
-                listaForms.remove(novoFormularioBinding)
-                binding.btnFinalizar.visibility = View.VISIBLE
+                viewModel.cadastrarCarro(
+                    novoCarro,
+                    onSuccess = {
+                        carrosCadastrados.add(novoCarro)
+                        mostrarCardCarro(novoCarro)
+                        Toast.makeText(this, "Carro salvo!", Toast.LENGTH_SHORT).show()
+                        binding.layoutForms.removeView(novoFormularioBinding.root)
+                        listaForms.remove(novoFormularioBinding)
+                        binding.btnFinalizar.visibility = View.VISIBLE
+                    },
+                    onFailure = { erro ->
+                        Toast.makeText(this, "Erro ao salvar carro: $erro", Toast.LENGTH_LONG).show()
+                    }
+                )
             } else {
                 Toast.makeText(this, "Por favor, preencha todos os campos.", Toast.LENGTH_SHORT).show()
             }
