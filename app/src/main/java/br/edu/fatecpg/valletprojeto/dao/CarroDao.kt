@@ -7,8 +7,8 @@ import br.edu.fatecpg.valletprojeto.model.Carro
 
 object CarroDao {
 
-    private val auth = FirebaseAuth.getInstance()
-    private val db = FirebaseFirestore.getInstance()
+    val auth = FirebaseAuth.getInstance()
+    val db = FirebaseFirestore.getInstance()
 
     fun cadastrarCarro(
         carro: Carro,

@@ -67,6 +67,12 @@ class IntroCadastroCarro : AppCompatActivity() {
             performLogout()
         }
 
+        binding.btnVaga?.setOnClickListener {
+            val intent = Intent(this, CadastroVagaActivity::class.java)
+            startActivity(intent)
+        }
+
+
         binding.btnadmin.setOnClickListener{
             val intent = Intent(this, IntroCadastroEstacionamento::class.java)
             startActivity(intent)
