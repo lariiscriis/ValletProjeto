@@ -100,6 +100,7 @@
             android:layout_height="70dp">
 
             <EditText
+                android:id="@+id/edt_email"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginTop="12dp"
@@ -139,6 +140,7 @@
 
 
             <EditText
+                android:id="@+id/edt_nome"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginTop="12dp"
@@ -176,6 +178,7 @@
             android:layout_height="70dp">
 
             <EditText
+                android:id="@+id/edt_cnh"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginTop="12dp"
@@ -214,6 +217,7 @@
             android:layout_height="70dp">
 
             <EditText
+                android:id="@+id/edt_senha"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginTop="12dp"
@@ -238,7 +242,7 @@
         </FrameLayout>
 
         <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/button"
+            android:id="@+id/btn_cadastrar"
             style="@android:style/Widget.Button"
             android:layout_width="match_parent"
             android:layout_height="50dp"
@@ -295,6 +299,7 @@
             android:layout_height="70dp">
 
             <EditText
+                android:id="@+id/edt_email_admin"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginTop="12dp"
@@ -334,6 +339,7 @@
 
 
             <EditText
+                android:id="@+id/edt_nome_empresa"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginTop="12dp"
@@ -371,6 +377,7 @@
             android:layout_height="70dp">
 
             <EditText
+                android:id="@+id/edt_cargo_admin"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginTop="12dp"
@@ -409,6 +416,7 @@
             android:layout_height="70dp">
 
             <EditText
+                android:id="@+id/edt_senha_admin"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginTop="12dp"
@@ -433,7 +441,7 @@
         </FrameLayout>
 
         <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/button_admin"
+            android:id="@+id/btn_cadastrar_admin"
             style="@android:style/Widget.Button"
             android:layout_width="match_parent"
             android:layout_height="50dp"

@@ -46,6 +46,9 @@ android {
 
 
 }
+dependencies {
+    implementation(libs.firebase.firestore.ktx)
+}
 
 kapt {
     correctErrorTypes = true
