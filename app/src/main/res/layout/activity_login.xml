@@ -334,7 +334,7 @@
             android:layout_height="70dp">
 
             <EditText
-                android:id="@+id/editTextText_admin"
+                android:id="@+id/edt_email_admin"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginTop="12dp"
@@ -373,7 +373,7 @@
             android:layout_height="70dp">
 
             <EditText
-                android:id="@+id/editTextCodigoAcesso_admin"
+                android:id="@+id/edt_codigo_acesso"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginTop="12dp"
@@ -412,7 +412,7 @@
             android:layout_height="70dp">
 
             <EditText
-                android:id="@+id/editTextSenha_admin"
+                android:id="@+id/edt_senha_admin"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginTop="12dp"

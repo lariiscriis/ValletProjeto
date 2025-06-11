@@ -81,8 +81,8 @@ class LoginActivity : AppCompatActivity() {
         }
 
         binding.entrarAdmin.setOnClickListener {
-            val email = binding.txvEmailAdmin.text.toString().trim()
-            val senha = binding.txvSenhaAdmin.text.toString().trim()
+            val email = binding.edtEmailAdmin.text.toString().trim()
+            val senha = binding.edtSenhaAdmin.text.toString().trim()
             if (validateCredentials(email, senha)) {
                 loginUser(email, senha, true)
             }
@@ -115,40 +115,52 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun checkAdminStatus(email: String, isAdminAttempt: Boolean) {
-        db.collection("admins")
+        db.collection("usuario")
             .whereEqualTo("email", email)
             .get()
             .addOnSuccessListener { documents ->
-                val isAdmin = !documents.isEmpty
+                if (!documents.isEmpty) {
+                    val doc = documents.documents[0]
+                    val tipoUser = doc.getString("tipo_user")
 
-                if (isAdminAttempt && !isAdmin) {
-                    // Tentou fazer login como admin mas não é
+                    val isAdminFromDB = tipoUser == "admin"
+
+                    if (isAdminAttempt && !isAdminFromDB) {
+                        auth.signOut()
+                        Toast.makeText(
+                            this,
+                            "Acesso restrito a administradores cadastrados",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    } else {
+                        redirectUser(isAdminFromDB, email)
+                    }
+                } else {
                     auth.signOut()
                     Toast.makeText(
                         this,
-                        "Acesso restrito a administradores cadastrados",
-                        Toast.LENGTH_LONG
+                        "Usuário não encontrado no banco de dados",
+                        Toast.LENGTH_SHORT
                     ).show()
-                } else {
-                    // Login bem-sucedido
-                    redirectUser(isAdmin)
                 }
             }
             .addOnFailureListener {
                 Toast.makeText(
                     this,
-                    "Erro ao verificar permissões",
+                    "Erro ao verificar permissões: ${it.message}",
                     Toast.LENGTH_SHORT
                 ).show()
             }
     }
 
-    private fun redirectUser(isAdmin: Boolean) {
+
+    private fun redirectUser(isAdmin: Boolean, email:String) {
         val intent = if (isAdmin) {
             Intent(this, CadastroCarro::class.java)
         } else {
             Intent(this, IntroCadastroCarro::class.java)
         }
+        intent.putExtra("email_usuario", email)
         startActivity(intent)
         finish()
     }
