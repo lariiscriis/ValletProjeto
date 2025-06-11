@@ -98,8 +98,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Salvar Alterações"
-            app:icon="@drawable/ic_save"
-            app:iconGravity="start"
-            app:backgroundTint="@color/primaryColor"/>
+            app:backgroundTint="#00A676"
+            app:iconGravity="start" />
     </LinearLayout>
 </ScrollView>
