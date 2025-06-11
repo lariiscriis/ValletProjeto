@@ -17,6 +17,15 @@
             android:name=".ReservaActivity"
             android:exported="false" />
         <activity
+            android:name=".EditarVagaActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CadastroVagaActivity"
+            android:exported="false" />
+        <activity
+            android:name=".VagaActivity"
+            android:exported="false" />
+        <activity
             android:name=".EditarCarroActivity"
             android:exported="false" />
         <activity
@@ -50,8 +59,6 @@
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
-
-
     </application>
 
 </manifest>
