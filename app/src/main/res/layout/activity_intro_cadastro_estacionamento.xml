@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".IntroCadastroCarro">
+    tools:context=".IntroCadastroEstacionamento">
 
     <LinearLayout
         android:id="@+id/introLayout"
@@ -32,19 +32,7 @@
 
         <!-- Botão de ir para o cadastro -->
 
-        <Button
-            android:id="@+id/btnSair"
-            android:layout_width="138dp"
-            android:layout_height="wrap_content"
-            android:backgroundTint="#4CAF50"
-            android:text="Logout" />
 
-        <Button
-            android:id="@+id/btnadmin"
-            android:layout_width="138dp"
-            android:layout_height="wrap_content"
-            android:backgroundTint="#4CAF50"
-            android:text="Logout" />
         <TextView
             android:id="@+id/txtBemVindo"
             android:layout_width="wrap_content"
@@ -83,7 +71,7 @@
             android:fontFamily="@font/poppins"
             android:gravity="center"
             android:padding="12dp"
-            android:text="Antes de estacionar, \n vamos conhecer seu carro."
+            android:text="Antes de receber veículos, \n vamos conhecer seu estacionamento!"
             android:textColor="#555555"
             android:textSize="16sp" />
 

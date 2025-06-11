@@ -1,59 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="140dp"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="6dp"
+    app:cardUseCompatPadding="true">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="match_parent"
         android:background="@drawable/edittext_backgroud"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:padding="12dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.5">
+        android:padding="12dp">
 
+        <!-- Imagem do carro (maior e saindo do card) -->
         <ImageView
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_marginEnd="12dp"
-            android:contentDescription="Imagem carro"
-            android:src="@drawable/ic_carro" />
+            android:id="@+id/imgCarro"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:contentDescription="Imagem do carro"
+            android:elevation="4dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/carro_item_card"
+            tools:ignore="RelativeOverlap" />
 
+        <!-- Container das informações -->
         <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center_vertical"
-            android:orientation="vertical">
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@id/imgCarro"
+            android:orientation="vertical"
+            android:paddingStart="16dp"
+            android:paddingTop="8dp">
 
+            <!-- Placa (destaque) -->
             <TextView
                 android:id="@+id/txtPlaca"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Placa: ABC-1234"
+                android:text="ABC-1234"
                 android:textColor="#121212"
+                android:textSize="18sp"
                 android:textStyle="bold" />
 
+            <!-- Marca e Modelo -->
             <TextView
-                android:id="@+id/txtMarca"
+                android:id="@+id/txtMarcaModelo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Marca: Toyota"
-                android:textColor="#121212" />
+                android:layout_marginTop="4dp"
+                android:text="Toyota Corolla"
+                android:textColor="#606060"
+                android:textSize="14sp" />
 
+            <!-- Ano/Detalhes -->
             <TextView
-                android:id="@+id/txtModelo"
+                android:id="@+id/txtDetalhes"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Modelo: Corolla"
-                android:textColor="#121212" />
+                android:layout_marginTop="2dp"
+                android:text="2022 • 25.000 km"
+                android:textColor="#909090"
+                android:textSize="12sp" />
+
+
         </LinearLayout>
-    </LinearLayout>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </RelativeLayout>
+</androidx.cardview.widget.CardView>

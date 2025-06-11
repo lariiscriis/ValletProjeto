@@ -2,26 +2,26 @@ package br.edu.fatecpg.valletprojeto
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import br.edu.fatecpg.valletprojeto.databinding.ActivityIntroCadastroCarroBinding
+import br.edu.fatecpg.valletprojeto.databinding.ActivityIntroCadastroEstacionamentoBinding
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
-class IntroCadastroCarro : AppCompatActivity() {
-    private lateinit var binding: ActivityIntroCadastroCarroBinding
+class IntroCadastroEstacionamento : AppCompatActivity() {
+    private lateinit var binding: ActivityIntroCadastroEstacionamentoBinding
     private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        binding = ActivityIntroCadastroCarroBinding.inflate(layoutInflater)
+        binding = ActivityIntroCadastroEstacionamentoBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         // Inicializa o Firebase Auth
@@ -39,49 +39,26 @@ class IntroCadastroCarro : AppCompatActivity() {
     }
 
     private fun setupEdgeToEdge() {
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
     }
 
-    private fun setupGifAnimation() {
-        Glide.with(this)
-            .asGif()
-            .load(R.drawable.car_intro_animado)
-            .into(binding.gifCarro)
-    }
-
-
     private fun setupButtonListeners() {
-        // Botão para cadastro de carro
         binding.btnIrParaCadastro.setOnClickListener {
-            navigateToCarRegistration()
-        }
-
-        binding.btnSair?.setOnClickListener {
-            performLogout()
-        }
-
-        binding.btnadmin.setOnClickListener{
-            val intent = Intent(this, IntroCadastroEstacionamento::class.java)
+            val intent = Intent(this, CadastroEstacionamento::class.java)
             startActivity(intent)
         }
 
     }
 
-    private fun navigateToCarRegistration() {
-        val intent = Intent(this, CadastroCarro::class.java)
-        startActivity(intent)
-        // Adicione animação de transição se desejar
-        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-    }
-
-    private fun performLogout() {
-        auth.signOut()
-        Toast.makeText(this, "Logout realizado com sucesso", Toast.LENGTH_SHORT).show()
-        redirectToLogin()
+    private fun setupGifAnimation() {
+        Glide.with(this)
+            .asGif()
+            .load(R.drawable.parking)
+            .into(binding.gifCarro)
     }
 
     private fun redirectToLogin() {

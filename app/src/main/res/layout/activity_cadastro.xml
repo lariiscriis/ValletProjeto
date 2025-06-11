@@ -224,7 +224,7 @@
                 android:background="@drawable/edittext_backgroud"
                 android:ems="10"
                 android:hint="Digite sua Senha"
-                android:inputType="text"
+                android:inputType="textPassword"
                 android:padding="12dp"
                 android:textColor="#8A8A8A"
                 tools:ignore="Autofill,HardcodedText,TextContrastCheck,VisualLintTextFieldSize" />
@@ -423,7 +423,7 @@
                 android:background="@drawable/edittext_backgroud"
                 android:ems="10"
                 android:hint="Digite sua Senha"
-                android:inputType="text"
+                android:inputType="textPassword"
                 android:padding="12dp"
                 android:textColor="#8A8A8A"
                 tools:ignore="Autofill,HardcodedText,TextContrastCheck,VisualLintTextFieldSize" />

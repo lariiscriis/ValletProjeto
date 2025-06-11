@@ -1,16 +1,19 @@
 package br.edu.fatecpg.valletprojeto
 
+import android.app.Dialog
 import android.os.Bundle
+import android.util.Log
 import android.view.View
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import br.edu.fatecpg.valletprojeto.R
+import androidx.recyclerview.widget.LinearLayoutManager
 import br.edu.fatecpg.valletprojeto.databinding.ActivityCadastroCarroBinding
-import br.edu.fatecpg.valletprojeto.databinding.FormCarroBinding
+import br.edu.fatecpg.valletprojeto.databinding.DialogCadastroCarroBinding
 import br.edu.fatecpg.valletprojeto.databinding.ItemCardCarroBinding
 import br.edu.fatecpg.valletprojeto.model.Carro
 import br.edu.fatecpg.valletprojeto.viewmodel.CarroViewModel
@@ -18,9 +21,9 @@ import br.edu.fatecpg.valletprojeto.viewmodel.CarroViewModel
 class CadastroCarro : AppCompatActivity() {
 
     private lateinit var binding: ActivityCadastroCarroBinding
-    private val listaForms = mutableListOf<FormCarroBinding>()
     private val carrosCadastrados = mutableListOf<Carro>()
     private val viewModel: CarroViewModel by viewModels()
+    private lateinit var carrosAdapter: CarrosAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,62 +31,107 @@ class CadastroCarro : AppCompatActivity() {
         binding = ActivityCadastroCarroBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
-        adicionarNovoFormulario()
+        // Configurar RecyclerView
+        setupRecyclerView()
 
         binding.btnAdicionarCarro.setOnClickListener {
-            adicionarNovoFormulario()
+            showAddCarDialog()
         }
 
         binding.btnFinalizar.setOnClickListener {
-            Toast.makeText(this, "Cadastro finalizado com ${carrosCadastrados.size} carro(s)!", Toast.LENGTH_SHORT).show()
-            // Enviar para outra tela ou finalizar
+            Toast.makeText(
+                this,
+                "Cadastro finalizado com ${carrosCadastrados.size} carro(s)!",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
-    private fun adicionarNovoFormulario() {
-        val novoFormularioBinding = FormCarroBinding.inflate(layoutInflater, binding.layoutForms, false)
-        binding.layoutForms.addView(novoFormularioBinding.root)
-        listaForms.add(novoFormularioBinding)
+    private fun setupRecyclerView() {
+        carrosAdapter = CarrosAdapter(carrosCadastrados)
+        binding.recyclerViewCarros.apply {
+            layoutManager = LinearLayoutManager(this@CadastroCarro)
+            adapter = carrosAdapter
+        }
+    }
 
-        novoFormularioBinding.btnConfirmar.setOnClickListener {
-            val placa = novoFormularioBinding.edtPlaca.text.toString().trim()
-            val marca = novoFormularioBinding.edtMarca.text.toString().trim()
-            val modelo = novoFormularioBinding.edtModelo.text.toString().trim()
+    private fun showAddCarDialog() {
+        val dialogBinding = DialogCadastroCarroBinding.inflate(layoutInflater)
 
-            if (placa.isNotEmpty() && marca.isNotEmpty() && modelo.isNotEmpty()) {
-                val novoCarro = Carro(placa, marca, modelo)
+        val dialog = Dialog(this, R.style.DialogTheme).apply {
+            setContentView(dialogBinding.root)
+
+            window?.setLayout(
+                (resources.displayMetrics.widthPixels * 0.9).toInt(),
+                WindowManager.LayoutParams.WRAP_CONTENT
+            )
+
+            setCancelable(true)
+        }
+
+        dialogBinding.btnConfirmar.setOnClickListener {
+            val placa = dialogBinding.editPlaca.text.toString().trim()
+            val marca = dialogBinding.editMarca.text.toString().trim()
+            val modelo = dialogBinding.editModelo.text.toString().trim()
+            val ano = dialogBinding.editAno.text.toString().trim()
+            val km = dialogBinding.editKM.text.toString().trim()
+
+            if (placa.isNotEmpty() && marca.isNotEmpty() && modelo.isNotEmpty() && ano.isNotEmpty() && km.isNotEmpty()) {
+                val novoCarro = Carro(placa, marca, modelo, ano, km)
 
                 viewModel.cadastrarCarro(
                     novoCarro,
                     onSuccess = {
                         carrosCadastrados.add(novoCarro)
-                        mostrarCardCarro(novoCarro)
-                        Toast.makeText(this, "Carro salvo!", Toast.LENGTH_SHORT).show()
-                        binding.layoutForms.removeView(novoFormularioBinding.root)
-                        listaForms.remove(novoFormularioBinding)
+                        carrosAdapter.notifyItemInserted(carrosCadastrados.size - 1)
+
                         binding.btnFinalizar.visibility = View.VISIBLE
+
+                        dialog.dismiss()
+                        Toast.makeText(this, "Carro salvo!", Toast.LENGTH_SHORT).show()
                     },
                     onFailure = { erro ->
-                        Toast.makeText(this, "Erro ao salvar carro: $erro", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this, "Erro ao salvar: $erro", Toast.LENGTH_LONG).show()
                     }
                 )
             } else {
-                Toast.makeText(this, "Por favor, preencha todos os campos.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Preencha todos os campos", Toast.LENGTH_SHORT).show()
             }
         }
-    }
 
-    private fun mostrarCardCarro(carro: Carro) {
-        val cardBinding = ItemCardCarroBinding.inflate(layoutInflater, binding.layoutCards, false)
-        cardBinding.txtPlaca.text = "Placa: ${carro.placa}"
-        cardBinding.txtMarca.text = "Marca: ${carro.marca}"
-        cardBinding.txtModelo.text = "Modelo: ${carro.modelo}"
-        binding.layoutCards.addView(cardBinding.root)
+        // 7. Mostrar o dialog
+        Log.d("DialogTest", "Tentando mostrar o dialog")
+        dialog.show()
+        Log.d("DialogTest", "Dialog mostrado")    }
+    // Adapter para o RecyclerView
+    inner class CarrosAdapter(private val carros: List<Carro>) :
+        androidx.recyclerview.widget.RecyclerView.Adapter<CarrosAdapter.CarroViewHolder>() {
+
+        inner class CarroViewHolder(val binding: ItemCardCarroBinding) :
+            androidx.recyclerview.widget.RecyclerView.ViewHolder(binding.root)
+
+        override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): CarroViewHolder {
+            val binding = ItemCardCarroBinding.inflate(
+                layoutInflater,
+                parent,
+                false
+            )
+            return CarroViewHolder(binding)
+        }
+
+        override fun onBindViewHolder(holder: CarroViewHolder, position: Int) {
+            val carro = carros[position]
+            holder.binding.txtPlaca.text = "${carro.placa}"
+            holder.binding.txtMarcaModelo.text = "${carro.marca} ${carro.modelo}"
+            holder.binding.txtDetalhes.text = "${carro.ano}•${carro.km} km"
+        }
+
+        override fun getItemCount() = carros.size
     }
 }
