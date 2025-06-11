@@ -5,5 +5,8 @@ data class Carro(
     val marca: String = "",
     val modelo: String = "",
     val ano: String = "",
-    val km: String=""
+    val km: String="",
+    var id: String = "",
+    var usuarioEmail: String = "",
+    var dataCadastro: String = ""
 )

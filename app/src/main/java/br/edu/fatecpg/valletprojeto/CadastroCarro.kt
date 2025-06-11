@@ -1,12 +1,14 @@
 package br.edu.fatecpg.valletprojeto
 
 import android.app.Dialog
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -40,6 +42,8 @@ class CadastroCarro : AppCompatActivity() {
         // Configurar RecyclerView
         setupRecyclerView()
 
+        carregarCarrosDoUsuario()
+
         binding.btnAdicionarCarro.setOnClickListener {
             showAddCarDialog()
         }
@@ -52,6 +56,21 @@ class CadastroCarro : AppCompatActivity() {
             ).show()
         }
     }
+
+    private fun carregarCarrosDoUsuario() {
+        viewModel.listarCarrosDoUsuario(
+            onSuccess = { lista ->
+                carrosCadastrados.clear()
+                carrosCadastrados.addAll(lista)
+                carrosAdapter.notifyDataSetChanged()
+                binding.btnFinalizar.visibility = if (carrosCadastrados.isNotEmpty()) View.VISIBLE else View.GONE
+            },
+            onFailure = { erro ->
+                Toast.makeText(this, "Erro ao carregar carros: $erro", Toast.LENGTH_LONG).show()
+            }
+        )
+    }
+
 
     private fun setupRecyclerView() {
         carrosAdapter = CarrosAdapter(carrosCadastrados)
@@ -124,12 +143,35 @@ class CadastroCarro : AppCompatActivity() {
             )
             return CarroViewHolder(binding)
         }
+        private val editarCarroLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == RESULT_OK) {
+                carregarCarrosDoUsuario() // Atualiza a lista após edição
+            }
+        }
+
 
         override fun onBindViewHolder(holder: CarroViewHolder, position: Int) {
             val carro = carros[position]
             holder.binding.txtPlaca.text = "${carro.placa}"
             holder.binding.txtMarcaModelo.text = "${carro.marca} ${carro.modelo}"
             holder.binding.txtDetalhes.text = "${carro.ano}•${carro.km} km"
+
+            holder.itemView.setOnClickListener {
+                val intent = Intent(this@CadastroCarro, EditarCarroActivity::class.java).apply {
+                    putExtra("carroId", carro.id)
+                    putExtra("placa", carro.placa)
+                    putExtra("marca", carro.marca)
+                    putExtra("modelo", carro.modelo)
+                    putExtra("ano", carro.ano)
+                    putExtra("km", carro.km)
+                }
+                editarCarroLauncher.launch(intent)
+            }
+
+
+
         }
 
         override fun getItemCount() = carros.size
