@@ -1,8 +1,11 @@
 data class Estacionamento(
     // Dados Básicos
+    var id: String = "",
     val nome: String,
     val cnpj: String,
     val telefone: String,
+    val adminEmail: String = "",
+    val dataCadastro: Any? = null,
 
     // Localização
     val endereco: String,
