@@ -11,7 +11,9 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <!-- CardView da reserva atual -->
         <androidx.cardview.widget.CardView
+            android:id="@+id/card_reserva_atual"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
@@ -92,6 +94,20 @@
             </RelativeLayout>
         </androidx.cardview.widget.CardView>
 
+        <!-- Texto para mostrar caso não tenha reserva -->
+        <TextView
+            android:id="@+id/tv_no_reservation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Você não possui reservas ativas. Clique aqui para ver as vagas disponíveis."
+            android:textColor="#046C4E"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:padding="16dp"
+            android:background="?attr/selectableItemBackground"
+            android:visibility="gone" />
+
+        <!-- Restante do layout (estatísticas, histórico etc) -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -99,8 +115,7 @@
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="#046C4E"
-            android:layout_marginBottom="12dp"/>
-
+            android:layout_marginBottom="12dp" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -13,26 +13,34 @@ class UsuarioDao {
         onError: (String) -> Unit
     ) {
         auth.createUserWithEmailAndPassword(usuario.email, usuario.senha)
-            .addOnSuccessListener {
-                val data = hashMapOf(
-                    "email" to usuario.email,
-                    "nome" to usuario.nome,
-                    "tipo_user" to usuario.tipo_user,
-                    "data_criacao" to FieldValue.serverTimestamp()
-                )
-                usuario.cnh?.let { data["cnh"] = it }
-                usuario.nome_empresa?.let { data["nome_empresa"] = it }
-                usuario.cargo?.let { data["cargo"] = it }
+            .addOnSuccessListener { result ->
+                val uid = result.user?.uid  // Pega o UID do usuário criado
+                if (uid != null) {
+                    val data = hashMapOf(
+                        "email" to usuario.email,
+                        "nome" to usuario.nome,
+                        "tipo_user" to usuario.tipo_user,
+                        "data_criacao" to FieldValue.serverTimestamp()
+                    )
+                    usuario.cnh?.let { data["cnh"] = it }
+                    usuario.nome_empresa?.let { data["nome_empresa"] = it }
+                    usuario.cargo?.let { data["cargo"] = it }
 
-                db.collection("usuario").add(data)
-                    .addOnSuccessListener { onSuccess() }
-                    .addOnFailureListener { e ->
-                        auth.currentUser?.delete()
-                        onError(e.message ?: "Erro ao salvar usuário")
-                    }
+                    // Salva o documento usando o UID como ID
+                    db.collection("usuario").document(uid)
+                        .set(data)
+                        .addOnSuccessListener { onSuccess() }
+                        .addOnFailureListener { e ->
+                            auth.currentUser?.delete()
+                            onError(e.message ?: "Erro ao salvar usuário")
+                        }
+                } else {
+                    onError("Erro ao obter UID do usuário")
+                }
             }
             .addOnFailureListener {
                 onError(it.message ?: "Erro ao criar usuário")
             }
+
     }
 }

@@ -54,13 +54,14 @@ class CadastroCarro : AppCompatActivity() {
                 "Cadastro finalizado com ${carrosCadastrados.size} carro(s)!",
                 Toast.LENGTH_SHORT
             ).show()
-
-            val vagaId = "123"
-            val estacionamentoId = "123"
-            val intent = Intent(this, ReservaActivity::class.java)
-            intent.putExtra("VAGA_ID", vagaId)
-            intent.putExtra("ESTACIONAMENTO_ID", estacionamentoId)
-            startActivity(intent)
+            val intent = Intent(this, CarroActivity::class.java)
+         startActivity(intent)
+            //val vagaId = "123"
+            //val estacionamentoId = "123"
+//            val intent = Intent(this, ReservaActivity::class.java)
+//            intent.putExtra("VAGA_ID", vagaId)
+//            intent.putExtra("ESTACIONAMENTO_ID", estacionamentoId)
+//            startActivity(intent)
         }
     }
 
