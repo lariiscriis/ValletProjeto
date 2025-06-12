@@ -1,53 +1,56 @@
 package br.edu.fatecpg.valletprojeto
 
-import ParkingSpotAdapter
-import android.R
+import android.content.Intent
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import br.edu.fatecpg.valletprojeto.dao.ParkingSpot
+import br.edu.fatecpg.valletprojeto.adapter.ParkingSpotAdapter
+import br.edu.fatecpg.valletprojeto.dao.ParkingSpotDao
 import br.edu.fatecpg.valletprojeto.databinding.ActivityPaginaDeReservaVagasBinding
-
+import br.edu.fatecpg.valletprojeto.model.Vaga
 
 class PaginaDeReservaVagas : AppCompatActivity() {
-    private lateinit var binding: ActivityPaginaDeReservaVagasBinding
 
+    private lateinit var binding: ActivityPaginaDeReservaVagasBinding
+    private lateinit var parkingSpotDao: ParkingSpotDao
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPaginaDeReservaVagasBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        enableEdgeToEdge()
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
+        parkingSpotDao = ParkingSpotDao()
 
-        val rvParkingSpots = binding.rvParkingSpots
-        rvParkingSpots.layoutManager = GridLayoutManager(this, 3)
+        // Configura o RecyclerView com layout manager logo no início
+        binding.rvParkingSpots.layoutManager = GridLayoutManager(this, 3)
 
-        // Criar lista de vagas
-        val spots = mutableListOf(
-            ParkingSpot("634", "Available"),
-            ParkingSpot("636", "Available"),
-            ParkingSpot("637", "Available"),
-            ParkingSpot("640", "Available"),
-            ParkingSpot("641", "Available"),
-            ParkingSpot("643", "Available"),
-            ParkingSpot("645", "Available")
+        // Busca as vagas do Firestore de forma assíncrona
+        parkingSpotDao.listarTodasAsVagas(
+            onSuccess = { vagas ->
+                runOnUiThread {
+                    val adapter = ParkingSpotAdapter(vagas) { vagaSelecionada ->
+                        // *** COLOQUE AQUI ***
+                        // Quando a vaga for clicada, cria o Intent e abre a ReservaActivity passando os dados da vaga
+                        val intent = Intent(this, ReservaActivity::class.java).apply {
+                            putExtra("VAGA_ID", vagaSelecionada.id)
+//                            putExtra("ESTACIONAMENTO_ID", vagaSelecionada.estacionamentoId)
+                        }
+                        startActivity(intent)
+
+                        Toast.makeText(this, "Vaga selecionada: ${vagaSelecionada.numero}", Toast.LENGTH_SHORT).show()
+                    }
+                    binding.rvParkingSpots.adapter = adapter
+                }
+            },
+            onError = { erro ->
+                runOnUiThread {
+                    Toast.makeText(this, "Erro ao carregar vagas: $erro", Toast.LENGTH_LONG).show()
+                }
+            }
         )
-
-        val adapter = ParkingSpotAdapter(spots)
-        rvParkingSpots.adapter = adapter
-
         binding.btnContinue.setOnClickListener {
+            // ação futura
         }
-
     }
 }
