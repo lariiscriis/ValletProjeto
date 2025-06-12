@@ -156,7 +156,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun redirectUser(isAdmin: Boolean, email:String) {
         val intent = if (isAdmin) {
-            Intent(this, EditarPerfilAdministradorActivity::class.java)
+            Intent(this, IntroCadastroEstacionamento::class.java)
         } else {
             Intent(this, IntroCadastroCarro::class.java)
         }

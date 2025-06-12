@@ -25,7 +25,7 @@ class VagaDao {
                 "disponivel" to vaga.disponivel,
             )
             vaga.id = vaga.numero
-            CarroDao.db.collection("carro")
+            db.collection("vaga")
                 .document(vaga.id)
                 .set(vagaCadastrada)
                 .addOnSuccessListener { onSuccess() }
