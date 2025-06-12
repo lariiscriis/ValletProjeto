@@ -1,0 +1,102 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:text="Editar Perfil do Administrador"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp"
+            android:layout_height="48dp"
+            android:layout_width="wrap_content"/>
+
+        <EditText
+            android:id="@+id/edtNomeAdmin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nome"
+            android:minHeight="48dp" />
+
+        <EditText
+            android:id="@+id/edtEmailAdmin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="Email"
+            android:inputType="textEmailAddress"
+            android:minHeight="48dp" />
+
+        <EditText
+            android:id="@+id/edtTelefoneAdmin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="Telefone"
+            android:inputType="phone"
+            android:minHeight="48dp" />
+
+        <TextView
+            android:text="@string/dados_do_estacionamento"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"
+            android:layout_height="48dp"
+            android:layout_width="wrap_content"/>
+
+        <EditText
+            android:id="@+id/edtNomeEstacionamento"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="Nome do Estacionamento"
+            android:minHeight="48dp" />
+
+        <EditText
+            android:id="@+id/edtEnderecoEstacionamento"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="Endereço"
+            android:minHeight="48dp" />
+
+        <EditText
+            android:id="@+id/edtVagasEstacionamento"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="Número de vagas"
+            android:inputType="number"
+            android:minHeight="48dp" />
+
+        <EditText
+            android:id="@+id/edtHorarioEstacionamento"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="Horário de funcionamento"
+            android:minHeight="48dp" />
+
+        <Button
+            android:id="@+id/btnSalvarPerfilAdmin"
+            android:text="Salvar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+
+
+    </LinearLayout>
+</ScrollView>
