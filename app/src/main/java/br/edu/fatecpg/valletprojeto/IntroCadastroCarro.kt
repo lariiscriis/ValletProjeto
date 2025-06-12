@@ -93,11 +93,7 @@ class IntroCadastroCarro : AppCompatActivity() {
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
     }
 
-    private fun performLogout() {
-        auth.signOut()
-        Toast.makeText(this, "Logout realizado com sucesso", Toast.LENGTH_SHORT).show()
-        redirectToLogin()
-    }
+
 
     private fun redirectToLogin() {
         val intent = Intent(this, LoginActivity::class.java)

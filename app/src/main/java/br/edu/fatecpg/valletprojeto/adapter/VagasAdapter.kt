@@ -19,16 +19,13 @@ class VagasAdapter(
         private val tvTitulo: TextView = itemView.findViewById(R.id.tvTitulo)
         private val tvLocalizacao: TextView = itemView.findViewById(R.id.tvLocalizacao)
         private val tvSalario: TextView = itemView.findViewById(R.id.tvSalario)
-        private val btnEditar: Button = itemView.findViewById(R.id.btnEditar)
-        private val btnExcluir: Button = itemView.findViewById(R.id.btnExcluir)
 
         fun bind(vaga: Vaga) {
             tvTitulo.text = vaga.numero
             tvLocalizacao.text = vaga.localizacao
             tvSalario.text = vaga.preco.toString()
 
-            btnEditar.setOnClickListener { onEditClick(vaga) }
-            btnExcluir.setOnClickListener { onDeleteClick(vaga) }
+
         }
     }
 

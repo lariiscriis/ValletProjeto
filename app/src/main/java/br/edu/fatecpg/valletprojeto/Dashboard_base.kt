@@ -16,6 +16,8 @@ import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import androidx.lifecycle.lifecycleScope
+import br.edu.fatecpg.valletprojeto.dao.CarroDao.auth
+import br.edu.fatecpg.valletprojeto.databinding.ActivityIntroCadastroCarroBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -96,6 +98,10 @@ class Dashboard_base : AppCompatActivity() {
             val intent = Intent(this, CadastroVagaActivity::class.java)
             startActivity(intent)
         }
+        binding.btnLogout?.setOnClickListener {
+            performLogout()
+        }
+
 
     }
 
@@ -183,5 +189,19 @@ class Dashboard_base : AppCompatActivity() {
             .replace(R.id.container, fragment)
             .commit()
     }
+
+    private fun redirectToLogin() {
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
+    }
+
+    private fun performLogout() {
+        auth.signOut()
+        Toast.makeText(this, "Logout realizado com sucesso", Toast.LENGTH_SHORT).show()
+        redirectToLogin()
+    }
+
 }
 
