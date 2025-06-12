@@ -2,6 +2,7 @@ package br.edu.fatecpg.valletprojeto
 
 import ManagementFragment
 import SpotsFragment
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -15,7 +16,11 @@ import br.edu.fatecpg.valletprojeto.fragments.MotoristaFragment
 
 class Dashboard_base : AppCompatActivity() {
     private lateinit var binding: ActivityDashboardBaseBinding
-    private var isAdmin = true  // Mude para true para ver tela de admin
+    private var isAdmin = false  // Mude para true para ver tela de admin
+
+        fun isUserAdmin(): Boolean {
+            return isAdmin
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,10 +47,14 @@ class Dashboard_base : AppCompatActivity() {
                     true
                 }
                 R.id.nav_management -> {
-                    if (isAdmin) replaceFragment(ManagementFragment())
-                    else replaceFragment(SpotsFragment())
-                    true
+                    if (isAdmin) {
+                        startActivity(Intent(this, EditarVagaActivity::class.java))
+                    } else {
+                        startActivity(Intent(this, EditarCarroActivity::class.java))
+                    }
+                    false
                 }
+
                 else -> false
             }
         }

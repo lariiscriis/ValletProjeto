@@ -63,20 +63,20 @@ class IntroCadastroCarro : AppCompatActivity() {
             navigateToCarRegistration()
         }
 
-        binding.btnSair?.setOnClickListener {
-            performLogout()
-        }
-
-        binding.btnVaga?.setOnClickListener {
-            val intent = Intent(this, CadastroVagaActivity::class.java)
-            startActivity(intent)
-        }
-
-
-        binding.btnadmin.setOnClickListener{
-            val intent = Intent(this, IntroCadastroEstacionamento::class.java)
-            startActivity(intent)
-        }
+//        binding.btnSair?.setOnClickListener {
+//            performLogout()
+//        }
+//
+//        binding.btnVaga?.setOnClickListener {
+//            val intent = Intent(this, CadastroVagaActivity::class.java)
+//            startActivity(intent)
+//        }
+//
+//
+//        binding.btnadmin.setOnClickListener{
+//            val intent = Intent(this, IntroCadastroEstacionamento::class.java)
+//            startActivity(intent)
+//        }
 
         binding.btnDashboard.setOnClickListener{
             val intent = Intent(this, Dashboard_base::class.java)

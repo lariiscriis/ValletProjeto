@@ -32,19 +32,19 @@
 
         <!-- Botão de ir para o cadastro -->
 
-        <Button
-            android:id="@+id/btnSair"
-            android:layout_width="138dp"
-            android:layout_height="wrap_content"
-            android:backgroundTint="#4CAF50"
-            android:text="Logout" />
+<!--        <Button-->
+<!--            android:id="@+id/btnSair"-->
+<!--            android:layout_width="138dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:backgroundTint="#4CAF50"-->
+<!--            android:text="Logout" />-->
 
-        <Button
-            android:id="@+id/btnadmin"
-            android:layout_width="227dp"
-            android:layout_height="wrap_content"
-            android:backgroundTint="#4CAF50"
-            android:text="Estacionamento" />
+<!--        <Button-->
+<!--            android:id="@+id/btnadmin"-->
+<!--            android:layout_width="227dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:backgroundTint="#4CAF50"-->
+<!--            android:text="Estacionamento" />-->
 
         <Button
             android:id="@+id/btn_dashboard"
@@ -83,12 +83,12 @@
             android:layout_marginBottom="16dp"
             android:contentDescription="Gif de um carro" />
 
-        <Button
-            android:id="@+id/btnVaga"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:backgroundTint="#4CAF50"
-            android:text="Logout" />
+<!--        <Button-->
+<!--            android:id="@+id/btnVaga"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:backgroundTint="#4CAF50"-->
+<!--            android:text="Logout" />-->
 
         <TextView
             android:id="@+id/txtDescricao"

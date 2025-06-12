@@ -16,7 +16,6 @@
         android:background="@drawable/edittext_backgroud"
         android:padding="12dp">
 
-        <!-- Imagem do carro (maior e saindo do card) -->
         <ImageView
             android:id="@+id/imgCarro"
             android:layout_width="120dp"
@@ -29,7 +28,6 @@
             android:src="@drawable/carro_item_card"
             tools:ignore="RelativeOverlap" />
 
-        <!-- Container das informações -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -38,7 +36,6 @@
             android:paddingStart="16dp"
             android:paddingTop="8dp">
 
-            <!-- Placa (destaque) -->
             <TextView
                 android:id="@+id/txtPlaca"
                 android:layout_width="wrap_content"
@@ -48,7 +45,6 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
-            <!-- Marca e Modelo -->
             <TextView
                 android:id="@+id/txtMarcaModelo"
                 android:layout_width="wrap_content"
@@ -58,7 +54,6 @@
                 android:textColor="#606060"
                 android:textSize="14sp" />
 
-            <!-- Ano/Detalhes -->
             <TextView
                 android:id="@+id/txtDetalhes"
                 android:layout_width="wrap_content"

@@ -154,7 +154,7 @@ class CadastroCarro : AppCompatActivity() {
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
             if (result.resultCode == RESULT_OK) {
-                carregarCarrosDoUsuario() // Atualiza a lista após edição
+                carregarCarrosDoUsuario()
             }
         }
 

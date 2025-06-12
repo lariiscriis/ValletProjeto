@@ -29,8 +29,8 @@
 
         <ImageView
             android:id="@+id/iv_parking_image"
-            android:layout_width="176dp"
-            android:layout_height="121dp"
+            android:layout_width="129dp"
+            android:layout_height="94dp"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:layout_marginRight="8dp"
@@ -81,10 +81,10 @@
 
         <Button
             android:id="@+id/btn_view_spots"
-            android:layout_width="109dp"
-            android:layout_height="54dp"
+            android:layout_width="117dp"
+            android:layout_height="wrap_content"
             android:layout_below="@id/tv_parking_distance"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="-1dp"
             android:backgroundTint="#046C4E"
             android:paddingHorizontal="16dp"
             android:text="Ver Vagas"

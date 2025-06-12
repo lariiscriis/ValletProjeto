@@ -14,6 +14,7 @@ import br.edu.fatecpg.valletprojeto.databinding.ActivityReservaBinding
 import br.edu.fatecpg.valletprojeto.model.Reserva
 import br.edu.fatecpg.valletprojeto.viewmodel.ReservaState
 import br.edu.fatecpg.valletprojeto.viewmodel.ReservaViewModel
+import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
@@ -44,12 +45,16 @@ class ReservaActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         solicitarPermissaoNotificacao()
+        setupGifAnimation()
+
 
         viewModel = ViewModelProvider(this).get(ReservaViewModel::class.java)
         val usuarioId = FirebaseAuth.getInstance().currentUser?.uid
         if (usuarioId != null) {
             mostrarReservaAtual(usuarioId)
         }
+
+
 
         val vagaId = intent.getStringExtra("VAGA_ID") ?: ""
 
@@ -108,6 +113,13 @@ class ReservaActivity : AppCompatActivity() {
         binding.btnCancelar.setOnClickListener {
             viewModel.cancelarReserva(this)
         }
+    }
+
+    private fun setupGifAnimation() {
+        Glide.with(this)
+            .asGif()
+            .load(R.drawable.reserva_carro)
+            .into(binding.gifCarro)
     }
     private fun buscarEstacionamento(estacionamentoId: String, onResult: (Estacionamento?) -> Unit) {
         val db = FirebaseFirestore.getInstance()

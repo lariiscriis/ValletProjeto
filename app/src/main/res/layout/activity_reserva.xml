@@ -1,68 +1,125 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
+    android:padding="32dp"
     android:gravity="center_horizontal"
     android:orientation="vertical"
-    android:background="?android:attr/windowBackground">
+    android:background="@android:color/white">
 
+    <!-- Vaga em destaque -->
     <TextView
         android:id="@+id/tvVagaId"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Vaga: ---"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="12dp"/>
+        android:layout_marginBottom="24dp"
+        android:fontFamily="@font/poppins_medium"
+        android:letterSpacing="0.1"
+        android:text="VAGA: A-013"
+        android:textAllCaps="true"
+        android:textColor="@android:color/black"
+        android:textSize="28sp"
+        android:textStyle="bold" />
 
+    <!-- Tempo máximo -->
     <TextView
         android:id="@+id/tvTempoMaximo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Tempo máximo: -- horas"
-        android:textSize="18sp"
-        android:layout_marginBottom="20dp"/>
+        android:layout_marginBottom="32dp"
+        android:fontFamily="@font/poppins_medium"
+        android:text="Tempo máximo: 2 horas"
+        android:textColor="#757575"
+        android:textSize="16sp" />
+
+    <!-- Círculo com carro -->
+    <FrameLayout
+        android:layout_width="216dp"
+        android:layout_height="205dp"
+        android:layout_marginBottom="32dp"
+        android:background="@drawable/circle_progress_background">
+
+        <ImageView
+            android:id="@+id/gifCarro"
+            android:layout_width="126dp"
+            android:layout_height="120dp"
+            android:layout_gravity="center" />
+    </FrameLayout>
 
     <TextView
         android:id="@+id/tvTimer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
+        android:fontFamily="@font/poppins_medium"
         android:text="00:00"
-        android:textSize="36sp"
-        android:textStyle="bold"
-        android:textColor="#D32F2F"
-        android:layout_marginBottom="40dp"/>
+        android:textColor="@color/preto"
+        android:textSize="48sp"
+        android:textStyle="bold" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnReservar"
+        style="@style/Widget.MaterialComponents.Button"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Reservar"
-        android:layout_marginBottom="16dp"/>
+        android:layout_height="56dp"
+        android:layout_marginBottom="16dp"
+        android:fontFamily="@font/poppins_medium"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:text="RESERVAR"
+        android:textAllCaps="true"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        app:backgroundTint="@color/verdeescuro"
+        app:cornerRadius="28dp"
+        app:rippleColor="#B71C1C"
+        app:strokeColor="#D32F2F"
+        app:strokeWidth="0dp" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnCancelar"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Cancelar"
-        android:visibility="gone"/>
+        android:layout_height="56dp"
+        android:text="CANCELAR"
+        android:textSize="16sp"
+        android:textAllCaps="true"
+        android:textColor="#D32F2F"
+        android:visibility="gone"
+        android:layout_marginBottom="24dp"
+        app:cornerRadius="28dp"
+        app:strokeColor="#D32F2F"
+        app:strokeWidth="2dp"/>
 
+    <!-- Horário reserva -->
     <TextView
         android:id="@+id/tvHorarioReserva"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Horário: -"
-        android:textSize="16sp"
         android:layout_marginTop="8dp"
-        android:textColor="@android:color/black" />
+        android:fontFamily="@font/poppins_medium"
+        android:letterSpacing="0.05"
+        android:text="Horário: 12:00 - 14:00"
+        android:textColor="#757575"
+        android:textSize="14sp" />
 
+    <!-- ProgressBar estilizada -->
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:visibility="gone"
-        android:layout_marginTop="24dp"/>
+        android:layout_marginTop="24dp"
+        android:indeterminateTint="#D32F2F"
+
+        />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+  />
 </LinearLayout>
