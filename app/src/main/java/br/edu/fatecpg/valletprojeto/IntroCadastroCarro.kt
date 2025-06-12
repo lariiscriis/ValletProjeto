@@ -73,15 +73,15 @@ class IntroCadastroCarro : AppCompatActivity() {
 //        }
 //
 //
-//        binding.btnadmin.setOnClickListener{
-//            val intent = Intent(this, IntroCadastroEstacionamento::class.java)
-//            startActivity(intent)
-//        }
-
-        binding.btnDashboard.setOnClickListener{
-            val intent = Intent(this, Dashboard_base::class.java)
+        binding.btnadmin.setOnClickListener{
+            val intent = Intent(this, PaginaDeReservaVagas::class.java)
             startActivity(intent)
         }
+
+//        binding.btnDashboard.setOnClickListener{
+//            val intent = Intent(this, Dashboard_base::class.java)
+//            startActivity(intent)
+//        }
 
     }
 
