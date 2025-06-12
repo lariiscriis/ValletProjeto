@@ -79,6 +79,32 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 
+
+            <Button
+                android:id="@+id/btnExibirVaga"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="168dp"
+                android:backgroundTint="#4CAF50"
+                android:text="Exibir Vagas"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <Button
+                android:id="@+id/btnCadastrarVaga"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="432dp"
+                android:backgroundTint="#4CAF50"
+                android:text="Cadastrar Vaga"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+
         </LinearLayout>
 
 

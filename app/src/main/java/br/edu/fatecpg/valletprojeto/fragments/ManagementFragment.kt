@@ -7,7 +7,6 @@ import br.edu.fatecpg.valletprojeto.databinding.ActivityDashboardBaseBinding
 import br.edu.fatecpg.valletprojeto.databinding.FragmentManagementBinding
 
 class ManagementFragment : Fragment() {
-
     private var _binding: FragmentManagementBinding? = null
     private val binding get() = _binding!!
 
@@ -18,6 +17,12 @@ class ManagementFragment : Fragment() {
     ): View {
         _binding = FragmentManagementBinding.inflate(inflater, container, false)
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+
     }
 
     override fun onDestroyView() {

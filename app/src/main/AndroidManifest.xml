@@ -18,6 +18,9 @@
             android:name=".CarroActivity"
             android:exported="false" />
         <activity
+            android:name=".PaginaDeReservaVagas"
+            android:exported="false" />
+        <activity
             android:name=".PerfilMotoristaActivity"
             android:exported="false" />
         <activity

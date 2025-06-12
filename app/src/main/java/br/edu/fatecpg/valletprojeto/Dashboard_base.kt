@@ -22,7 +22,7 @@ import kotlinx.coroutines.tasks.await
 
 class Dashboard_base : AppCompatActivity() {
     private lateinit var binding: ActivityDashboardBaseBinding
-    private var isAdmin: Boolean? = null
+    private var isAdmin = true  // Mude para true para ver tela de admin
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -171,3 +171,4 @@ class Dashboard_base : AppCompatActivity() {
             .commit()
     }
 }
+
