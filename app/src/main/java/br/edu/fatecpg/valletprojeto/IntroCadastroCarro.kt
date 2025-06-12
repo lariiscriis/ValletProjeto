@@ -63,6 +63,7 @@ class IntroCadastroCarro : AppCompatActivity() {
             navigateToCarRegistration()
         }
 
+
 //        binding.btnSair?.setOnClickListener {
 //            performLogout()
 //        }
@@ -74,7 +75,7 @@ class IntroCadastroCarro : AppCompatActivity() {
 //
 //
         binding.btnadmin.setOnClickListener{
-            val intent = Intent(this, PaginaDeReservaVagas::class.java)
+            val intent = Intent(this, CadastroEstacionamento::class.java)
             startActivity(intent)
         }
 

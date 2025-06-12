@@ -52,6 +52,7 @@ class Dashboard_base : AppCompatActivity() {
 
         tvUserName.setOnClickListener { clickListener() }
         ivProfileImage.setOnClickListener { clickListener() }
+        setupButtonListeners()
     }
 
 
@@ -85,6 +86,18 @@ class Dashboard_base : AppCompatActivity() {
             }
     }
 
+    private fun setupButtonListeners() {
+        binding.btnExibirVaga.setOnClickListener {
+            val intent = Intent(this, VagaActivity::class.java)
+            startActivity(intent)
+        }
+
+        binding.btnCadastrarVaga.setOnClickListener {
+            val intent = Intent(this, CadastroVagaActivity::class.java)
+            startActivity(intent)
+        }
+
+    }
 
     private fun carregarDadosUsuario() {
         val email = FirebaseAuth.getInstance().currentUser?.email ?: return
