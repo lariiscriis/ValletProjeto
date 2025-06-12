@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    tools:context=".view.EditarPerfilMotoristaActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Editar Perfil"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Foto de Perfil -->
+        <ImageView
+            android:id="@+id/imgFotoEditar"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/ic_parking"
+            android:scaleType="centerCrop"
+            android:layout_marginBottom="8dp"/>
+
+        <Button
+            android:id="@+id/btnAlterarFoto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Alterar Foto" />
+
+        <!-- Campos de Edição -->
+        <EditText
+            android:id="@+id/edtNome"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="Nome"
+            android:minHeight="48dp" />
+
+        <EditText
+            android:id="@+id/edtEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Email"
+            android:inputType="textEmailAddress"
+            android:layout_marginTop="8dp" />
+
+        <EditText
+            android:id="@+id/edtTelefone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Telefone"
+            android:inputType="phone"
+            android:layout_marginTop="8dp" />
+
+        <EditText
+            android:id="@+id/edtCnh"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="CNH"
+            android:inputType="number"
+            android:layout_marginTop="8dp" />
+
+        <!-- Botões -->
+        <Button
+            android:id="@+id/btnSalvar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Salvar Alterações"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="#00A676"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/btnCancelar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cancelar"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="@color/design_default_color_error"
+            android:textColor="@android:color/white"/>
+
+    </LinearLayout>
+</ScrollView>

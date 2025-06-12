@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:paddingBottom="24dp">
+
+        <TextView
+            android:text="Editar Perfil"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp"
+            android:layout_height="48dp"
+            android:layout_width="wrap_content"/>
+
+        <ImageView
+            android:id="@+id/imgFotoEditar"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_parking"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/btnSelecionarFoto"
+            android:text="Selecionar Foto"
+            android:layout_height="48dp"
+            android:layout_width="wrap_content"
+            />
+
+        <EditText
+            android:id="@+id/edtNome"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nome"
+            android:minHeight="48dp" />
+
+        <EditText
+            android:id="@+id/edtEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:hint="Email"
+            android:minHeight="48dp" />
+
+        <EditText
+            android:id="@+id/edtTelefone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Telefone"
+            android:minHeight="48dp" />
+
+        <EditText
+            android:id="@+id/edtCnh"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="CNH"
+            android:minHeight="48dp" />
+
+        <Button
+            android:id="@+id/btnSalvarPerfil"
+            android:text="Salvar Alterações"
+            android:layout_marginTop="16dp"
+            android:layout_height="48dp"
+            android:layout_width="wrap_content"
+            />
+    </LinearLayout>
+</ScrollView>

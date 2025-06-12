@@ -52,6 +52,8 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.firebase.storage.ktx)
+    implementation(libs.androidx.media3.common.ktx)
 }
 
 kapt {
@@ -75,6 +77,7 @@ dependencies {
 
     implementation( "com.github.bumptech.glide:glide:4.16.0")
     kapt ( "com.github.bumptech.glide:compiler:4.16.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
