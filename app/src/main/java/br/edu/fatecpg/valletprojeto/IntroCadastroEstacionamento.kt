@@ -52,6 +52,7 @@ class IntroCadastroEstacionamento : AppCompatActivity() {
             startActivity(intent)
         }
 
+
     }
 
     private fun setupGifAnimation() {

@@ -151,6 +151,12 @@
                     app:hintTextColor="#046C4E"
                     app:startIconTint="#046C4E">
 
+                    <ProgressBar
+                        android:id="@+id/progressBarCep"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone" />
+
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/edt_cep"
                         android:layout_width="match_parent"

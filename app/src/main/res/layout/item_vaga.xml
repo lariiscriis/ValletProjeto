@@ -56,39 +56,6 @@ android:singleLine="true"/>
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:layout_marginTop="8dp"
-    android:gravity="center">
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnEditar"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="70dp"
-        android:layout_height="36dp"
-        android:layout_marginEnd="4dp"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        android:text="Editar"
-        android:textColor="#046C4E"
-        android:textSize="12sp"
-        app:cornerRadius="18dp"
-        app:strokeColor="#046C4E"
-        app:strokeWidth="1dp"
-        tools:ignore="TouchTargetSizeCheck" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnExcluir"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="70dp"
-        android:layout_height="36dp"
-        android:layout_marginStart="4dp"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        android:text="Excluir"
-        android:textColor="#D32F2F"
-        android:textSize="12sp"
-        app:cornerRadius="18dp"
-        app:strokeColor="#D32F2F"
-        app:strokeWidth="1dp"
-        tools:ignore="TouchTargetSizeCheck" />
-</LinearLayout>
+    android:gravity="center"/>
 </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
