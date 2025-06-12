@@ -32,7 +32,17 @@ class Dashboard_base : AppCompatActivity() {
 
         // Carrega o fragment inicial
         loadInitialFragment()
+
+        binding.tvBalance.setOnClickListener{
+            if (isAdmin) {
+                startActivity(Intent(this, EditarPerfilAdministradorActivity::class.java))
+            } else {
+                startActivity(Intent(this, EditarPerfilMotoristaActivity::class.java))
+            }
+            false
+        }
     }
+
 
     private fun setupNavigation() {
         binding.bottomNavigation.setOnItemSelectedListener { item ->
