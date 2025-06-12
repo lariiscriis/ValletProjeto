@@ -83,6 +83,13 @@
             android:layout_marginBottom="16dp"
             android:contentDescription="Gif de um carro" />
 
+        <Button
+            android:id="@+id/btnVaga"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#4CAF50"
+            android:text="Logout" />
+
         <TextView
             android:id="@+id/txtDescricao"
             android:layout_width="wrap_content"

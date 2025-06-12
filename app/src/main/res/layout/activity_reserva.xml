@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rootLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:background="?android:attr/windowBackground">
+
+    <TextView
+        android:id="@+id/tvVagaId"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Vaga: ---"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="12dp"/>
+
+    <TextView
+        android:id="@+id/tvTempoMaximo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tempo máximo: -- horas"
+        android:textSize="18sp"
+        android:layout_marginBottom="20dp"/>
+
+    <TextView
+        android:id="@+id/tvTimer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="00:00"
+        android:textSize="36sp"
+        android:textStyle="bold"
+        android:textColor="#D32F2F"
+        android:layout_marginBottom="40dp"/>
+
+    <Button
+        android:id="@+id/btnReservar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Reservar"
+        android:layout_marginBottom="16dp"/>
+
+    <Button
+        android:id="@+id/btnCancelar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cancelar"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/tvHorarioReserva"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Horário: -"
+        android:textSize="16sp"
+        android:layout_marginTop="8dp"
+        android:textColor="@android:color/black" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:visibility="gone"
+        android:layout_marginTop="24dp"/>
+</LinearLayout>

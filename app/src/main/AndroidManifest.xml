@@ -13,6 +13,21 @@
         android:theme="@style/Theme.ValletProjeto"
         tools:targetApi="31">
         <activity
+            android:name=".ReservaActivity"
+            android:exported="false" />
+        <activity
+            android:name=".EditarVagaActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CadastroVagaActivity"
+            android:exported="false" />
+        <activity
+            android:name=".VagaActivity"
+            android:exported="false" />
+        <activity
+            android:name=".EditarCarroActivity"
+            android:exported="false" />
+        <activity
             android:name=".Dashboard_base"
             android:exported="false" />
         <activity

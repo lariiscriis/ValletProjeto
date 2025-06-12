@@ -7,8 +7,8 @@ import br.edu.fatecpg.valletprojeto.model.Carro
 
 object CarroDao {
 
-    private val auth = FirebaseAuth.getInstance()
-    private val db = FirebaseFirestore.getInstance()
+    val auth = FirebaseAuth.getInstance()
+    val db = FirebaseFirestore.getInstance()
 
     fun cadastrarCarro(
         carro: Carro,
@@ -21,13 +21,41 @@ object CarroDao {
             "placa" to carro.placa,
             "marca" to carro.marca,
             "modelo" to carro.modelo,
+            "ano" to carro.ano,
+            "km" to carro.km,
             "usuarioEmail" to emailUsuario,
             "data_cadastro" to FieldValue.serverTimestamp()
         )
-
+        carro.id = carro.placa
         db.collection("carro")
-            .add(carroCadastrado)
+            .document(carro.id)
+            .set(carroCadastrado)
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { onFailure(it.message ?: "Erro desconhecido") }
+
+    }
+
+    fun listarCarrosDoUsuario(
+        onSuccess: (List<Carro>) -> Unit,
+        onFailure: (String) -> Unit
+    ) {
+        val emailUsuario = FirebaseAuth.getInstance().currentUser?.email ?: return
+
+        FirebaseFirestore.getInstance()
+            .collection("carro")
+            .whereEqualTo("usuarioEmail", emailUsuario)
+            .get()
+            .addOnSuccessListener { result ->
+                val lista = mutableListOf<Carro>()
+                for (doc in result) {
+                    val carro = doc.toObject(Carro::class.java)
+                    carro.id = doc.id
+                    lista.add(carro)
+                }
+                onSuccess(lista)
+            }
+            .addOnFailureListener {
+                onFailure(it.message ?: "Erro desconhecido")
+            }
     }
 }
