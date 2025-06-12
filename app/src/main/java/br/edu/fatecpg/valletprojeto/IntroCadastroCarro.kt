@@ -78,6 +78,11 @@ class IntroCadastroCarro : AppCompatActivity() {
             startActivity(intent)
         }
 
+        binding.btnDashboard.setOnClickListener{
+            val intent = Intent(this, Dashboard_base::class.java)
+            startActivity(intent)
+        }
+
     }
 
     private fun navigateToCarRegistration() {
