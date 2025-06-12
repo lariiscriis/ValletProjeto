@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="200dp"
+    android:layout_marginBottom="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/edittext_backgroud"
+        android:padding="15dp">
+
+        <TextView
+            android:id="@+id/tv_parking_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/button_background"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="4dp"
+            android:text="ABERTO"
+            android:textColor="@color/branco"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/iv_parking_image"
+            android:layout_width="176dp"
+            android:layout_height="121dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="8dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/estacionamento_foto" />
+
+        <TextView
+            android:id="@+id/tv_parking_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tv_parking_status"
+            android:layout_marginTop="8dp"
+            android:text="Parking Name"
+            android:textColor="#333333"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_parking_address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tv_parking_name"
+            android:layout_marginTop="4dp"
+            android:text="Address"
+            android:textColor="#666666"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/tv_parking_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tv_parking_address"
+            android:layout_marginTop="8dp"
+            android:text="R$0,00/h"
+            android:textColor="#046C4E"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_parking_distance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tv_parking_price"
+            android:layout_marginTop="4dp"
+            android:text="0m"
+            android:textColor="#666666"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/btn_view_spots"
+            android:layout_width="109dp"
+            android:layout_height="54dp"
+            android:layout_below="@id/tv_parking_distance"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="#046C4E"
+            android:paddingHorizontal="16dp"
+            android:text="Ver Vagas"
+            android:textColor="@android:color/white"
+            android:textSize="12sp"
+            tools:ignore="TouchTargetSizeCheck" />
+    </RelativeLayout>
+</androidx.cardview.widget.CardView>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_spots"
+        android:icon="@drawable/ic_parking"
+        android:title="Estacionamentos"/>
+
+    <item
+        android:id="@+id/nav_dashboard"
+        android:icon="@drawable/ic_dashboard"
+        android:title="Dashboard"/>
+
+    <item
+        android:id="@+id/nav_management"
+        android:icon="@drawable/ic_management"
+        android:title="Gerenciamento"/>
+</menu>
