@@ -10,7 +10,7 @@
 <a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=24&pause=1000&color=4CAF50&width=600&height=55&lines=Sistema+de+Gest%C3%A3o+de+Estacionamentos" alt="Typing SVG" /></a>
 
 <p>
-Seja bem-vindo ao <b>ValletProjeto</b>,<br> um aplicativo Android desenvolvido em Kotlin com arquitetura MVVM e integração com Firebase <br>
+Seja bem-vindo ao <b>ValletProjeto um aplicativo Android <br>desenvolvido em Kotlin com arquitetura MVVM e integração com Firebase <br>
 voltado para o gerenciamento inteligente de <b>vagas de estacionamento</b>. 
 </p>
 <br><br>
