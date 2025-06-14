@@ -19,14 +19,32 @@ class EditarVagaActivity : AppCompatActivity() {
         binding = ActivityEditarVagaBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Recebe o ID da vaga que será editada
         vagaId = intent.getStringExtra("vagaId")
+
+        if (vagaId != null) {
+            carregarDadosDaVaga(vagaId!!)
+        }
 
         binding.btnSalvar.setOnClickListener {
             salvarOuAtualizarVaga()
         }
     }
 
+    private fun carregarDadosDaVaga(id: String) {
+        db.collection("vaga").document(id).get()
+            .addOnSuccessListener { document ->
+                if (document != null && document.exists()) {
+                    binding.edtNumero.setText(document.getString("numero"))
+                    binding.edtLocalizacao.setText(document.getString("localizacao"))
+                    binding.edtPreco.setText(document.getDouble("preco")?.toString())
+
+                    binding.switchDisponivel.isChecked = document.getBoolean("disponivel") ?: true
+                }
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Erro ao carregar vaga: ${it.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
     private fun salvarOuAtualizarVaga() {
         // Valida todos os campos primeiro
         if (binding.edtNumero.text.isNullOrEmpty() ||
@@ -49,7 +67,8 @@ class EditarVagaActivity : AppCompatActivity() {
             "localizacao" to binding.edtLocalizacao.text.toString(),
             "preco" to preco,
             "tipo" to findViewById<RadioButton>(binding.radioGroup.checkedRadioButtonId).text.toString(),
-            "disponivel" to binding.switchDisponivel.isChecked
+            "disponivel" to binding.switchDisponivel.isChecked,
+
         )
 
         if (vagaId == null) {

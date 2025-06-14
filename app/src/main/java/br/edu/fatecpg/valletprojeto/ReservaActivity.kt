@@ -43,20 +43,26 @@
 
             binding = ActivityReservaBinding.inflate(layoutInflater)
             setContentView(binding.root)
+            val vagaId = intent.getStringExtra("vagaId") ?: ""
 
+            val estacionamentoId = intent.getStringExtra("estacionamentoId") ?: ""
             solicitarPermissaoNotificacao()
             setupGifAnimation()
 
 
             viewModel = ViewModelProvider(this).get(ReservaViewModel::class.java)
+
             val usuarioId = FirebaseAuth.getInstance().currentUser?.uid
             if (usuarioId != null) {
                 mostrarReservaAtual(usuarioId)
             }
 
-            val vagaId = intent.getStringExtra("VAGA_ID") ?: ""
 
-            val estacionamentoId = intent.getStringExtra("ESTACIONAMENTO_ID") ?: ""
+            if (vagaId.isBlank() || estacionamentoId.isBlank()) {
+                Toast.makeText(this, "Erro ao abrir reserva: dados incompletos", Toast.LENGTH_LONG).show()
+                finish()
+                return
+            }
 
             var tempoMaxReservaHoras = 2
             buscarEstacionamento(estacionamentoId) { estacionamento ->
@@ -78,12 +84,12 @@
             }
 
             val fromNotification = intent.getBooleanExtra("FROM_NOTIFICATION", false)
-            val usuarioI = FirebaseAuth.getInstance().currentUser?.uid
 
-            if (fromNotification && usuarioI != null) {
-                mostrarReservaAtual(usuarioI)
+            if (fromNotification && usuarioId != null) {
+                mostrarReservaAtual(usuarioId)  // vai carregar a reserva e continuar o timer
+            } else if (vagaId.isNotBlank() && estacionamentoId.isNotBlank() && usuarioId != null) {
+                mostrarReservaAtual(usuarioId)  // também para caso abrir direto pela Activity
             }
-
 
             viewModel.reservaStatus.observe(this) { state ->
                 when (state) {
@@ -110,7 +116,7 @@
             }
 
             binding.btnCancelar.setOnClickListener {
-                viewModel.cancelarReserva(this)
+                viewModel.cancelarReserva(this, vagaId, estacionamentoId)
             }
         }
 
@@ -137,12 +143,14 @@
         }
         private fun mostrarReservaAtual(usuarioId: String) {
             val db = FirebaseFirestore.getInstance()
-            db.collection("reservas")
+            db.collection("reserva")  // plural, para garantir consistência
                 .whereEqualTo("usuarioId", usuarioId)
                 .whereEqualTo("status", "ativa")
                 .get()
                 .addOnSuccessListener { documents ->
                     if (!documents.isEmpty) {
+                        val doc = documents.first()
+                        val reservaId = doc.id
                         val reserva = documents.first().toObject(Reserva::class.java)
                         val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
 
@@ -153,18 +161,41 @@
                             val inicio = sdf.format(inicioTimestamp.toDate())
                             val fim = sdf.format(fimTimestamp.toDate())
                             binding.tvHorarioReserva.text = "Horário: das $inicio às $fim"
+
+                            // Continua o timer com o tempo restante
+                            viewModel.atualizarReservaAtiva(
+                                reservaId,
+                                fimTimestamp.toDate(),
+                                reserva.vagaId,
+                                reserva.estacionamentoId,
+                                this
+                            )
+                            // Atualiza botões: reserva já ativa
+                            binding.btnReservar.visibility = android.view.View.GONE
+                            binding.btnCancelar.visibility = android.view.View.VISIBLE
+                            binding.btnReservar.isEnabled = false
+
                         } else {
                             binding.tvHorarioReserva.text = "Horário: dados incompletos"
                         }
                     } else {
                         binding.tvHorarioReserva.text = "Nenhuma reserva ativa encontrada"
+
+                        // Não há reserva ativa, deixa o botão reservar visível
+                        binding.btnReservar.visibility = android.view.View.VISIBLE
+                        binding.btnCancelar.visibility = android.view.View.GONE
+                        binding.btnReservar.isEnabled = true
                     }
                 }
                 .addOnFailureListener {
                     binding.tvHorarioReserva.text = "Horário: erro ao carregar"
+
+                    // Em caso de erro, deixa o botão reservar disponível para tentar
+                    binding.btnReservar.visibility = android.view.View.VISIBLE
+                    binding.btnCancelar.visibility = android.view.View.GONE
+                    binding.btnReservar.isEnabled = true
                 }
         }
-
 
 
         private fun solicitarPermissaoNotificacao() {

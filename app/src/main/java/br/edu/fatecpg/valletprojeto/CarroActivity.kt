@@ -43,6 +43,20 @@ class CarroActivity : AppCompatActivity() {
             insets
         }
 
+        binding.btnVerVagas2.setOnClickListener{
+            val intent = Intent(this, VagaActivity::class.java)
+            startActivity(intent)
+        }
+        binding.btnAddCarro.setOnClickListener{
+            val intent = Intent(this, CadastroCarro::class.java)
+            startActivity(intent)
+        }
+
+        binding.btnDashboard.setOnClickListener{
+            val intent = Intent(this, Dashboard_base::class.java)
+            startActivity(intent)
+        }
+
         setupRecyclerView()
         carregarCarrosDoUsuario()
     }

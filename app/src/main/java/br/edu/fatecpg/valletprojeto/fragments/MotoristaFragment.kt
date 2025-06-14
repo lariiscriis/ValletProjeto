@@ -14,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import br.edu.fatecpg.valletprojeto.CadastroCarro
 import br.edu.fatecpg.valletprojeto.CarroActivity
+import br.edu.fatecpg.valletprojeto.ReservaActivity
 import br.edu.fatecpg.valletprojeto.VagaActivity
 import br.edu.fatecpg.valletprojeto.databinding.FragmentMotoristaDashboardBinding
 import br.edu.fatecpg.valletprojeto.model.Vaga
@@ -33,6 +34,10 @@ class MotoristaFragment : Fragment() {
     private lateinit var adapter: HistoricoReservasAdapter
     private val db = FirebaseFirestore.getInstance()
 
+    // Variáveis para guardar dados da reserva ativa
+    private var vagaIdAtiva: String? = null
+    private var estacionamentoIdAtivo: String? = null
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -44,9 +49,20 @@ class MotoristaFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.rvReservationHistory.layoutManager = GridLayoutManager(requireContext(), 1)
 
-        // Define o clique do texto para abrir a tela de vagas
+        // Clique para abrir a reserva ativa
+        binding.btnViewReservation.setOnClickListener {
+            if (vagaIdAtiva != null && estacionamentoIdAtivo != null) {
+                val intent = Intent(requireContext(), ReservaActivity::class.java)
+                intent.putExtra("vagaId", vagaIdAtiva)
+                intent.putExtra("estacionamentoId", estacionamentoIdAtivo)
+                startActivity(intent)
+            } else {
+                Toast.makeText(requireContext(), "Nenhuma reserva ativa encontrada.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        // Clique para abrir a página de vagas
         binding.tvNoReservation.setOnClickListener {
-            // Exemplo de navegação: abrir Activity ou Fragment de vagas
             abrirPaginaDeVagas()
         }
 
@@ -54,10 +70,8 @@ class MotoristaFragment : Fragment() {
     }
 
     private fun abrirPaginaDeVagas() {
-
-        val intent = Intent(requireContext(), CadastroCarro::class.java)
+        val intent = Intent(requireContext(), VagaActivity::class.java)
         startActivity(intent)
-
         Toast.makeText(requireContext(), "Abrir página de vagas", Toast.LENGTH_SHORT).show()
     }
 
@@ -77,6 +91,7 @@ class MotoristaFragment : Fragment() {
                 for (doc in reservas) {
                     val status = doc.getString("status")
                     val vagaId = doc.getString("vagaId") ?: continue
+                    val estacionamentoId = doc.getString("estacionamentoId") ?: "" // pegar estacionamentoId
                     val inicio = doc.getTimestamp("inicioReserva")?.toDate()
                     val fim = doc.getTimestamp("fimReserva")?.toDate()
 
@@ -99,6 +114,10 @@ class MotoristaFragment : Fragment() {
                         binding.tvLocation.text = "Local: ${vaga.localizacao}"
                         binding.tvTimeRange.text = formatarHorario(inicio, fim)
                         binding.tvTimeRemaining.text = "Reserva ativa"
+
+                        // Guardar os dados para abrir depois
+                        vagaIdAtiva = vagaId
+                        estacionamentoIdAtivo = estacionamentoId
                     } else {
                         historico.add(
                             ReservaHistorico(
@@ -113,6 +132,9 @@ class MotoristaFragment : Fragment() {
                 if (!temReservaAtiva) {
                     binding.cardReservaAtual.visibility = View.GONE
                     binding.tvNoReservation.visibility = View.VISIBLE
+                    // Limpa os dados da reserva ativa se não tiver
+                    vagaIdAtiva = null
+                    estacionamentoIdAtivo = null
                 }
 
                 binding.tvTotalReservations.text = totalReservas.toString()
@@ -138,3 +160,4 @@ class MotoristaFragment : Fragment() {
         _binding = null
     }
 }
+

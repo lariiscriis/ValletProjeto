@@ -8,26 +8,64 @@
     android:fitsSystemWindows="true">
 
     <!-- RecyclerView -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewCarros"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:clipToPadding="false"
-        android:paddingBottom="80dp" />
 
     <!-- Barra inferior com botões -->
+
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="bottom"
+        android:background="#FFFFFF"
+        android:elevation="8dp"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <Button
+            android:id="@+id/btnAddCarro"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginLeft="30dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="30dp"
+            android:layout_marginBottom="10dp"
+            android:backgroundTint="@color/verdeescuro"
+            android:text="+ Adicionar Carro" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewCarros"
+            android:layout_width="match_parent"
+            android:layout_height="563dp"
+            android:clipToPadding="false"
+            android:paddingBottom="80dp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="91dp"
         android:layout_gravity="bottom"
         android:background="#FFFFFF"
         android:elevation="8dp"
         android:orientation="horizontal"
         android:padding="16dp">
 
-        <Space
-            android:layout_width="16dp"
-            android:layout_height="1dp" />
+        <Button
+            android:id="@+id/btn_ver_vagas2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="20dp"
+            android:layout_weight="1"
+            android:backgroundTint="#076854"
+            android:text="Ver Vagas" />
+
+        <Button
+            android:id="@+id/btn_dashboard"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="#076854"
+            android:text="Dashboard" />
 
     </LinearLayout>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

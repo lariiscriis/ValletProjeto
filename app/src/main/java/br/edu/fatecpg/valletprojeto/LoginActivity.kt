@@ -3,6 +3,7 @@ package br.edu.fatecpg.valletprojeto
 import android.content.Intent
 import android.os.Bundle
 import android.util.Patterns
+import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -23,26 +24,27 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Inicializa o Firebase Auth
         auth = Firebase.auth
+        setupUI()
+    }
 
+    private fun setupUI() {
         setupLoginType()
         setupWindowInsets()
-        setupButtonListeners()
+        setupListeners()
     }
 
     private fun setupLoginType() {
         if (isAdmin) {
-            binding.layoutLoginUsuario.visibility = android.view.View.GONE
-            binding.layoutLoginAdmin.visibility = android.view.View.VISIBLE
-            binding.switchTipoLogin.text = "Sou usuário comum"
+            binding.layoutLoginUsuario.visibility = View.GONE
+            binding.layoutLoginAdmin.visibility = View.VISIBLE
+            binding.switchTipoLogin.text = "Sou motorista"
         } else {
-            binding.layoutLoginUsuario.visibility = android.view.View.VISIBLE
-            binding.layoutLoginAdmin.visibility = android.view.View.GONE
+            binding.layoutLoginUsuario.visibility = View.VISIBLE
+            binding.layoutLoginAdmin.visibility = View.GONE
             binding.switchTipoLogin.text = "Sou administrador"
         }
     }
@@ -55,22 +57,11 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupButtonListeners() {
-        binding.botaoCarros.setOnClickListener {
-            startActivity(Intent(this, IntroCadastroCarro::class.java))
-        }
+    private fun setupListeners() {
+        binding.switchTipoLogin.setOnClickListener { toggleLoginType() }
 
-        binding.botaoCadastro.setOnClickListener {
-            navigateToCadastro("usuario")
-        }
-
-        binding.botaoCadastroAdmin.setOnClickListener {
-            navigateToCadastro("admin")
-        }
-
-        binding.switchTipoLogin.setOnClickListener {
-            toggleLoginType()
-        }
+        binding.botaoCadastro.setOnClickListener { navigateToCadastro("usuario") }
+        binding.botaoCadastroAdmin.setOnClickListener { navigateToCadastro("admin") }
 
         binding.button3.setOnClickListener {
             val email = binding.editTextText.text.toString().trim()
@@ -89,73 +80,74 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private fun validateCredentials(email: String, password: String): Boolean {
+    private fun toggleLoginType() {
+        isAdmin = !isAdmin
+        setupLoginType()
+    }
+
+    private fun navigateToCadastro(tipo: String) {
+        val intent = Intent(this, CadastroActivity::class.java)
+        intent.putExtra("tipoCadastro", tipo)
+        startActivity(intent)
+    }
+
+    private fun validateCredentials(email: String, senha: String): Boolean {
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             Toast.makeText(this, "Formato de email inválido", Toast.LENGTH_SHORT).show()
             return false
         }
-
-        if (password.length < 6) {
-            Toast.makeText(this, "Senha deve ter pelo menos 6 caracteres", Toast.LENGTH_SHORT).show()
+        if (senha.length < 6) {
+            Toast.makeText(this, "A senha deve ter no mínimo 6 caracteres", Toast.LENGTH_SHORT).show()
             return false
         }
-
         return true
     }
 
-    private fun loginUser(email: String, password: String, isAdminAttempt: Boolean) {
-        auth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    checkAdminStatus(email, isAdminAttempt)
+    private fun loginUser(email: String, senha: String, isAdminAttempt: Boolean) {
+        auth.signInWithEmailAndPassword(email, senha)
+            .addOnSuccessListener {
+                val user = auth.currentUser
+                if (user != null) {
+                    checkUserType(user.uid, email, isAdminAttempt)
                 } else {
-                    handleLoginError(task.exception)
+                    Toast.makeText(this, "Erro ao obter usuário", Toast.LENGTH_SHORT).show()
                 }
             }
+            .addOnFailureListener { e -> handleLoginError(e) }
     }
 
-    private fun checkAdminStatus(email: String, isAdminAttempt: Boolean) {
-        db.collection("usuario")
-            .whereEqualTo("email", email)
-            .get()
-            .addOnSuccessListener { documents ->
-                if (!documents.isEmpty) {
-                    val doc = documents.documents[0]
-                    val tipoUser = doc.getString("tipo_user")
-
+    private fun checkUserType(uid: String, email: String, isAdminAttempt: Boolean) {
+        db.collection("usuario").document(uid).get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val tipoUser = document.getString("tipo_user") ?: "usuario"
                     val isAdminFromDB = tipoUser == "admin"
+                    val primeiroAcesso = document.getBoolean("primeiroAcesso") ?: true
 
                     if (isAdminAttempt && !isAdminFromDB) {
                         auth.signOut()
-                        Toast.makeText(
-                            this,
-                            "Acesso restrito a administradores cadastrados",
-                            Toast.LENGTH_LONG
-                        ).show()
+                        Toast.makeText(this, "Acesso restrito a administradores", Toast.LENGTH_LONG).show()
                     } else {
-                        redirectUser(isAdminFromDB, email)
+                        if (primeiroAcesso) {
+                            db.collection("usuario").document(uid)
+                                .update("primeiroAcesso", false)
+                            redirectToIntro(tipoUser, email)
+                        } else {
+                            redirectToHome(tipoUser, email)
+                        }
                     }
                 } else {
                     auth.signOut()
-                    Toast.makeText(
-                        this,
-                        "Usuário não encontrado no banco de dados",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(this, "Usuário não encontrado no banco de dados", Toast.LENGTH_SHORT).show()
                 }
             }
             .addOnFailureListener {
-                Toast.makeText(
-                    this,
-                    "Erro ao verificar permissões: ${it.message}",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(this, "Erro ao buscar tipo de usuário: ${it.message}", Toast.LENGTH_SHORT).show()
             }
     }
 
-
-    private fun redirectUser(isAdmin: Boolean, email:String) {
-        val intent = if (isAdmin) {
+    private fun redirectToIntro(tipoUser: String, email: String) {
+        val intent = if (tipoUser == "admin") {
             Intent(this, IntroCadastroEstacionamento::class.java)
         } else {
             Intent(this, IntroCadastroCarro::class.java)
@@ -165,35 +157,32 @@ class LoginActivity : AppCompatActivity() {
         finish()
     }
 
-    private fun handleLoginError(exception: Exception?) {
-        val errorMessage = when {
-            exception?.message?.contains("email address is badly formatted") == true ->
-                "Formato de email inválido"
-            exception?.message?.contains("password is invalid") == true ->
-                "Senha incorreta"
-            exception?.message?.contains("no user record") == true ->
-                "Usuário não encontrado"
-            else -> "Erro no login: ${exception?.message}"
+    private fun redirectToHome(tipoUser: String, email: String) {
+        val intent = if (tipoUser == "admin") {
+            Intent(this, Dashboard_base::class.java)
+        } else {
+            Intent(this, Dashboard_base::class.java)
         }
-        Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show()
-    }
-
-    private fun toggleLoginType() {
-        isAdmin = !isAdmin
-        setupLoginType()
-    }
-
-    private fun navigateToCadastro(userType: String) {
-        val intent = Intent(this, CadastroActivity::class.java)
-        intent.putExtra("tipoCadastro", userType)
+        intent.putExtra("email_usuario", email)
         startActivity(intent)
+        finish()
+    }
+
+    private fun handleLoginError(e: Exception?) {
+        val message = when {
+            e?.message?.contains("badly formatted", true) == true -> "Email inválido"
+            e?.message?.contains("password is invalid", true) == true -> "Senha incorreta"
+            e?.message?.contains("no user record", true) == true -> "Usuário não encontrado"
+            else -> "Erro no login: ${e?.message}"
+        }
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
     override fun onStart() {
         super.onStart()
-        auth.currentUser?.let {
-            // Verifica se o usuário logado é admin
-            checkAdminStatus(it.email ?: "", false)
+        val user = auth.currentUser
+        user?.let {
+            checkUserType(it.uid, it.email ?: "", false)
         }
     }
 }

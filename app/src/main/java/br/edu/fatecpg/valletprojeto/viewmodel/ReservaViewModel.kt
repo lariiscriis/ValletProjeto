@@ -28,7 +28,6 @@ sealed class ReservaState {
     data class Success(val reservaId: String) : ReservaState()
     data class Error(val message: String) : ReservaState()
 }
-
 class ReservaViewModel : ViewModel() {
 
     private val db = FirebaseFirestore.getInstance()
@@ -43,11 +42,19 @@ class ReservaViewModel : ViewModel() {
     private var timer: CountDownTimer? = null
     private var currentReservaId: String? = null
 
+    // Guarde vagaId e estacionamentoId atuais para usar no timer e cancelamento
+    private var currentVagaId: String? = null
+    private var currentEstacionamentoId: String? = null
+
     companion object {
         const val CHANNEL_ID = "reserva_channel"
         const val NOTIFICATION_ID = 1001
     }
-
+    fun continuarTimerComFim(fimReserva: Date, vagaId: String, estacionamentoId: String, context: Context) {
+        currentVagaId = vagaId
+        currentEstacionamentoId = estacionamentoId
+        iniciarTimer(fimReserva.time, vagaId, estacionamentoId, context)
+    }
     fun iniciarReserva(vagaId: String, estacionamentoId: String, tempoMaxReservaHoras: Int, context: Context) {
         _reservaStatus.value = ReservaState.Loading
 
@@ -71,6 +78,9 @@ class ReservaViewModel : ViewModel() {
             .add(reserva)
             .addOnSuccessListener { docRef ->
                 currentReservaId = docRef.id
+                currentVagaId = vagaId
+                currentEstacionamentoId = estacionamentoId
+
                 _reservaStatus.value = ReservaState.Success(docRef.id)
 
                 val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
@@ -80,17 +90,27 @@ class ReservaViewModel : ViewModel() {
                 criarNotificacao(
                     context,
                     "Reserva Confirmada",
-                    "Vaga $vagaId reservada das $inicioStr às $fimStr"
+                    "Vaga $vagaId reservada das $inicioStr às $fimStr",
+                    vagaId,
+                    estacionamentoId
                 )
 
-                iniciarTimer(fimReserva.toDate().time, context)
+                iniciarTimer(fimReserva.toDate().time, vagaId, estacionamentoId, context)
             }
             .addOnFailureListener {
                 _reservaStatus.value = ReservaState.Error("Erro ao criar reserva")
             }
     }
+    // No ViewModel
+    fun atualizarReservaAtiva(reservaId: String, fimReserva: Date, vagaId: String, estacionamentoId: String, context: Context) {
+        currentReservaId = reservaId
+        currentVagaId = vagaId
+        currentEstacionamentoId = estacionamentoId
+        iniciarTimer(fimReserva.time, vagaId, estacionamentoId, context)
+    }
 
-    fun cancelarReserva(context: Context) {
+    // Agora receber vagaId e estacionamentoId para repassar na notificação
+    fun cancelarReserva(context: Context, vagaId: String, estacionamentoId: String) {
         val reservaId = currentReservaId
         if (reservaId == null) {
             _reservaStatus.value = ReservaState.Error("Reserva não encontrada")
@@ -103,14 +123,15 @@ class ReservaViewModel : ViewModel() {
                 _reservaStatus.value = ReservaState.Success("Reserva cancelada")
                 timer?.cancel()
                 _tempoRestante.value = "00:00"
-                criarNotificacao(context, "Reserva Cancelada", "Sua reserva foi cancelada.")
+                criarNotificacao(context, "Reserva Cancelada", "Sua reserva foi cancelada.", vagaId, estacionamentoId)
             }
             .addOnFailureListener {
                 _reservaStatus.value = ReservaState.Error("Erro ao cancelar reserva")
             }
     }
 
-    private fun iniciarTimer(fimTimestamp: Long, context: Context) {
+    // Adicionado estacionamentoId para usar na notificação
+    private fun iniciarTimer(fimTimestamp: Long, vagaId: String, estacionamentoId: String, context: Context) {
         timer?.cancel()
 
         val tempoRestanteMs = fimTimestamp - System.currentTimeMillis()
@@ -126,18 +147,33 @@ class ReservaViewModel : ViewModel() {
                 _tempoRestante.value = String.format("%02d:%02d", minutos, segundos)
 
                 if (minutos == 10L && segundos == 0L) {
-                    criarNotificacao(context, "Aviso", "Faltam 10 minutos para sua reserva acabar!")
+                    criarNotificacao(context, "Aviso", "Faltam 10 minutos para sua reserva acabar!", vagaId, estacionamentoId)
                 }
             }
 
             override fun onFinish() {
                 _tempoRestante.value = "00:00"
-                criarNotificacao(context, "Reserva Finalizada", "Sua reserva foi finalizada.")
+                criarNotificacao(context, "Reserva Finalizada", "Sua reserva foi finalizada.", vagaId, estacionamentoId)
+
+                currentReservaId?.let { reservaId ->
+                    db.collection("reserva").document(reservaId)
+                        .update("status", "finalizada")
+                }
+
+                db.collection("vaga").document(vagaId)
+                    .update("disponivel", false)
             }
         }.start()
     }
 
-    fun criarNotificacao(context: Context, titulo: String, texto: String) {
+    // Parâmetros vagaId e estacionamentoId agora opcionais com valores padrão
+    fun criarNotificacao(
+        context: Context,
+        titulo: String,
+        texto: String,
+        vagaId: String = "",
+        estacionamentoId: String = ""
+    ) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
@@ -160,14 +196,16 @@ class ReservaViewModel : ViewModel() {
         val intent = Intent(context, ReservaActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             putExtra("FROM_NOTIFICATION", true)
+            if (vagaId.isNotEmpty()) putExtra("vagaId", vagaId)
+            if (estacionamentoId.isNotEmpty()) putExtra("estacionamentoId", estacionamentoId)
         }
+
         val pendingIntent = PendingIntent.getActivity(
             context,
             0,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_parking)

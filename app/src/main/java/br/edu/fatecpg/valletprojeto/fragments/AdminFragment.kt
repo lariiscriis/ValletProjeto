@@ -33,9 +33,7 @@ class AdminFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Primeiro calcula e salva os relatórios
         gerarEAtualizarRelatorios {
-            // Depois carrega para a UI
             loadAdminDashboardData()
         }
     }

@@ -31,10 +31,16 @@ class VagaViewModel : ViewModel() {
                     return@addSnapshotListener
                 }
 
-                val vagasList = snapshot?.toObjects(Vaga::class.java)
-                vagas.value = vagasList
+                val lista = mutableListOf<Vaga>()
+                snapshot?.documents?.forEach { doc ->
+                    val vaga = doc.toObject(Vaga::class.java)
+                    vaga?.id = doc.id
+                    vaga?.let { lista.add(it) }
+                }
+                vagas.value = lista
             }
     }
+
 
     fun deleteVaga(vagaId: String, onComplete: (Boolean, String?) -> Unit) {
         vagasCollection.document(vagaId)

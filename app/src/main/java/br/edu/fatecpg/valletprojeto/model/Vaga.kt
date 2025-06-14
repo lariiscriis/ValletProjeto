@@ -7,5 +7,5 @@ data class Vaga(
     val preco: Double = 0.0,
     val tipo: String = "",
     val disponivel: Boolean = true,
-
+    val estacionamentoId: String = ""
     )

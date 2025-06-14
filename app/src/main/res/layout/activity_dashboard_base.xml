@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5"
+    android:backgroundTint="#F5F5F5"
     android:padding="5dp">
 
     <ScrollView
@@ -21,44 +20,13 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <Button
-                android:id="@+id/btnExibirVaga"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="168dp"
-                android:backgroundTint="#4CAF50"
-                android:text="Exibir Vagas"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintStart_toStartOf="parent" />
-
-            <Button
-                android:id="@+id/btnCadastrarVaga"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="432dp"
-                android:backgroundTint="#4CAF50"
-                android:text="Cadastrar Vaga"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <Button
-                android:id="@+id/btnLogout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:backgroundTint="#4CAF50"
-                android:text="Logout" />
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/form_background"
                 android:orientation="horizontal"
-                android:paddingVertical="16dp"
-                android:padding="10dp">
+                android:padding="10dp"
+                android:paddingVertical="16dp">
 
                 <ImageView
                     android:id="@+id/iv_profile_image"
@@ -66,7 +34,8 @@
                     android:layout_height="60dp"
                     android:layout_marginEnd="16dp"
                     android:contentDescription="Foto do perfil"
-                    android:src="@drawable/button_background" />
+                    android:src="@drawable/ic_default_profile"
+                    />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -96,20 +65,17 @@
                     android:layout_height="1dp"
                     android:layout_weight="1" />
 
-                <TextView
-                    android:id="@+id/tv_balance"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:background="@drawable/menu"
-                    android:textColor="#4CAF50"
-                    android:textStyle="bold" />
+                <Button
+                    android:id="@+id/btn_logout"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:backgroundTint="#EFE7E7"
+                    android:contentDescription="logout"
+                    android:foreground="@drawable/btn_proximo"
+                    android:textColor="#FFFFFF"
+                    android:textColorLink="#F0EAEA" />
+
             </LinearLayout>
-
-
-            <FrameLayout
-                android:id="@+id/container"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
 
 
         </LinearLayout>
@@ -125,10 +91,10 @@
         android:layout_marginEnd="16dp"
         android:background="@drawable/form_background"
         app:itemIconTint="@drawable/nav_item_color_state"
+        app:itemRippleColor="@color/cinza"
         app:itemTextColor="@drawable/nav_item_color_state"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:menu="@menu/bottom_nav_menu"
-        app:itemRippleColor="@color/cinza"/>
+        app:menu="@menu/bottom_nav_menu" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -17,7 +17,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import androidx.lifecycle.lifecycleScope
 import br.edu.fatecpg.valletprojeto.dao.CarroDao.auth
-import br.edu.fatecpg.valletprojeto.databinding.ActivityIntroCadastroCarroBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -89,20 +88,9 @@ class Dashboard_base : AppCompatActivity() {
     }
 
     private fun setupButtonListeners() {
-        binding.btnExibirVaga.setOnClickListener {
-            val intent = Intent(this, VagaActivity::class.java)
-            startActivity(intent)
-        }
-
-        binding.btnCadastrarVaga.setOnClickListener {
-            val intent = Intent(this, CadastroVagaActivity::class.java)
-            startActivity(intent)
-        }
         binding.btnLogout?.setOnClickListener {
             performLogout()
         }
-
-
     }
 
     private fun carregarDadosUsuario() {
@@ -119,12 +107,11 @@ class Dashboard_base : AppCompatActivity() {
                 if (!usuarioSnapshot.isEmpty) {
                     val userDoc = usuarioSnapshot.documents.first()
                     val nome = userDoc.getString("nome") ?: "Usuário"
-                    val tipo = userDoc.getString("tipo") ?: "Motorista"
+                    val tipo = userDoc.getString("tipo_user") ?: "Motorista"
                     val saldo = userDoc.getDouble("saldo") ?: 0.0
 
                     findViewById<TextView>(R.id.tv_user_name).text = nome
                     findViewById<TextView>(R.id.tv_account_type).text = tipo.replaceFirstChar { it.uppercase() }
-                    findViewById<TextView>(R.id.tv_balance).text = "R$ %.2f".format(saldo)
 
                     val fotoUrl = userDoc.getString("fotoPerfil")
                     if (!fotoUrl.isNullOrEmpty()) {
@@ -132,6 +119,7 @@ class Dashboard_base : AppCompatActivity() {
                             .load(fotoUrl)
                             .placeholder(R.drawable.ic_default_profile)
                             .into(findViewById(R.id.iv_profile_image))
+
                     }
                 }
             } catch (e: Exception) {
@@ -156,13 +144,17 @@ class Dashboard_base : AppCompatActivity() {
                     true
                 }
                 R.id.nav_management -> {
-                    when (isAdmin) {
-                        true -> replaceFragment(ManagementFragment())
-                        false -> replaceFragment(SpotsFragment())
-                        else -> false
+                    if (isAdmin) {
+                        val intent = Intent(this, VagaActivity::class.java)
+                        startActivity(intent)
+                        true  // A ação foi tratada
+                    } else {
+                        val intent = Intent(this, CarroActivity::class.java)
+                        startActivity(intent)
+                        false  // Não executa ação nem marca como selecionado
                     }
-                    true
                 }
+
                 else -> false
             }
         }
@@ -186,7 +178,7 @@ class Dashboard_base : AppCompatActivity() {
 
     private fun replaceFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
-            .replace(R.id.container, fragment)
+            .replace(R.id.content_container, fragment)
             .commit()
     }
 

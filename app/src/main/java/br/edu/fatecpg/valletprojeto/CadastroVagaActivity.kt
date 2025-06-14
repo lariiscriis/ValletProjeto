@@ -23,9 +23,11 @@ class CadastroVagaActivity : AppCompatActivity() {
         binding.btnCadastrarVaga.setOnClickListener {
             cadastrarNovaVaga()
         }
+
     }
 
     private fun cadastrarNovaVaga() {
+        val estacionamentoId = intent.getStringExtra("estacionamentoId") ?: ""
         val numeroVaga = binding.edtNumeroVaga.text.toString().trim()
         val localizacao = binding.edtLocalizacao.text.toString().trim()
         val precoHora = binding.edtPrecoHora.text.toString().trim()
@@ -35,8 +37,9 @@ class CadastroVagaActivity : AppCompatActivity() {
             else -> ""
         }
 
-        if (validarCampos(numeroVaga, localizacao, precoHora, tipoVaga)) {
+        if (validarCampos(estacionamentoId,numeroVaga, localizacao, precoHora, tipoVaga)) {
             val vaga = hashMapOf(
+                "estacionamentoId" to estacionamentoId,
                 "numero" to numeroVaga,
                 "localizacao" to localizacao,
                 "precoHora" to precoHora.toDouble(),
@@ -49,6 +52,7 @@ class CadastroVagaActivity : AppCompatActivity() {
                 .addOnSuccessListener {
                     Toast.makeText(this, "Vaga cadastrada com sucesso!", Toast.LENGTH_SHORT).show()
                     limparCampos()
+                    finish() // fecha essa tela após cadastro
                 }
                 .addOnFailureListener { e ->
                     Toast.makeText(this, "Erro ao cadastrar: ${e.message}", Toast.LENGTH_LONG).show()
@@ -57,12 +61,17 @@ class CadastroVagaActivity : AppCompatActivity() {
     }
 
     private fun validarCampos(
+        estacionamentoId: String,
         numero: String,
         localizacao: String,
         preco: String,
         tipo: String
     ): Boolean {
         return when {
+            estacionamentoId.isEmpty() -> {
+                Toast.makeText(this, "Estacionamento inválido", Toast.LENGTH_SHORT).show()
+                false
+            }
             numero.isEmpty() -> {
                 binding.edtNumeroVaga.error = "Informe o número da vaga"
                 false
@@ -82,6 +91,7 @@ class CadastroVagaActivity : AppCompatActivity() {
             else -> true
         }
     }
+
 
     private fun limparCampos() {
         binding.edtNumeroVaga.text?.clear()

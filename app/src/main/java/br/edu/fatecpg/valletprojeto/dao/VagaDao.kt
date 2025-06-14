@@ -23,6 +23,7 @@ class VagaDao {
                 "preco" to vaga.preco,
                 "tipo" to vaga.tipo,
                 "disponivel" to vaga.disponivel,
+                "estacionamentoId" to vaga.estacionamentoId
             )
             vaga.id = vaga.numero
             db.collection("vaga")

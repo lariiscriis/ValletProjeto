@@ -56,12 +56,6 @@ class CadastroCarro : AppCompatActivity() {
             ).show()
             val intent = Intent(this, CarroActivity::class.java)
          startActivity(intent)
-            //val vagaId = "123"
-            //val estacionamentoId = "123"
-//            val intent = Intent(this, ReservaActivity::class.java)
-//            intent.putExtra("VAGA_ID", vagaId)
-//            intent.putExtra("ESTACIONAMENTO_ID", estacionamentoId)
-//            startActivity(intent)
         }
     }
 
