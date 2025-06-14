@@ -24,6 +24,9 @@ class IntroCadastroEstacionamento : AppCompatActivity() {
         binding = ActivityIntroCadastroEstacionamentoBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val emailUsuario = intent.getStringExtra("email_usuario") ?: "Usuário"
+        binding.txtNome.text = "$emailUsuario"
+
         // Inicializa o Firebase Auth
         auth = Firebase.auth
 
