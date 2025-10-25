@@ -55,7 +55,7 @@ class CadastroEstacionamento : AppCompatActivity() {
                     vm.cadastrar(est,
                         onSuccess = {
                             Toast.makeText(this, "Estacionamento cadastrado!", Toast.LENGTH_SHORT).show()
-                            val intent = Intent(this, Dashboard_base::class.java) // troque pelo nome real da sua Dashboard
+                            val intent = Intent(this, Dashboard_base::class.java)
                             startActivity(intent)
                             finish()
                         },

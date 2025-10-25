@@ -39,6 +39,7 @@ class EstacionamentoDao {
                 "tempoMaxReservaHoras" to est.tempoMaxReservaHoras,
                 "toleranciaReservaMinutos" to est.toleranciaReservaMinutos,
                 "fotoEstacionamentoUri" to est.fotoEstacionamentoUri,
+                "adminUid" to FirebaseAuth.getInstance().currentUser?.uid,
                 "adminEmail" to emailAdmin,
                 "dataCadastro" to FieldValue.serverTimestamp()
             )

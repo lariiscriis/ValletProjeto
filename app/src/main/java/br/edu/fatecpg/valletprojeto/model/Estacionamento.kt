@@ -4,6 +4,8 @@ data class Estacionamento(
     val nome: String,
     val cnpj: String,
     val telefone: String,
+
+    val adminUid:  String? = null,
     val adminEmail: String = "",
     val dataCadastro: Any? = null,
 

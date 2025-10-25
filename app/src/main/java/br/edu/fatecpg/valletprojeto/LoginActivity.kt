@@ -133,7 +133,11 @@ class LoginActivity : AppCompatActivity() {
                                 .update("primeiroAcesso", false)
                             redirectToIntro(tipoUser, email)
                         } else {
-                            redirectToHome(tipoUser, email)
+                            if (tipoUser == "admin") {
+                                checkEstacionamentoCadastrado(uid, email)
+                            } else {
+                                redirectToHome(tipoUser, email)
+                            }
                         }
                     }
                 } else {
@@ -145,6 +149,28 @@ class LoginActivity : AppCompatActivity() {
                 Toast.makeText(this, "Erro ao buscar tipo de usuário: ${it.message}", Toast.LENGTH_SHORT).show()
             }
     }
+
+    private fun checkEstacionamentoCadastrado(uid: String, email: String) {
+        db.collection("estacionamento")
+            .whereEqualTo("adminUid", uid)
+            .get()
+            .addOnSuccessListener { result ->
+                if (result.isEmpty) {
+                    // Admin sem estacionamento → ir para cadastro
+                    val intent = Intent(this, CadastroEstacionamento::class.java)
+                    intent.putExtra("email_usuario", email)
+                    startActivity(intent)
+                    finish()
+                } else {
+                    // Admin já tem estacionamento → ir para dashboard
+                    redirectToHome("admin", email)
+                }
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Erro ao verificar estacionamento: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
 
     private fun redirectToIntro(tipoUser: String, email: String) {
         val intent = if (tipoUser == "admin") {
