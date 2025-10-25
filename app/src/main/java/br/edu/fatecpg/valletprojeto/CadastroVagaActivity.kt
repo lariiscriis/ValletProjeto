@@ -42,7 +42,7 @@ class CadastroVagaActivity : AppCompatActivity() {
                 "estacionamentoId" to estacionamentoId,
                 "numero" to numeroVaga,
                 "localizacao" to localizacao,
-                "precoHora" to precoHora.toDouble(),
+                "preco" to precoHora.toDouble(),
                 "tipo" to tipoVaga,
                 "disponivel" to true,
             )
@@ -52,7 +52,7 @@ class CadastroVagaActivity : AppCompatActivity() {
                 .addOnSuccessListener {
                     Toast.makeText(this, "Vaga cadastrada com sucesso!", Toast.LENGTH_SHORT).show()
                     limparCampos()
-                    finish() // fecha essa tela após cadastro
+                    finish()
                 }
                 .addOnFailureListener { e ->
                     Toast.makeText(this, "Erro ao cadastrar: ${e.message}", Toast.LENGTH_LONG).show()
