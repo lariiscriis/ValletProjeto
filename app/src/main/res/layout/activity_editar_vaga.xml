@@ -97,8 +97,10 @@
             android:id="@+id/btnSalvar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Salvar Alterações"
-            app:backgroundTint="#00A676"
+            android:fontFamily="@font/poppins_medium"
+            android:text="SALVAR ALTERAÇÕES"
+            android:textSize="16sp"
+            app:backgroundTint="@color/verdeescuro"
             app:iconGravity="start" />
     </LinearLayout>
 </ScrollView>

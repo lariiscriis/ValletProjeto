@@ -84,7 +84,7 @@
             android:fontFamily="@font/poppins"
             android:gravity="center"
             android:padding="12dp"
-            android:text="Antes de estacionar, \n vamos conhecer seu carro."
+            android:text="Antes de estacionar, \n vamos conhecer seu veículo."
             android:textColor="#555555"
             android:textSize="16sp" />
 

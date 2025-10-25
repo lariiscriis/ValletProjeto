@@ -7,8 +7,8 @@
     android:padding="24dp">
 
     <LinearLayout
-        android:layout_width="285dp"
-        android:layout_height="410dp"
+        android:layout_width="280dp"
+        android:layout_height="420dp"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -19,9 +19,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:text="Adicionar Carro"
+            android:fontFamily="@font/poppins_medium"
+            android:text="Adicionar Veículo"
             android:textAlignment="center"
-            android:textSize="20sp"
+            android:textSize="22sp"
             android:textStyle="bold" />
 
         <EditText
@@ -85,8 +86,10 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:backgroundTint="@color/verdeescuro"
-            android:minHeight="48dp"
-            android:text="Confirmar"
-            android:textColor="@color/branco" />
+            android:fontFamily="@font/poppins_medium"
+            android:minHeight="52dp"
+            android:text="CONFIRMAR"
+            android:textColor="@color/branco"
+            android:textSize="16sp" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

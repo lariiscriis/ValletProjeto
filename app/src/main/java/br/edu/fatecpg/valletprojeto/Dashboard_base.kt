@@ -1,6 +1,5 @@
 package br.edu.fatecpg.valletprojeto
 
-import ManagementFragment
 import SpotsFragment
 import android.content.Intent
 import android.os.Bundle
@@ -88,7 +87,7 @@ class Dashboard_base : AppCompatActivity() {
     }
 
     private fun setupButtonListeners() {
-        binding.btnLogout?.setOnClickListener {
+        binding.btnLogout.setOnClickListener {
             performLogout()
         }
     }

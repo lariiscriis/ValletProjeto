@@ -16,8 +16,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
+            android:fontFamily="@font/poppins_medium"
             android:gravity="center"
             android:text="Cadastro de Vagas"
+            android:textColor="@color/preto"
             android:textSize="24sp"
             android:textStyle="bold" />
 
@@ -91,8 +93,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Cadastrar Vaga"
+            android:fontFamily="@font/poppins_medium"
+            android:padding="8dp"
+            android:text="CADASTRAR VAGA"
             android:textColor="@android:color/white"
+            android:textSize="16sp"
             app:backgroundTint="@color/verdeescuro" />
     </LinearLayout>
 </ScrollView>

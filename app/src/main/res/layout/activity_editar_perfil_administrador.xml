@@ -16,35 +16,38 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp"
-            app:strokeColor="#E0E0E0"
             app:cardBackgroundColor="@color/branco"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            app:strokeColor="#E0E0E0"
             app:strokeWidth="1dp">
 
             <LinearLayout
-                android:layout_width="374dp"
+                android:layout_width="370dp"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="24dp">
 
                 <!-- Título -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginBottom="24dp"
-                    android:letterSpacing="0.02"
-                    android:text="Editar Perfil do Administrador"
-                    android:textColor="@android:color/black"
-                    android:textSize="22sp"
-                    android:textStyle="bold" />
 
                 <!-- Seção Dados Pessoais -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="24dp"
+                    android:fontFamily="@font/poppins_medium"
+                    android:letterSpacing="0.02"
+                    android:text="Editar Perfil do Administrador"
+                    android:textColor="@android:color/black"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
+                    android:fontFamily="@font/poppins_medium"
                     android:letterSpacing="0.1"
                     android:text="DADOS PESSOAIS"
                     android:textColor="@color/verdeescuro"
@@ -126,7 +129,9 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
                     android:layout_marginBottom="8dp"
+                    android:fontFamily="@font/poppins_medium"
                     android:letterSpacing="0.1"
                     android:text="DADOS DO ESTACIONAMENTO"
                     android:textColor="@color/verdeescuro"
@@ -232,6 +237,8 @@
                     style="@style/Widget.MaterialComponents.Button"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
+                    android:fontFamily="@font/poppins_medium"
+                    android:letterSpacing="0"
                     android:text="SALVAR ALTERAÇÕES"
                     android:textAllCaps="true"
                     android:textColor="@android:color/white"

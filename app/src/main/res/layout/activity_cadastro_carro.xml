@@ -29,8 +29,11 @@
             android:layout_height="48dp"
             android:layout_weight="1"
             android:backgroundTint="#046C4E"
-            android:text="Finalizar Cadastro"
-            android:textColor="@android:color/white" />
+            android:fontFamily="@font/poppins_medium"
+            android:padding="8dp"
+            android:text="FINALIZAR CADASTRO"
+            android:textColor="@android:color/white"
+            android:textSize="16sp" />
 
         <Space
             android:layout_width="16dp"
@@ -43,7 +46,7 @@
             android:contentDescription="Adicionar carro"
             app:backgroundTint="#046C4E"
             app:fabCustomSize="48dp"
-            app:srcCompat="@android:drawable/ic_menu_add"
+            app:srcCompat="@android:drawable/ic_input_add"
             app:tint="@android:color/white" />
     </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

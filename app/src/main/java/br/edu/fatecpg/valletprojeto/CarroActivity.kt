@@ -47,7 +47,8 @@ class CarroActivity : AppCompatActivity() {
             val intent = Intent(this, VagaActivity::class.java)
             startActivity(intent)
         }
-        binding.btnAddCarro.setOnClickListener{
+
+        binding.btnAddVeiculo.setOnClickListener{
             val intent = Intent(this, CadastroCarro::class.java)
             startActivity(intent)
         }

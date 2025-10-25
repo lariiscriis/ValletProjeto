@@ -40,6 +40,8 @@
                     android:layout_weight="1"
                     android:hint="Pesquisar estacionamento"
                     android:background="@null"
+                    android:imeOptions="actionSearch"
+                    android:singleLine="true"
                     android:textSize="14sp"/>
 
                 <ImageView
@@ -203,7 +205,7 @@
                     <Button
                         android:id="@+id/btn_fav2_view"
                         android:layout_width="101dp"
-                        android:layout_height="48dp"
+                        android:layout_height="36dp"
                         android:layout_below="@id/tv_fav2_distance"
                         android:layout_centerHorizontal="true"
                         android:layout_marginTop="2dp"

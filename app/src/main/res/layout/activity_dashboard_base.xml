@@ -68,10 +68,10 @@
                 <Button
                     android:id="@+id/btn_logout"
                     android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_height="wrap_content"
                     android:backgroundTint="#EFE7E7"
                     android:contentDescription="logout"
-                    android:foreground="@drawable/btn_proximo"
+                    android:foreground="@drawable/logout"
                     android:textColor="#FFFFFF"
                     android:textColorLink="#F0EAEA" />
 
@@ -87,8 +87,6 @@
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
         android:background="@drawable/form_background"
         app:itemIconTint="@drawable/nav_item_color_state"
         app:itemRippleColor="@color/cinza"

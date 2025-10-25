@@ -21,7 +21,7 @@
         android:padding="16dp">
 
         <Button
-            android:id="@+id/btnAddCarro"
+            android:id="@+id/btnAddVeiculo"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_marginLeft="30dp"
@@ -29,7 +29,9 @@
             android:layout_marginRight="30dp"
             android:layout_marginBottom="10dp"
             android:backgroundTint="@color/verdeescuro"
-            android:text="+ Adicionar Carro" />
+            android:fontFamily="@font/poppins_medium"
+            android:text="+ ADICIONAR VEICULO"
+            android:textSize="16sp" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewCarros"
@@ -55,7 +57,7 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="20dp"
             android:layout_weight="1"
-            android:backgroundTint="#076854"
+            android:backgroundTint="@color/verdeescuro"
             android:text="Ver Vagas" />
 
         <Button
@@ -63,7 +65,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:backgroundTint="#076854"
+            android:backgroundTint="@color/verdeescuro"
             android:text="Dashboard" />
 
     </LinearLayout>

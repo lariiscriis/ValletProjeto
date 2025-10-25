@@ -110,14 +110,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:text="Reservar Vaga"
-        android:textSize="16sp"
+        android:fontFamily="@font/poppins_medium"
+        android:minHeight="52dp"
+        android:text="RESERVAR VAGA"
         android:textAllCaps="false"
-        app:cornerRadius="8dp"
+        android:textSize="16sp"
         app:backgroundTint="@color/verdeescuro"
-        app:rippleColor="@color/verdeescuro"
+        app:cornerRadius="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:rippleColor="@color/verdeescuro" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
