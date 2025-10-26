@@ -3,6 +3,7 @@ package br.edu.fatecpg.valletprojeto
 import android.app.Activity
 import android.os.Bundle
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import br.edu.fatecpg.valletprojeto.databinding.ActivityEditarCarroBinding
 import com.google.firebase.firestore.FirebaseFirestore
@@ -31,9 +32,35 @@ class EditarCarroActivity : AppCompatActivity() {
         binding.editAno.setText(ano)
         binding.editKM.setText(km)
 
-        binding.btnConfirmar.setOnClickListener {
-            atualizarCarro()
+        binding.btnConfirmar.setOnClickListener { atualizarCarro() }
+        binding.btnExcluir.setOnClickListener { confirmarExclusao() }
+    }
+
+    private fun confirmarExclusao() {
+        AlertDialog.Builder(this)
+            .setTitle("Excluir carro")
+            .setMessage("Tem certeza que deseja excluir este carro?")
+            .setPositiveButton("Excluir") { _, _ -> excluirCarro() }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun excluirCarro() {
+        if (carroId.isNullOrEmpty()) {
+            Toast.makeText(this, "ID do carro não encontrado", Toast.LENGTH_SHORT).show()
+            return
         }
+
+        db.collection("carro").document(carroId!!)
+            .delete()
+            .addOnSuccessListener {
+                Toast.makeText(this, "Carro excluído com sucesso!", Toast.LENGTH_SHORT).show()
+                setResult(Activity.RESULT_OK)
+                finish()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Erro ao excluir carro: ${e.message}", Toast.LENGTH_LONG).show()
+            }
     }
 
     private fun atualizarCarro() {
@@ -43,27 +70,28 @@ class EditarCarroActivity : AppCompatActivity() {
         val novoAno = binding.editAno.text.toString()
         val novoKM = binding.editKM.text.toString()
 
-        if (carroId != null) {
-            val carroAtualizado = hashMapOf(
-                "placa" to novaPlaca,
-                "marca" to novaMarca,
-                "modelo" to novoModelo,
-                "ano" to novoAno,
-                "km" to novoKM
-            )
-
-            db.collection("carro").document(carroId!!)
-                .update(carroAtualizado as Map<String, Any>)
-                .addOnSuccessListener {
-                    Toast.makeText(this, "Carro atualizado com sucesso!", Toast.LENGTH_SHORT).show()
-                    setResult(Activity.RESULT_OK) // <- notifica que deu certo
-                    finish()
-                }
-                .addOnFailureListener {
-                    Toast.makeText(this, "Erro ao atualizar carro", Toast.LENGTH_SHORT).show()
-                }
-        } else {
+        if (carroId.isNullOrEmpty()) {
             Toast.makeText(this, "ID do carro não encontrado", Toast.LENGTH_SHORT).show()
+            return
         }
+
+        val carroAtualizado = mapOf(
+            "placa" to novaPlaca,
+            "marca" to novaMarca,
+            "modelo" to novoModelo,
+            "ano" to novoAno,
+            "km" to novoKM
+        )
+
+        db.collection("carro").document(carroId!!)
+            .update(carroAtualizado)
+            .addOnSuccessListener {
+                Toast.makeText(this, "Carro atualizado com sucesso!", Toast.LENGTH_SHORT).show()
+                setResult(Activity.RESULT_OK)
+                finish()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Erro ao atualizar carro: ${e.message}", Toast.LENGTH_LONG).show()
+            }
     }
 }
