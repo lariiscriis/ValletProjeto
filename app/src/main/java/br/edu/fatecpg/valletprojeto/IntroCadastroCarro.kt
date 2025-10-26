@@ -65,9 +65,8 @@ class IntroCadastroCarro : AppCompatActivity() {
     }
 
     private fun navigateToCarRegistration() {
-        val intent = Intent(this, Carro::class.java)
+        val intent = Intent(this, CarroActivity::class.java)
         startActivity(intent)
-        // Adicione animação de transição se desejar
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
     }
 

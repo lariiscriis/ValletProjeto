@@ -9,7 +9,6 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import br.edu.fatecpg.valletprojeto.LoginActivity
 import br.edu.fatecpg.valletprojeto.databinding.ActivityCadastroBinding
 import br.edu.fatecpg.valletprojeto.model.Usuario
 import br.edu.fatecpg.valletprojeto.viewmodel.CadastroViewModel
@@ -40,15 +39,13 @@ class CadastroActivity : AppCompatActivity() {
         }
 
         binding.botaoLogin.setOnClickListener {
-            val intent = Intent(this, LoginActivity::class.java)
-            intent.putExtra("tipoCadastro", "usuario")
-            startActivity(intent)
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
         }
 
         binding.botaoLoginAdmin.setOnClickListener {
-            val intent = Intent(this, LoginActivity::class.java)
-            intent.putExtra("tipoCadastro", "admin")
-            startActivity(intent)
+            startActivity(Intent(this, LoginActivity::class.java).putExtra("tipoCadastro", "admin"))
+            finish()
         }
 
         binding.btnCadastrar.setOnClickListener {
@@ -76,22 +73,29 @@ class CadastroActivity : AppCompatActivity() {
     }
 
     private fun cadastrar(usuario: Usuario) {
+        if (usuario.email.isEmpty() || usuario.senha.isEmpty() || usuario.nome.isEmpty()) {
+            Toast.makeText(this, "Preencha todos os campos obrigatórios", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        binding.progressOverlay.visibility = View.VISIBLE
+
         viewModel.cadastrarUsuario(
             usuario,
             onSuccess = {
+                binding.progressOverlay.visibility = View.GONE
                 Toast.makeText(this, "Cadastro realizado com sucesso!", Toast.LENGTH_SHORT).show()
-
                 val intent = Intent(this, LoginActivity::class.java)
                 intent.putExtra("tipoCadastro", usuario.tipo_user)
                 startActivity(intent)
                 finish()
             },
             onError = { msg ->
-                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                binding.progressOverlay.visibility = View.GONE
+                Toast.makeText(this, msg ?: "Erro ao cadastrar usuário", Toast.LENGTH_SHORT).show()
             }
         )
     }
-
 
     private fun atualizarLayoutCadastro() {
         if (isAdmin) {
@@ -104,5 +108,4 @@ class CadastroActivity : AppCompatActivity() {
             binding.switchTipoCadastro.text = "Sou administrador"
         }
     }
-
 }

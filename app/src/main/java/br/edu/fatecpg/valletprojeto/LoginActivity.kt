@@ -64,6 +64,7 @@ class LoginActivity : AppCompatActivity() {
         binding.botaoCadastroAdmin.setOnClickListener { navigateToCadastro("admin") }
 
         binding.button3.setOnClickListener {
+            binding.progressOverlay.animate().alpha(1f).setDuration(150).withStartAction { binding.progressOverlay.visibility = View.VISIBLE }
             val email = binding.editTextText.text.toString().trim()
             val senha = binding.editTextSenha.text.toString().trim()
             if (validateCredentials(email, senha)) {
@@ -106,6 +107,7 @@ class LoginActivity : AppCompatActivity() {
     private fun loginUser(email: String, senha: String, isAdminAttempt: Boolean) {
         auth.signInWithEmailAndPassword(email, senha)
             .addOnSuccessListener {
+                binding.progressOverlay.visibility = View.GONE
                 val user = auth.currentUser
                 if (user != null) {
                     checkUserType(user.uid, email, isAdminAttempt)
@@ -113,8 +115,12 @@ class LoginActivity : AppCompatActivity() {
                     Toast.makeText(this, "Erro ao obter usuário", Toast.LENGTH_SHORT).show()
                 }
             }
-            .addOnFailureListener { e -> handleLoginError(e) }
+            .addOnFailureListener { e ->
+                binding.progressOverlay.visibility = View.GONE
+                handleLoginError(e)
+            }
     }
+
 
     private fun checkUserType(uid: String, email: String, isAdminAttempt: Boolean) {
         db.collection("usuario").document(uid).get()
@@ -146,6 +152,8 @@ class LoginActivity : AppCompatActivity() {
                 }
             }
             .addOnFailureListener {
+                binding.progressOverlay.visibility = View.GONE
+
                 Toast.makeText(this, "Erro ao buscar tipo de usuário: ${it.message}", Toast.LENGTH_SHORT).show()
             }
     }
@@ -155,18 +163,19 @@ class LoginActivity : AppCompatActivity() {
             .whereEqualTo("adminUid", uid)
             .get()
             .addOnSuccessListener { result ->
+                binding.progressOverlay.visibility = View.GONE
+
                 if (result.isEmpty) {
-                    // Admin sem estacionamento → ir para cadastro
                     val intent = Intent(this, CadastroEstacionamento::class.java)
                     intent.putExtra("email_usuario", email)
                     startActivity(intent)
                     finish()
                 } else {
-                    // Admin já tem estacionamento → ir para dashboard
                     redirectToHome("admin", email)
                 }
             }
             .addOnFailureListener { e ->
+                binding.progressOverlay.visibility = View.GONE
                 Toast.makeText(this, "Erro ao verificar estacionamento: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
@@ -207,8 +216,9 @@ class LoginActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         val user = auth.currentUser
-        user?.let {
-            checkUserType(it.uid, it.email ?: "", false)
+        if (user != null) {
+            binding.progressOverlay.visibility = View.VISIBLE
+            checkUserType(user.uid, user.email ?: "", false)
         }
     }
 }
