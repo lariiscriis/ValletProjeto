@@ -3,6 +3,8 @@ package br.edu.fatecpg.valletprojeto
 import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -13,6 +15,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import br.edu.fatecpg.valletprojeto.databinding.ActivityCarroBinding
+import br.edu.fatecpg.valletprojeto.databinding.DialogCadastroCarroBinding
 import br.edu.fatecpg.valletprojeto.databinding.ItemCardCarroBinding
 import br.edu.fatecpg.valletprojeto.model.Carro
 import br.edu.fatecpg.valletprojeto.viewmodel.CarroViewModel
@@ -48,9 +51,8 @@ class CarroActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        binding.btnAddVeiculo.setOnClickListener{
-            val intent = Intent(this, CadastroCarro::class.java)
-            startActivity(intent)
+        binding.btnAddVeiculo.setOnClickListener {
+            showAddCarDialog()
         }
 
         binding.btnDashboard.setOnClickListener{
@@ -81,6 +83,51 @@ class CarroActivity : AppCompatActivity() {
             layoutManager = LinearLayoutManager(this@CarroActivity)
             adapter = carrosAdapter
         }
+    }
+
+    private fun showAddCarDialog() {
+        val dialogBinding = DialogCadastroCarroBinding.inflate(layoutInflater)
+
+        val dialog = Dialog(this, R.style.DialogTheme).apply {
+            setContentView(dialogBinding.root)
+
+            window?.setLayout(
+                (resources.displayMetrics.widthPixels * 0.9).toInt(),
+                WindowManager.LayoutParams.WRAP_CONTENT
+            )
+
+            setCancelable(true)
+        }
+
+        dialogBinding.btnConfirmar.setOnClickListener {
+            val placa = dialogBinding.editPlaca.text.toString().trim()
+            val marca = dialogBinding.editMarca.text.toString().trim()
+            val modelo = dialogBinding.editModelo.text.toString().trim()
+            val ano = dialogBinding.editAno.text.toString().trim()
+            val km = dialogBinding.editKM.text.toString().trim()
+
+            if (placa.isNotEmpty() && marca.isNotEmpty() && modelo.isNotEmpty() && ano.isNotEmpty() && km.isNotEmpty()) {
+                val novoCarro = Carro(placa, marca, modelo, ano, km)
+
+                viewModel.cadastrarCarro(
+                    novoCarro,
+                    onSuccess = {
+                        carregarCarrosDoUsuario()
+                        dialog.dismiss()
+                        Toast.makeText(this, "Carro salvo!", Toast.LENGTH_SHORT).show()
+                    },
+                    onFailure = { erro ->
+                        Toast.makeText(this, "Erro ao salvar: $erro", Toast.LENGTH_LONG).show()
+                    }
+                )
+            } else {
+                Toast.makeText(this, "Preencha todos os campos", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        Log.d("DialogTest", "Tentando mostrar o dialog")
+        dialog.show()
+        Log.d("DialogTest", "Dialog mostrado")
     }
 
     inner class CarrosAdapter(private val carros: List<Carro>) :

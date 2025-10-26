@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import br.edu.fatecpg.valletprojeto.databinding.ActivityIntroCadastroCarroBinding
+import br.edu.fatecpg.valletprojeto.model.Carro
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
@@ -56,23 +57,19 @@ class IntroCadastroCarro : AppCompatActivity() {
             .into(binding.gifCarro)
     }
 
-
     private fun setupButtonListeners() {
         // Botão para cadastro de carro
         binding.btnIrParaCadastro.setOnClickListener {
             navigateToCarRegistration()
         }
-
     }
 
     private fun navigateToCarRegistration() {
-        val intent = Intent(this, CadastroCarro::class.java)
+        val intent = Intent(this, Carro::class.java)
         startActivity(intent)
         // Adicione animação de transição se desejar
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
     }
-
-
 
     private fun redirectToLogin() {
         val intent = Intent(this, LoginActivity::class.java)

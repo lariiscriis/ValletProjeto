@@ -12,7 +12,6 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
-import br.edu.fatecpg.valletprojeto.CadastroCarro
 import br.edu.fatecpg.valletprojeto.CarroActivity
 import br.edu.fatecpg.valletprojeto.ReservaActivity
 import br.edu.fatecpg.valletprojeto.VagaActivity
