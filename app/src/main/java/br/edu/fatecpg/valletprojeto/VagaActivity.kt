@@ -20,6 +20,7 @@ class VagaActivity : AppCompatActivity() {
     private lateinit var viewModel: VagaViewModel
     private lateinit var binding: ActivityVagaBinding
     private var isAdmin: Boolean = false
+    private var estacionamentoId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,75 +30,82 @@ class VagaActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this)[VagaViewModel::class.java]
 
         val userId = FirebaseAuth.getInstance().currentUser?.uid
+        val db = FirebaseFirestore.getInstance()
+
+        estacionamentoId = intent.getStringExtra("estacionamentoId")
+
         if (userId != null) {
-            FirebaseFirestore.getInstance().collection("usuario")
-                .document(userId)
-                .get()
+            db.collection("usuario").document(userId).get()
                 .addOnSuccessListener { document ->
                     val tipo = document.getString("tipo_user")
                     isAdmin = tipo == "admin"
 
-                    setupListeners()
-                    setupRecyclerView()
-                    setupObservers()
-                    viewModel.fetchVagas()
+                    if (isAdmin) {
+                        val emailAdmin = FirebaseAuth.getInstance().currentUser?.email
+                        if (emailAdmin != null) {
+                            db.collection("estacionamento")
+                                .whereEqualTo("adminEmail", emailAdmin)
+                                .get()
+                                .addOnSuccessListener { querySnapshot ->
+                                    if (!querySnapshot.isEmpty) {
+                                        estacionamentoId = querySnapshot.documents[0].id
+                                        setupUI()
+                                    } else {
+                                        Toast.makeText(this, "Estacionamento não encontrado para este admin", Toast.LENGTH_SHORT).show()
+                                        setupUI()
+                                    }
+                                }
+                                .addOnFailureListener {
+                                    Toast.makeText(this, "Erro ao buscar estacionamento do admin", Toast.LENGTH_SHORT).show()
+                                    setupUI()
+                                }
+                        } else {
+                            Toast.makeText(this, "E-mail do admin não encontrado", Toast.LENGTH_SHORT).show()
+                            setupUI()
+                        }
+                    } else {
+                        setupUI()
+                    }
                 }
                 .addOnFailureListener {
                     Toast.makeText(this, "Erro ao verificar tipo de usuário", Toast.LENGTH_SHORT).show()
-                    isAdmin = false
-                    setupListeners()
-                    setupRecyclerView()
-                    setupObservers()
-                    viewModel.fetchVagas()
+                    setupUI()
                 }
         } else {
-            // Caso não tenha usuário logado
-            isAdmin = false
-            setupListeners()
-            setupRecyclerView()
-            setupObservers()
-            viewModel.fetchVagas()
+            Toast.makeText(this, "Usuário não logado", Toast.LENGTH_SHORT).show()
+            setupUI()
+        }
+    }
+
+    private fun setupUI() {
+        setupListeners()
+        setupRecyclerView()
+        setupObservers()
+
+        if (estacionamentoId == null) {
+            Toast.makeText(this, "Erro: ID do estacionamento não encontrado.", Toast.LENGTH_SHORT).show()
+            return
         }
 
-
+        viewModel.fetchVagasPorEstacionamento(estacionamentoId!!)
     }
 
     private fun setupListeners() {
         if (isAdmin) {
             binding.fabAdd.visibility = View.VISIBLE
             binding.fabAdd.setOnClickListener {
-                val emailAdmin = FirebaseAuth.getInstance().currentUser?.email
-
-                if (emailAdmin != null) {
-                    FirebaseFirestore.getInstance().collection("estacionamento")
-                        .whereEqualTo("adminEmail", emailAdmin)
-                        .get()
-                        .addOnSuccessListener { querySnapshot ->
-                            if (!querySnapshot.isEmpty) {
-                                val estacionamentoDoc = querySnapshot.documents[0]
-                                val estacionamentoId = estacionamentoDoc.id
-
-                                // Aqui sim, dentro do callback, você já pode iniciar a Activity
-                                val intent = Intent(this, CadastroVagaActivity::class.java)
-                                intent.putExtra("estacionamentoId", estacionamentoId)
-                                startActivity(intent)
-                            } else {
-                                Toast.makeText(this, "Estacionamento não encontrado para o admin", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                        .addOnFailureListener {
-                            Toast.makeText(this, "Erro ao buscar estacionamento", Toast.LENGTH_SHORT).show()
-                        }
-                } else {
-                    Toast.makeText(this, "Usuário não logado", Toast.LENGTH_SHORT).show()
+                estacionamentoId?.let {
+                    val intent = Intent(this, CadastroVagaActivity::class.java)
+                    intent.putExtra("estacionamentoId", it)
+                    startActivity(intent)
+                } ?: run {
+                    Toast.makeText(this, "Estacionamento não encontrado", Toast.LENGTH_SHORT).show()
                 }
             }
         } else {
             binding.fabAdd.visibility = View.GONE
         }
     }
-
-
 
     private fun setupRecyclerView() {
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
@@ -125,7 +133,6 @@ class VagaActivity : AppCompatActivity() {
             }
         }
     }
-
 
     private fun showDeleteDialog(vaga: Vaga) {
         AlertDialog.Builder(this)

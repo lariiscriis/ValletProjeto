@@ -23,31 +23,6 @@
             android:textSize="24sp"
             android:textStyle="bold" />
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/edtNumeroVaga"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Número da Vaga"
-                android:inputType="text"/>
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/edtLocalizacao"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Localização (Ex: Piso 1, Setor A)"
-                android:inputType="text"/>
-        </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
@@ -62,31 +37,58 @@
                 android:inputType="numberDecimal"/>
         </com.google.android.material.textfield.TextInputLayout>
 
-        <TextView
+
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Tipo de Vaga:"
-            android:layout_marginBottom="8dp"/>
+            android:layout_marginBottom="8dp">
 
-        <RadioGroup
-            android:id="@+id/radioGroup"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtPiso"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Piso (ex: 1, Térreo)"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginBottom="24dp">
+            android:layout_marginBottom="8dp">
 
-            <RadioButton
-                android:id="@+id/radioCovered"
-                android:layout_width="wrap_content"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtQtdTotalVagas"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Preferencial" />
+                android:hint="Quantidade total de vagas no piso"
+                android:inputType="number" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-            <RadioButton
-                android:id="@+id/radioUncovered"
-                android:layout_width="wrap_content"
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtQtdIdosoPcd"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Comum" />
-        </RadioGroup>
+                android:hint="Quantidade de vagas Idoso/PCD"
+                android:inputType="number" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtQtdMoto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Quantidade de vagas Moto"
+                android:inputType="number" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCadastrarVaga"

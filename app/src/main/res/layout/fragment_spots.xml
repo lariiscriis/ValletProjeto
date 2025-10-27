@@ -38,11 +38,12 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:hint="Pesquisar estacionamento"
                     android:background="@null"
+                    android:hint="Pesquisar estacionamento"
                     android:imeOptions="actionSearch"
+                    android:minHeight="48dp"
                     android:singleLine="true"
-                    android:textSize="14sp"/>
+                    android:textSize="14sp" />
 
                 <ImageView
                     android:layout_width="24dp"
@@ -65,165 +66,18 @@
             android:textSize="16sp"
             android:textStyle="bold" />
 
-        <LinearLayout
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_favorites"
             android:layout_width="match_parent"
             android:layout_height="218dp"
             android:layout_marginBottom="16dp"
             android:orientation="horizontal"
-            android:padding="1dp">
-
-            <!-- Favorito 1 Corrigido -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="8dp"
-                android:layout_weight="1"
-                app:cardBackgroundColor="@android:color/white"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp">
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/edittext_backgroud"
-                    android:minHeight="160dp"
-                    android:padding="12dp">
-
-                    <TextView
-                        android:id="@+id/tv_fav1_status"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/button_background"
-                        android:paddingHorizontal="6dp"
-                        android:paddingVertical="2dp"
-                        android:text="ABERTO"
-                        android:textColor="@color/branco"
-                        android:textSize="10sp"
-                        android:textStyle="bold" />
-
-                    <ImageView
-                        android:id="@+id/iv_fav1_image"
-                        android:layout_width="match_parent"
-                        android:layout_height="80dp"
-                        android:layout_below="@id/tv_fav1_status"
-                        android:layout_marginTop="8dp"
-                        android:scaleType="centerCrop"
-                        android:src="@drawable/estacionamento_foto" />
-
-                    <TextView
-                        android:id="@+id/tv_fav1_name"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@id/iv_fav1_image"
-                        android:layout_marginTop="8dp"
-                        android:text="Waterloo"
-                        android:textColor="#333333"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tv_fav1_spaces"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@id/tv_fav1_name"
-                        android:text="27 vagas livres"
-                        android:textColor="#666666"
-                        android:textSize="12sp" />
-
-                    <Button
-                        android:id="@+id/btn_fav1_view"
-                        android:layout_width="98dp"
-                        android:layout_height="36dp"
-                        android:layout_below="@id/tv_fav1_spaces"
-                        android:layout_centerHorizontal="true"
-                        android:layout_marginTop="2dp"
-                        android:layout_marginBottom="4dp"
-                        android:backgroundTint="#046C4E"
-                        android:fontFamily="@font/poppins_medium"
-                        android:paddingHorizontal="12dp"
-                        android:text="Ver Vagas"
-                        android:textColor="@android:color/white"
-                        android:textSize="10sp"
-                        tools:ignore="TouchTargetSizeCheck" />
-                </RelativeLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                app:cardBackgroundColor="@android:color/white"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp">
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/edittext_backgroud"
-                    android:minHeight="160dp"
-                    android:padding="12dp">
-
-                    <TextView
-                        android:id="@+id/tv_fav2_status"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/button_background_closed"
-                        android:paddingHorizontal="6dp"
-                        android:paddingVertical="2dp"
-                        android:text="FECHADO"
-                        android:textColor="@color/branco"
-                        android:textSize="10sp"
-                        android:textStyle="bold" />
-
-                    <ImageView
-                        android:id="@+id/iv_fav2_image"
-                        android:layout_width="match_parent"
-                        android:layout_height="80dp"
-                        android:layout_below="@id/tv_fav2_status"
-                        android:layout_marginTop="8dp"
-                        android:scaleType="centerCrop"
-                        android:src="@drawable/estacionamento_foto" />
-
-                    <TextView
-                        android:id="@+id/tv_fav2_name"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@id/iv_fav2_image"
-                        android:layout_marginTop="8dp"
-                        android:text="Park Plaza"
-                        android:textColor="#333333"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tv_fav2_distance"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@id/tv_fav2_name"
-                        android:text="1.468m"
-                        android:textColor="#666666"
-                        android:textSize="12sp" />
-
-                    <Button
-                        android:id="@+id/btn_fav2_view"
-                        android:layout_width="101dp"
-                        android:layout_height="36dp"
-                        android:layout_below="@id/tv_fav2_distance"
-                        android:layout_centerHorizontal="true"
-                        android:layout_marginTop="2dp"
-                        android:layout_marginBottom="4dp"
-                        android:backgroundTint="#046C4E"
-                        android:fontFamily="@font/poppins_medium"
-                        android:paddingHorizontal="12dp"
-                        android:text="Ver Vagas"
-                        android:textColor="@android:color/white"
-                        android:textSize="10sp" />
-                </RelativeLayout>
-            </androidx.cardview.widget.CardView>
-        </LinearLayout>
+            android:padding="1dp"
+            tools:listitem="@layout/item_favorite_parking" />
 
 
-<!--        <Button-->
+
+        <!--        <Button-->
 <!--            android:id="@+id/btn_view_all"-->
 <!--            android:layout_width="wrap_content"-->
 <!--            android:layout_height="wrap_content"-->
@@ -248,6 +102,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            tools:listitem="@layout/item_parking"/>
+            tools:listitem="@layout/item_parking" />
     </LinearLayout>
 </ScrollView>

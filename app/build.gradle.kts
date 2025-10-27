@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.google.gms.google.services)
     id ("kotlin-kapt")
+
 }
 
 android {
@@ -54,6 +55,9 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.firebase.storage.ktx)
     implementation(libs.androidx.media3.common.ktx)
+    implementation ("com.google.android.gms:play-services-location:21.3.0")
+    implementation ("com.google.firebase:firebase-firestore:25.1.1")
+    implementation ("com.google.firebase:firebase-auth:23.1.0")
 
     // Retrofit para requisições HTTP
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
@@ -65,17 +69,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     // Coroutines para programação assíncrona
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
-}
 
-kapt {
-    correctErrorTypes = true
-    useBuildCache = true
-    javacOptions {
-        option("-Xlanguage-version", "2.0")
-    }
-
-
-dependencies {
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -92,5 +86,13 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
+}
+kapt {
+    correctErrorTypes = true
+    useBuildCache = true
+    javacOptions {
+        option("-Xlanguage-version", "2.0")
     }
+
+
 }

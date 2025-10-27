@@ -55,34 +55,57 @@
                 android:inputType="numberDecimal"/>
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Tipo de Vaga -->
+        <!-- Piso -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Piso">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtPiso"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Tipo de veículo -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Tipo de vaga"
+            android:text="Tipo de veículo"
             android:layout_marginBottom="4dp"/>
 
         <RadioGroup
-            android:id="@+id/radioGroup"
+            android:id="@+id/radioTipoVeiculo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginBottom="16dp">
 
             <RadioButton
-                android:id="@+id/radioComum"
+                android:id="@+id/radioCarro"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Comum" />
+                android:text="Carro"/>
 
             <RadioButton
-                android:id="@+id/radioPreferencial"
+                android:id="@+id/radioMoto"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Preferencial" />
+                android:text="Moto"/>
         </RadioGroup>
+
+        <!-- Preferencial -->
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switchPreferencial"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Vaga preferencial"
+            android:layout_marginBottom="16dp"/>
 
         <!-- Disponibilidade -->
         <com.google.android.material.switchmaterial.SwitchMaterial

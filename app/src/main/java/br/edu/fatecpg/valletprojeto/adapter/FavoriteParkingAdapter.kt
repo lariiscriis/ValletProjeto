@@ -1,12 +1,11 @@
 package br.edu.fatecpg.valletprojeto.adapter
 
-import android.graphics.Color
-import android.widget.Toast
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import br.edu.fatecpg.valletprojeto.R
-import br.edu.fatecpg.valletprojeto.databinding.ItemParkingBinding
+import br.edu.fatecpg.valletprojeto.databinding.ItemFavoriteParkingBinding
 import br.edu.fatecpg.valletprojeto.model.Estacionamento
 import br.edu.fatecpg.valletprojeto.viewmodel.VagaViewModel
 import com.bumptech.glide.Glide
@@ -14,21 +13,15 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
-class SimpleParkingAdapter(
+class FavoriteParkingAdapter(
+    private val favoritos: List<Estacionamento>,
     private val onClick: (Estacionamento) -> Unit
-) : RecyclerView.Adapter<SimpleParkingAdapter.ViewHolder>() {
+) : RecyclerView.Adapter<FavoriteParkingAdapter.ViewHolder>() {
 
-    private val lista = mutableListOf<Estacionamento>()
-
-    fun submitList(novaLista: List<Estacionamento>) {
-        lista.clear()
-        lista.addAll(novaLista)
-        notifyDataSetChanged()
-    }
-
-    inner class ViewHolder(private val binding: ItemParkingBinding) :
+    inner class ViewHolder(val binding: ItemFavoriteParkingBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
         private val favoritoRef = FirebaseFirestore.getInstance().collection("favoritos")
@@ -43,9 +36,7 @@ class SimpleParkingAdapter(
             val db = FirebaseFirestore.getInstance()
             var vagasListener: ListenerRegistration? = null
 
-            // 🔹 Função que inicia o listener em tempo real
             fun iniciarListenerVagas() {
-                // Remove listener anterior, se houver (evita duplicação)
                 vagasListener?.remove()
 
                 vagasListener = db.collection("vaga")
@@ -136,6 +127,7 @@ class SimpleParkingAdapter(
         }
 
 
+
         private fun atualizarIconeFavorito(estacionamentoId: String) {
             if (usuarioId == null) return
             favoritoRef.whereEqualTo("usuarioId", usuarioId)
@@ -171,10 +163,17 @@ class SimpleParkingAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding = ItemParkingBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val binding = ItemFavoriteParkingBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
         return ViewHolder(binding)
     }
 
-    override fun getItemCount() = lista.size
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(lista[position])
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.bind(favoritos[position])
+    }
+
+    override fun getItemCount() = favoritos.size
 }

@@ -1,10 +1,10 @@
 package br.edu.fatecpg.valletprojeto.viewmodel
 
-import br.edu.fatecpg.valletprojeto.model.Estacionamento
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.edu.fatecpg.valletprojeto.dao.EstacionamentoDao
 import br.edu.fatecpg.valletprojeto.model.Endereco
+import br.edu.fatecpg.valletprojeto.model.Estacionamento
 import br.edu.fatecpg.valletprojeto.repository.CepRepository
 import kotlinx.coroutines.launch
 

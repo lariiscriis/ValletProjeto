@@ -64,12 +64,15 @@ class LoginActivity : AppCompatActivity() {
         binding.botaoCadastroAdmin.setOnClickListener { navigateToCadastro("admin") }
 
         binding.button3.setOnClickListener {
-            binding.progressOverlay.animate().alpha(1f).setDuration(150).withStartAction { binding.progressOverlay.visibility = View.VISIBLE }
+            binding.progressOverlay.visibility = View.VISIBLE
+
             val email = binding.editTextText.text.toString().trim()
             val senha = binding.editTextSenha.text.toString().trim()
             if (validateCredentials(email, senha)) {
                 loginUser(email, senha, false)
             }
+            binding.progressOverlay.visibility = View.GONE
+
         }
 
         binding.entrarAdmin.setOnClickListener {
@@ -78,6 +81,8 @@ class LoginActivity : AppCompatActivity() {
             if (validateCredentials(email, senha)) {
                 loginUser(email, senha, true)
             }
+            binding.progressOverlay.visibility = View.GONE
+
         }
     }
 
@@ -106,9 +111,10 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun loginUser(email: String, senha: String, isAdminAttempt: Boolean) {
+        binding.progressOverlay.visibility = View.GONE
+
         auth.signInWithEmailAndPassword(email, senha)
             .addOnSuccessListener {
-                binding.progressOverlay.visibility = View.GONE
                 val user = auth.currentUser
                 if (user != null) {
                     checkUserType(user.uid, email, isAdminAttempt)
@@ -116,10 +122,7 @@ class LoginActivity : AppCompatActivity() {
                     Toast.makeText(this, "Erro ao obter usuário", Toast.LENGTH_SHORT).show()
                 }
             }
-            .addOnFailureListener { e ->
-                binding.progressOverlay.visibility = View.GONE
-                handleLoginError(e)
-            }
+            .addOnFailureListener { e -> handleLoginError(e) }
     }
 
     private fun checkUserType(uid: String, email: String, isAdminAttempt: Boolean) {
@@ -157,9 +160,6 @@ class LoginActivity : AppCompatActivity() {
                 }
             }
             .addOnFailureListener {
-                binding.progressOverlay.visibility = View.GONE
-
-                Toast.makeText(this, "Erro ao buscar tipo de usuário: ${it.message}", Toast.LENGTH_SHORT).show()
                 Toast.makeText(
                     this,
                     "Erro ao buscar tipo de usuário: ${it.message}",
@@ -173,19 +173,18 @@ class LoginActivity : AppCompatActivity() {
             .whereEqualTo("adminUid", uid)
             .get()
             .addOnSuccessListener { result ->
-                binding.progressOverlay.visibility = View.GONE
-
                 if (result.isEmpty) {
+                    // Admin sem estacionamento → ir para cadastro
                     val intent = Intent(this, CadastroEstacionamento::class.java)
                     intent.putExtra("email_usuario", email)
                     startActivity(intent)
                     finish()
                 } else {
+                    // Admin já tem estacionamento → ir para dashboard
                     redirectToHome("admin", email)
                 }
             }
             .addOnFailureListener { e ->
-                binding.progressOverlay.visibility = View.GONE
                 Toast.makeText(
                     this,
                     "Erro ao verificar estacionamento: ${e.message}",
@@ -227,16 +226,13 @@ class LoginActivity : AppCompatActivity() {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
+
     override fun onStart() {
         super.onStart()
         val usuarioAtual = FirebaseAuth.getInstance().currentUser
         if (usuarioAtual != null) {
             binding.progressOverlay.visibility = View.VISIBLE
-
-            // Usuário já está logado, vá para a tela principal
-            val intent = Intent(this, DashboardBase::class.java)
-            startActivity(intent)
-            finish() // ESSENCIAL: Fecha a tela de login para não voltar para ela
+            checkUserType(usuarioAtual.uid, usuarioAtual.email ?: "", false)
         }
     }
 }

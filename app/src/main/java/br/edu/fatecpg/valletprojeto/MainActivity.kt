@@ -114,7 +114,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun redirectToHome(tipoUser: String, email: String) {
-        val intent = Intent(this, Dashboard_base::class.java)
+        val intent = Intent(this, DashboardBase::class.java)
         intent.putExtra("email_usuario", email)
         intent.putExtra("tipo_user", tipoUser)
         startActivity(intent)

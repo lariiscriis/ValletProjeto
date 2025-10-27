@@ -35,13 +35,17 @@ class EstacionamentoDao {
                 "numeroPavimentos" to est.numeroPavimentos,
                 "valorHora" to est.valorHora,
                 "valorDiario" to est.valorDiario,
-                "horarioFuncionamento" to est.horarioFuncionamento,
+                "horarioAbertura" to est.horarioAbertura,
+                "horarioFechamento" to est.horarioFechamento,
                 "tempoMaxReservaHoras" to est.tempoMaxReservaHoras,
                 "toleranciaReservaMinutos" to est.toleranciaReservaMinutos,
                 "fotoEstacionamentoUri" to est.fotoEstacionamentoUri,
                 "adminUid" to FirebaseAuth.getInstance().currentUser?.uid,
                 "adminEmail" to emailAdmin,
-                "dataCadastro" to FieldValue.serverTimestamp()
+                "dataCadastro" to FieldValue.serverTimestamp(),
+                "latitude" to (est.latitude ?: 0.0),
+                "longitude" to (est.longitude ?: 0.0)
+
             )
 
             docRef.set(data)
