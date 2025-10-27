@@ -2,7 +2,6 @@ package br.edu.fatecpg.valletprojeto
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -26,7 +25,7 @@ class IntroCadastroCarro : AppCompatActivity() {
         setContentView(binding.root)
 
         val emailUsuario = intent.getStringExtra("email_usuario") ?: "Usuário"
-        binding.txtNome.text = "$emailUsuario"
+        binding.txtNome.text = emailUsuario
 
         // Inicializa o Firebase Auth
         auth = Firebase.auth

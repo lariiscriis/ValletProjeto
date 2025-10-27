@@ -2,7 +2,6 @@ package br.edu.fatecpg.valletprojeto.service
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import br.edu.fatecpg.valletprojeto.service.ViaCepService
 
 object RetrofitClient {
         val retrofit: Retrofit = Retrofit.Builder()

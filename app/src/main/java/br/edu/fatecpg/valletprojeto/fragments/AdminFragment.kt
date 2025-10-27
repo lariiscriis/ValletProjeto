@@ -9,8 +9,6 @@ import androidx.fragment.app.Fragment
 import br.edu.fatecpg.valletprojeto.databinding.FragmentAdminDashboardBinding
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.QuerySnapshot
-import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.HashMap
 

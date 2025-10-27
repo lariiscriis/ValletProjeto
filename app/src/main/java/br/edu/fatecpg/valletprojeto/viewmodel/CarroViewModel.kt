@@ -3,8 +3,6 @@ package br.edu.fatecpg.valletprojeto.viewmodel
 import androidx.lifecycle.ViewModel
 import br.edu.fatecpg.valletprojeto.dao.CarroDao
 import br.edu.fatecpg.valletprojeto.model.Carro
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 
 class CarroViewModel : ViewModel() {
 

@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import br.edu.fatecpg.valletprojeto.R
 import br.edu.fatecpg.valletprojeto.adapter.SimpleParkingAdapter
-import br.edu.fatecpg.valletprojeto.databinding.ActivityDashboardBaseBinding
 import br.edu.fatecpg.valletprojeto.databinding.FragmentSpotsBinding
 
 class SpotsFragment : Fragment() {
@@ -39,8 +38,6 @@ class SpotsFragment : Fragment() {
             )
         }
     }
-
-
 
     override fun onDestroyView() {
         super.onDestroyView()

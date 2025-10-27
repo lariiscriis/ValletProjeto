@@ -1,6 +1,6 @@
 package br.edu.fatecpg.valletprojeto.dao
 
-import Estacionamento
+import br.edu.fatecpg.valletprojeto.model.Estacionamento
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore

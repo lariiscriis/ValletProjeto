@@ -48,7 +48,7 @@
             android:name=".EditarCarroActivity"
             android:exported="false" />
         <activity
-            android:name=".Dashboard_base"
+            android:name=".DashboardBase"
             android:exported="false" />
         <activity
             android:name=".CadastroEstacionamento"
@@ -58,9 +58,6 @@
             android:exported="false" />
         <activity
             android:name=".IntroCadastroCarro"
-            android:exported="false" />
-        <activity
-            android:name=".CadastroCarro"
             android:exported="false" />
         <activity
             android:name=".MainActivity"

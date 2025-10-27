@@ -1,73 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
+    android:background="#F5F5F5"
+    tools:context=".CarroActivity"> <!-- Altere para o nome da sua Activity/Fragment -->
 
-    <!-- RecyclerView -->
-
-    <!-- Barra inferior com botões -->
-
-    <LinearLayout
+    <!-- Pode adicionar um título aqui se quiser -->
+    <TextView
+        android:id="@+id/tv_title"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="bottom"
-        android:background="#FFFFFF"
-        android:elevation="8dp"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_height="wrap_content"
+        android:text="Meus Veículos"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/verdeescuro"
+        android:fontFamily="@font/poppins_medium"
+        android:padding="16dp"/>
 
-        <Button
-            android:id="@+id/btnAddVeiculo"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginLeft="30dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginRight="30dp"
-            android:layout_marginBottom="10dp"
-            android:backgroundTint="@color/verdeescuro"
-            android:fontFamily="@font/poppins_medium"
-            android:text="+ ADICIONAR VEICULO"
-            android:textSize="16sp" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerViewCarros"
-            android:layout_width="match_parent"
-            android:layout_height="563dp"
-            android:clipToPadding="false"
-            android:paddingBottom="80dp" />
-
-    </LinearLayout>
-
-    <LinearLayout
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_car_list"
         android:layout_width="match_parent"
-        android:layout_height="91dp"
-        android:layout_gravity="bottom"
-        android:background="#FFFFFF"
-        android:elevation="8dp"
-        android:orientation="horizontal"
-        android:padding="16dp">
+        android:layout_height="195dp"
+        android:layout_below="@id/tv_title"
+        android:clipToPadding="false"
+        android:paddingBottom="80dp"
+        tools:listitem="@layout/item_card_carro" /> <!-- Referencia o item que criamos -->
 
-        <Button
-            android:id="@+id/btn_ver_vagas2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="20dp"
-            android:layout_weight="1"
-            android:backgroundTint="@color/verdeescuro"
-            android:text="Ver Vagas" />
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_add_car"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="16dp"
+        android:src="@android:drawable/ic_input_add"
+        app:backgroundTint="@color/verdeescuro"
+        app:tint="@android:color/white"
+        android:contentDescription="Adicionar novo veículo"/>
 
-        <Button
-            android:id="@+id/btn_dashboard"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:backgroundTint="@color/verdeescuro"
-            android:text="Dashboard" />
-
-    </LinearLayout>
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</RelativeLayout>

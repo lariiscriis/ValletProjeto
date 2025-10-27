@@ -23,6 +23,7 @@ object CarroDao {
             "modelo" to carro.modelo,
             "ano" to carro.ano,
             "km" to carro.km,
+            "tipo" to carro.tipo,
             "usuarioEmail" to emailUsuario,
             "data_cadastro" to FieldValue.serverTimestamp()
         )

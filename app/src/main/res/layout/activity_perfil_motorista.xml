@@ -111,13 +111,13 @@
                         android:id="@+id/txtTelefone"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="(11) 99999-0000"
-                        android:textSize="16sp"
-                        android:textColor="#757575"
+                        android:layout_marginBottom="8dp"
                         android:drawableStart="@drawable/telefone"
                         android:drawablePadding="8dp"
-                        android:layout_marginBottom="8dp"
-                        android:drawableTint="@color/verdeclaro"/>
+                        android:drawableTint="@color/verdeclaro"
+                        android:text="(11) 99999-0000"
+                        android:textColor="#757575"
+                        android:textSize="16sp" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/txtTipoConta"
@@ -226,9 +226,9 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="12"
-                                android:textSize="24sp"
                                 android:textColor="@color/verdeclaro"
-                                android:textStyle="bold"/>
+                                android:textSize="20sp"
+                                android:textStyle="bold" />
 
                             <TextView
                                 android:layout_width="wrap_content"
@@ -260,9 +260,9 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="34h"
-                                android:textSize="24sp"
                                 android:textColor="@color/verdeclaro"
-                                android:textStyle="bold"/>
+                                android:textSize="20sp"
+                                android:textStyle="bold" />
 
                             <TextView
                                 android:layout_width="wrap_content"

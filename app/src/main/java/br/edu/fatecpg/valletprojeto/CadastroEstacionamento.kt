@@ -1,6 +1,5 @@
 package br.edu.fatecpg.valletprojeto
 
-import Estacionamento
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -8,6 +7,7 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import br.edu.fatecpg.valletprojeto.databinding.ActivityCadastroEstacionamentoBinding
+import br.edu.fatecpg.valletprojeto.model.Estacionamento
 import br.edu.fatecpg.valletprojeto.viewmodel.EstacionamentoViewModel
 
 
@@ -36,7 +36,8 @@ class CadastroEstacionamento : AppCompatActivity() {
                         telefone = binding.edtTelefone.text.toString().trim(),
                         endereco = "${endereco.logradouro}, ${endereco.bairro}, ${endereco.localidade} - ${endereco.uf}",
                         cep = endereco.cep,
-                        quantidadeVagasTotal = binding.edtVagasTotal.text.toString().toIntOrNull() ?: 0,
+                        quantidadeVagasTotal = binding.edtVagasTotal.text.toString().toIntOrNull()
+                            ?: 0,
                         tiposVagasComum = true,
                         tiposVagasIdosoPcd = false,
                         quantidadeVagasComum = null,
@@ -55,7 +56,7 @@ class CadastroEstacionamento : AppCompatActivity() {
                     vm.cadastrar(est,
                         onSuccess = {
                             Toast.makeText(this, "Estacionamento cadastrado!", Toast.LENGTH_SHORT).show()
-                            val intent = Intent(this, Dashboard_base::class.java)
+                            val intent = Intent(this, DashboardBase::class.java)
                             startActivity(intent)
                             finish()
                         },

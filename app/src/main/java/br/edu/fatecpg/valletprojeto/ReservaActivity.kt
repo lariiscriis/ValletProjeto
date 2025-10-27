@@ -1,6 +1,6 @@
     package br.edu.fatecpg.valletprojeto
 
-    import Estacionamento
+    import br.edu.fatecpg.valletprojeto.model.Estacionamento
     import android.Manifest
     import android.content.pm.PackageManager
     import android.os.Build

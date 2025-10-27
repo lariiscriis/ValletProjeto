@@ -1,6 +1,6 @@
 package br.edu.fatecpg.valletprojeto.viewmodel
 
-import Estacionamento
+import br.edu.fatecpg.valletprojeto.model.Estacionamento
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.edu.fatecpg.valletprojeto.dao.EstacionamentoDao

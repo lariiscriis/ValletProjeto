@@ -4,11 +4,10 @@ import br.edu.fatecpg.valletprojeto.dao.VagaDao
 import androidx.lifecycle.ViewModel
 import br.edu.fatecpg.valletprojeto.model.Vaga
 import com.google.firebase.Firebase
-import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.firestore
 
 class VagaViewModel : ViewModel() {
-    private val VagaDao = VagaDao()
+    private val vagaDao = VagaDao()
     private val db = Firebase.firestore
     private val vagasCollection = db.collection("vaga")
 
@@ -20,7 +19,7 @@ class VagaViewModel : ViewModel() {
         onSuccess: () -> Unit,
         onFailure: (String) -> Unit
     ) {
-        VagaDao.cadastrarVaga(vaga, onSuccess, onFailure)
+        vagaDao.cadastrarVaga(vaga, onSuccess, onFailure)
     }
 
     fun fetchVagas() {
