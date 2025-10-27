@@ -134,7 +134,6 @@ class CarroActivity : AppCompatActivity() {
         Log.d("DialogTest", "Dialog mostrado")
     }
 
-
     inner class CarrosAdapter(private val carros: List<Carro>) :
         RecyclerView.Adapter<CarrosAdapter.CarroViewHolder>() {
 
@@ -152,11 +151,10 @@ class CarroActivity : AppCompatActivity() {
         override fun onBindViewHolder(holder: CarroViewHolder, position: Int) {
             val carro = carros[position]
 
-            // Define o ícone correto com base no tipo do veículo
             if (carro.tipo == "moto") {
-                holder.binding.ivCarIcon.setImageResource(R.drawable.ic_moto) // Certifique-se de ter 'ic_moto.xml' em res/drawable
+                holder.binding.ivCarIcon.setImageResource(R.drawable.ic_moto)
             } else {
-                holder.binding.ivCarIcon.setImageResource(R.drawable.ic_vehicle) // Certifique-se de ter 'ic_car.xml' em res/drawable
+                holder.binding.ivCarIcon.setImageResource(R.drawable.ic_vehicle)
             }
 
             holder.binding.tvCarModel.text = "${carro.marca} ${carro.modelo}"
@@ -169,8 +167,6 @@ class CarroActivity : AppCompatActivity() {
                         "${carro.placa} definido como principal!",
                         Toast.LENGTH_SHORT
                     ).show()
-                    // TODO: Chamar o ViewModel para salvar este estado no Firebase
-                    // viewModel.definirCarroPrincipal(carro.id)
                 }
             }
 
