@@ -1,3 +1,5 @@
+package br.edu.fatecpg.valletprojeto.dao
+
 import br.edu.fatecpg.valletprojeto.model.Usuario
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
@@ -19,11 +21,11 @@ class UsuarioDao {
                     val data = hashMapOf(
                         "email" to usuario.email,
                         "nome" to usuario.nome,
-                        "tipo_user" to usuario.tipo_user,
+                        "tipo_user" to usuario.tipoUser,
                         "data_criacao" to FieldValue.serverTimestamp()
                     )
                     usuario.cnh?.let { data["cnh"] = it }
-                    usuario.nome_empresa?.let { data["nome_empresa"] = it }
+                    usuario.nomeEmpresa?.let { data["nome_empresa"] = it }
                     usuario.cargo?.let { data["cargo"] = it }
 
                     // Salva o documento usando o UID como ID

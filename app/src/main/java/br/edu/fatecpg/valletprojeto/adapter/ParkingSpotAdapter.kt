@@ -25,7 +25,7 @@ class ParkingSpotAdapter(
 
             // Muda a cor com base no status
             tvSpotStatus.setTextColor(
-                if (spot.disponivel != true) Color.parseColor("#F44336")
+                if (!spot.disponivel) Color.parseColor("#F44336")
                 else Color.parseColor("#4CAF50")
             )
 

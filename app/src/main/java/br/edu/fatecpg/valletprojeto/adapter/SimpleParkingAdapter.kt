@@ -1,6 +1,5 @@
 package br.edu.fatecpg.valletprojeto.adapter
 
-import android.graphics.Color
 import android.widget.Toast
 import android.view.LayoutInflater
 import android.view.ViewGroup

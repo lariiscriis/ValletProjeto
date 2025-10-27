@@ -1,7 +1,7 @@
 package br.edu.fatecpg.valletprojeto.viewmodel
 
-import UsuarioDao
 import androidx.lifecycle.ViewModel
+import br.edu.fatecpg.valletprojeto.dao.UsuarioDao
 import br.edu.fatecpg.valletprojeto.model.Usuario
 
 class CadastroViewModel : ViewModel() {

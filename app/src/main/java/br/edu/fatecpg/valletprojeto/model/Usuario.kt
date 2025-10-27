@@ -4,8 +4,8 @@ data class Usuario(
     val email: String = "",
     val nome: String = "",
     val senha: String = "",
-    val tipo_user: String = "",
+    val tipoUser: String = "",
     val cnh: String? = null,
-    val nome_empresa: String? = null,
+    val nomeEmpresa: String? = null,
     val cargo: String? = null
 )

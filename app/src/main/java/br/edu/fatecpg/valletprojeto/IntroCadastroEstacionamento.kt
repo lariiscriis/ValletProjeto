@@ -6,7 +6,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import br.edu.fatecpg.valletprojeto.databinding.ActivityIntroCadastroCarroBinding
 import br.edu.fatecpg.valletprojeto.databinding.ActivityIntroCadastroEstacionamentoBinding
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
@@ -25,7 +24,7 @@ class IntroCadastroEstacionamento : AppCompatActivity() {
         setContentView(binding.root)
 
         val emailUsuario = intent.getStringExtra("email_usuario") ?: "Usuário"
-        binding.txtNome.text = "$emailUsuario"
+        binding.txtNome.text = emailUsuario
 
         // Inicializa o Firebase Auth
         auth = Firebase.auth

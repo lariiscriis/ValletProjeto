@@ -54,7 +54,7 @@ class CadastroActivity : AppCompatActivity() {
                 cnh = binding.edtCnh.text.toString().trim(),
                 nome = binding.edtNome.text.toString().trim(),
                 senha = binding.edtSenha.text.toString().trim(),
-                tipo_user = "motorista"
+                tipoUser = "motorista"
             )
             cadastrar(usuario)
         }
@@ -64,8 +64,8 @@ class CadastroActivity : AppCompatActivity() {
                 email = binding.edtEmailAdmin.text.toString().trim(),
                 nome = binding.edtNomeEmpresa.text.toString().trim(),
                 senha = binding.edtSenhaAdmin.text.toString().trim(),
-                tipo_user = "admin",
-                nome_empresa = binding.edtNomeEmpresa.text.toString().trim(),
+                tipoUser = "admin",
+                nomeEmpresa = binding.edtNomeEmpresa.text.toString().trim(),
                 cargo = binding.edtCargoAdmin.text.toString().trim()
             )
             cadastrar(usuario)
@@ -86,7 +86,7 @@ class CadastroActivity : AppCompatActivity() {
                 binding.progressOverlay.visibility = View.GONE
                 Toast.makeText(this, "Cadastro realizado com sucesso!", Toast.LENGTH_SHORT).show()
                 val intent = Intent(this, LoginActivity::class.java)
-                intent.putExtra("tipoCadastro", usuario.tipo_user)
+                intent.putExtra("tipoCadastro", usuario.tipoUser)
                 startActivity(intent)
                 finish()
             },

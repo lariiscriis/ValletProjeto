@@ -1,6 +1,5 @@
 package br.edu.fatecpg.valletprojeto
 
-import android.app.Activity
 import android.os.Bundle
 import android.widget.RadioButton
 import android.widget.Toast
@@ -94,7 +93,7 @@ class EditarVagaActivity : AppCompatActivity() {
                         .add(vaga)
                         .addOnSuccessListener {
                             Toast.makeText(this, "Vaga criada com sucesso!", Toast.LENGTH_SHORT).show()
-                            setResult(Activity.RESULT_OK)
+                            setResult(RESULT_OK)
                             finish()
                         }
                         .addOnFailureListener {
@@ -106,7 +105,7 @@ class EditarVagaActivity : AppCompatActivity() {
                         .update(vaga as Map<String, Any>)
                         .addOnSuccessListener {
                             Toast.makeText(this, "Vaga atualizada com sucesso!", Toast.LENGTH_SHORT).show()
-                            setResult(Activity.RESULT_OK)
+                            setResult(RESULT_OK)
                             finish()
                         }
                         .addOnFailureListener {

@@ -1,6 +1,5 @@
 package br.edu.fatecpg.valletprojeto.fragments
 
-import HistoricoReservasAdapter
 import br.edu.fatecpg.valletprojeto.model.ReservaHistorico
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -14,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import br.edu.fatecpg.valletprojeto.ReservaActivity
 import br.edu.fatecpg.valletprojeto.VagaActivity
+import br.edu.fatecpg.valletprojeto.adapter.HistoricoReservasAdapter
 import br.edu.fatecpg.valletprojeto.databinding.FragmentMotoristaDashboardBinding
 import br.edu.fatecpg.valletprojeto.model.Vaga
 import com.google.firebase.auth.FirebaseAuth

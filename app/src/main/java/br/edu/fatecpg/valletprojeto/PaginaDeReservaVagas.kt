@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.GridLayoutManager
 import br.edu.fatecpg.valletprojeto.adapter.ParkingSpotAdapter
 import br.edu.fatecpg.valletprojeto.dao.ParkingSpotDao
 import br.edu.fatecpg.valletprojeto.databinding.ActivityPaginaDeReservaVagasBinding
-import br.edu.fatecpg.valletprojeto.model.Vaga
 
 class PaginaDeReservaVagas : AppCompatActivity() {
 

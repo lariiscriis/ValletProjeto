@@ -1,4 +1,4 @@
-package br.edu.fatecpg.valletprojeto
+package br.edu.fatecpg.valletprojeto.fragments
 
 import android.Manifest
 import android.content.Intent
@@ -15,12 +15,14 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import br.edu.fatecpg.valletprojeto.VagaActivity
 import br.edu.fatecpg.valletprojeto.adapter.FavoriteParkingAdapter
 import br.edu.fatecpg.valletprojeto.adapter.SimpleParkingAdapter
 import br.edu.fatecpg.valletprojeto.databinding.FragmentSpotsBinding
 import br.edu.fatecpg.valletprojeto.model.Estacionamento
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlin.math.roundToInt
@@ -116,7 +118,7 @@ class SpotsFragment : Fragment() {
         }
 
         fusedLocationClient.getCurrentLocation(
-            com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY,
+            Priority.PRIORITY_HIGH_ACCURACY,
             null
         ).addOnSuccessListener { location ->
             if (location != null) {

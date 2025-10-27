@@ -15,6 +15,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import androidx.lifecycle.lifecycleScope
 import br.edu.fatecpg.valletprojeto.dao.CarroDao.auth
+import br.edu.fatecpg.valletprojeto.fragments.SpotsFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -38,12 +39,10 @@ class DashboardBase : AppCompatActivity() {
         val ivProfileImage = findViewById<ImageView>(R.id.iv_profile_image)
 
         val clickListener = {
-            if (isAdmin == true) {
+            if (isAdmin) {
                 startActivity(Intent(this, PerfilAdminActivity::class.java))
-            } else if (isAdmin == false) {
-                startActivity(Intent(this, PerfilMotoristaActivity::class.java))
             } else {
-                Toast.makeText(this, "Tipo de usuário indefinido.", Toast.LENGTH_SHORT).show()
+                startActivity(Intent(this, PerfilMotoristaActivity::class.java))
             }
         }
 
@@ -135,7 +134,6 @@ class DashboardBase : AppCompatActivity() {
                     when (isAdmin) {
                         true -> replaceFragment(AdminFragment())
                         false -> replaceFragment(MotoristaFragment())
-                        else -> false
                     }
                     true
                 }
@@ -165,9 +163,6 @@ class DashboardBase : AppCompatActivity() {
             false -> {
                 replaceFragment(MotoristaFragment())
                 binding.bottomNavigation.selectedItemId = R.id.nav_dashboard
-            }
-            else -> {
-                Toast.makeText(this, "Tipo de usuário indefinido.", Toast.LENGTH_SHORT).show()
             }
         }
     }

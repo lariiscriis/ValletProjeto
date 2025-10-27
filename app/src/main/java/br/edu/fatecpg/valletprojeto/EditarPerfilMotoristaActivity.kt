@@ -2,8 +2,6 @@ package br.edu.fatecpg.valletprojeto
 
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
-import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog

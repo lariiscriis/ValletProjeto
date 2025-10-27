@@ -56,7 +56,7 @@ class PerfilAdminActivity : AppCompatActivity() {
                             .get()
                             .addOnSuccessListener { estSnapshot ->
                                 val estDoc = estSnapshot.documents.find {
-                                    it.getString("nome")?.trim()?.lowercase() == nomeEmpresa?.trim()?.lowercase()
+                                    it.getString("nome")?.trim()?.lowercase() == nomeEmpresa.trim().lowercase()
                                 }
 
                                 binding.progressBar.visibility = View.GONE  // ✅ Adicionado aqui

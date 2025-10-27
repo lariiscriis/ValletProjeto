@@ -2,7 +2,6 @@ package br.edu.fatecpg.valletprojeto.dao
 
 import br.edu.fatecpg.valletprojeto.model.Vaga
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ListenerRegistration
 
 class ParkingSpotDao {
 

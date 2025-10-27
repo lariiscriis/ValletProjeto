@@ -50,7 +50,7 @@ class ReservaActivity : AppCompatActivity() {
         setupGifAnimation()
 
 
-        viewModel = ViewModelProvider(this).get(ReservaViewModel::class.java)
+        viewModel = ViewModelProvider(this)[ReservaViewModel::class.java]
 
         val usuarioId = FirebaseAuth.getInstance().currentUser?.uid
         if (usuarioId != null) {

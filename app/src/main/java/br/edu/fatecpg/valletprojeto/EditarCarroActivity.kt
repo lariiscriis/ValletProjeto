@@ -1,6 +1,5 @@
 package br.edu.fatecpg.valletprojeto
 
-import android.app.Activity
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -55,7 +54,7 @@ class EditarCarroActivity : AppCompatActivity() {
             .delete()
             .addOnSuccessListener {
                 Toast.makeText(this, "Carro excluído com sucesso!", Toast.LENGTH_SHORT).show()
-                setResult(Activity.RESULT_OK)
+                setResult(RESULT_OK)
                 finish()
             }
             .addOnFailureListener { e ->
@@ -87,7 +86,7 @@ class EditarCarroActivity : AppCompatActivity() {
             .update(carroAtualizado)
             .addOnSuccessListener {
                 Toast.makeText(this, "Carro atualizado com sucesso!", Toast.LENGTH_SHORT).show()
-                setResult(Activity.RESULT_OK)
+                setResult(RESULT_OK)
                 finish()
             }
             .addOnFailureListener { e ->
