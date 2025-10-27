@@ -1,3 +1,5 @@
+package br.edu.fatecpg.valletprojeto.model
+
 data class Estacionamento(
     // Dados Básicos
     var id: String = "",

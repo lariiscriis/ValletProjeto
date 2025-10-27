@@ -97,7 +97,8 @@ class LoginActivity : AppCompatActivity() {
             return false
         }
         if (senha.length < 6) {
-            Toast.makeText(this, "A senha deve ter no mínimo 6 caracteres", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "A senha deve ter no mínimo 6 caracteres", Toast.LENGTH_SHORT)
+                .show()
             return false
         }
         return true
@@ -126,7 +127,8 @@ class LoginActivity : AppCompatActivity() {
 
                     if (isAdminAttempt && !isAdminFromDB) {
                         auth.signOut()
-                        Toast.makeText(this, "Acesso restrito a administradores", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this, "Acesso restrito a administradores", Toast.LENGTH_LONG)
+                            .show()
                     } else {
                         if (primeiroAcesso) {
                             db.collection("usuario").document(uid)
@@ -142,11 +144,19 @@ class LoginActivity : AppCompatActivity() {
                     }
                 } else {
                     auth.signOut()
-                    Toast.makeText(this, "Usuário não encontrado no banco de dados", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this,
+                        "Usuário não encontrado no banco de dados",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
             .addOnFailureListener {
-                Toast.makeText(this, "Erro ao buscar tipo de usuário: ${it.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "Erro ao buscar tipo de usuário: ${it.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
     }
 
@@ -167,7 +177,11 @@ class LoginActivity : AppCompatActivity() {
                 }
             }
             .addOnFailureListener { e ->
-                Toast.makeText(this, "Erro ao verificar estacionamento: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "Erro ao verificar estacionamento: ${e.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
     }
 
@@ -185,9 +199,9 @@ class LoginActivity : AppCompatActivity() {
 
     private fun redirectToHome(tipoUser: String, email: String) {
         val intent = if (tipoUser == "admin") {
-            Intent(this, Dashboard_base::class.java)
+            Intent(this, DashboardBase::class.java)
         } else {
-            Intent(this, Dashboard_base::class.java)
+            Intent(this, DashboardBase::class.java)
         }
         intent.putExtra("email_usuario", email)
         startActivity(intent)
@@ -206,9 +220,12 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        val user = auth.currentUser
-        user?.let {
-            checkUserType(it.uid, it.email ?: "", false)
+        val usuarioAtual = FirebaseAuth.getInstance().currentUser
+        if (usuarioAtual != null) {
+            // Usuário já está logado, vá para a tela principal
+            val intent = Intent(this, DashboardBase::class.java)
+            startActivity(intent)
+            finish() // ESSENCIAL: Fecha a tela de login para não voltar para ela
         }
     }
 }

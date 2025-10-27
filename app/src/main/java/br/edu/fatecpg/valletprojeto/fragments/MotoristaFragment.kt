@@ -1,10 +1,10 @@
 package br.edu.fatecpg.valletprojeto.fragments
 
 import HistoricoReservasAdapter
-import ReservaHistorico
+import br.edu.fatecpg.valletprojeto.model.ReservaHistorico
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,7 +12,6 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
-import br.edu.fatecpg.valletprojeto.CarroActivity
 import br.edu.fatecpg.valletprojeto.ReservaActivity
 import br.edu.fatecpg.valletprojeto.VagaActivity
 import br.edu.fatecpg.valletprojeto.databinding.FragmentMotoristaDashboardBinding
@@ -23,7 +22,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class MotoristaFragment : Fragment() {
@@ -61,10 +61,9 @@ class MotoristaFragment : Fragment() {
         }
 
         // Clique para abrir a página de vagas
-        binding.tvNoReservation.setOnClickListener {
+        binding.txvNoReservation.setOnClickListener {
             abrirPaginaDeVagas()
         }
-
         buscarReservasComCoroutines()
     }
 
@@ -74,6 +73,7 @@ class MotoristaFragment : Fragment() {
         Toast.makeText(requireContext(), "Abrir página de vagas", Toast.LENGTH_SHORT).show()
     }
 
+    @SuppressLint("SetTextI18n")
     private fun buscarReservasComCoroutines() {
         val uidLogado = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
@@ -107,12 +107,12 @@ class MotoristaFragment : Fragment() {
                     if (status == "ativa") {
                         temReservaAtiva = true
                         binding.cardReservaAtual.visibility = View.VISIBLE
-                        binding.tvNoReservation.visibility = View.GONE
+                        binding.txvNoReservation.visibility = View.GONE
 
-                        binding.tvSpotLetter.text = vaga.numero
-                        binding.tvLocation.text = "Local: ${vaga.localizacao}"
-                        binding.tvTimeRange.text = formatarHorario(inicio, fim)
-                        binding.tvTimeRemaining.text = "Reserva ativa"
+                        binding.txvSpotLetter.text = vaga.numero
+                        binding.txvLocation.text = "Local: ${vaga.localizacao}"
+                        binding.txvTimeRange.text = formatarHorario(inicio, fim)
+                        binding.txvTimeRemaining.text = "Reserva ativa"
 
                         // Guardar os dados para abrir depois
                         vagaIdAtiva = vagaId
@@ -130,15 +130,15 @@ class MotoristaFragment : Fragment() {
 
                 if (!temReservaAtiva) {
                     binding.cardReservaAtual.visibility = View.GONE
-                    binding.tvNoReservation.visibility = View.VISIBLE
-                    // Limpa os dados da reserva ativa se não tiver
+                    binding.txvNoReservation.visibility = View.VISIBLE
+                    // Limpa os dados da reserva ativa caso não tenha
                     vagaIdAtiva = null
                     estacionamentoIdAtivo = null
                 }
 
-                binding.tvTotalReservations.text = totalReservas.toString()
+                binding.txvTotalReservations.text = totalReservas.toString()
                 val horasTotais = TimeUnit.MILLISECONDS.toHours(totalHoras)
-                binding.tvTotalHours.text = "${horasTotais}h"
+                binding.txvTotalHours.text = "${horasTotais}h"
 
                 adapter = HistoricoReservasAdapter(historico)
                 binding.rvReservationHistory.adapter = adapter

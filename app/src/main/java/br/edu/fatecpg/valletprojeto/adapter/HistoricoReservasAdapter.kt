@@ -2,7 +2,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import br.edu.fatecpg.valletprojeto.databinding.ItemReservaHistoricoRecenteBinding
-//import br.edu.fatecpg.valletprojeto.model.ReservaHistorico
+import br.edu.fatecpg.valletprojeto.model.ReservaHistorico
 
 class HistoricoReservasAdapter(
     private val listaReservas: List<ReservaHistorico>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Estado quando o botão está checado (usa seu drawable btn_star_on) -->
+    <item android:state_checked="true"
+        android:drawable="@drawable/btn_star_on" />
+
+    <!-- Estado padrão (usa seu drawable btn_star_off) -->
+    <item android:state_checked="false"
+        android:drawable="@drawable/btn_star_off" />
+
+</selector>

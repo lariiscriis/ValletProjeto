@@ -228,7 +228,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:layout_margin="8dp"
-                    app:srcCompat="@drawable/google2"
+                    app:srcCompat="@drawable/google"
                     tools:ignore="ContentDescription" />
 
                 <TextView
@@ -500,7 +500,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:layout_margin="8dp"
-                    app:srcCompat="@drawable/google2"
+                    app:srcCompat="@drawable/google"
                     tools:ignore="ContentDescription" />
 
                 <TextView

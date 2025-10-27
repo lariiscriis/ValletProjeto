@@ -46,18 +46,8 @@ class CarroActivity : AppCompatActivity() {
             insets
         }
 
-        binding.btnVerVagas2.setOnClickListener{
-            val intent = Intent(this, VagaActivity::class.java)
-            startActivity(intent)
-        }
-
-        binding.btnAddVeiculo.setOnClickListener {
+        binding.fabAddCar.setOnClickListener {
             showAddCarDialog()
-        }
-
-        binding.btnDashboard.setOnClickListener{
-            val intent = Intent(this, Dashboard_base::class.java)
-            startActivity(intent)
         }
 
         setupRecyclerView()
@@ -79,7 +69,7 @@ class CarroActivity : AppCompatActivity() {
 
     private fun setupRecyclerView() {
         carrosAdapter = CarrosAdapter(carrosCadastrados)
-        binding.recyclerViewCarros.apply {
+        binding.rvCarList.apply {
             layoutManager = LinearLayoutManager(this@CarroActivity)
             adapter = carrosAdapter
         }
@@ -90,39 +80,53 @@ class CarroActivity : AppCompatActivity() {
 
         val dialog = Dialog(this, R.style.DialogTheme).apply {
             setContentView(dialogBinding.root)
-
             window?.setLayout(
                 (resources.displayMetrics.widthPixels * 0.9).toInt(),
                 WindowManager.LayoutParams.WRAP_CONTENT
             )
-
             setCancelable(true)
         }
 
         dialogBinding.btnConfirmar.setOnClickListener {
+
             val placa = dialogBinding.editPlaca.text.toString().trim()
             val marca = dialogBinding.editMarca.text.toString().trim()
             val modelo = dialogBinding.editModelo.text.toString().trim()
+            val apelido = dialogBinding.editApelido.text.toString().trim()
             val ano = dialogBinding.editAno.text.toString().trim()
             val km = dialogBinding.editKM.text.toString().trim()
 
-            if (placa.isNotEmpty() && marca.isNotEmpty() && modelo.isNotEmpty() && ano.isNotEmpty() && km.isNotEmpty()) {
-                val novoCarro = Carro(placa, marca, modelo, ano, km)
-
-                viewModel.cadastrarCarro(
-                    novoCarro,
-                    onSuccess = {
-                        carregarCarrosDoUsuario()
-                        dialog.dismiss()
-                        Toast.makeText(this, "Carro salvo!", Toast.LENGTH_SHORT).show()
-                    },
-                    onFailure = { erro ->
-                        Toast.makeText(this, "Erro ao salvar: $erro", Toast.LENGTH_LONG).show()
-                    }
-                )
-            } else {
-                Toast.makeText(this, "Preencha todos os campos", Toast.LENGTH_SHORT).show()
+            if (placa.isEmpty() || marca.isEmpty() || modelo.isEmpty() || ano.isEmpty() || km.isEmpty()) {
+                Toast.makeText(this, "Preencha todos os campos obrigatórios (*)", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
+
+            val tipoSelecionado = when (dialogBinding.rgVehicleType.checkedRadioButtonId) {
+                R.id.rb_moto -> "moto"
+                else -> "carro"
+            }
+
+            val novoCarro = Carro(
+                placa = placa,
+                marca = marca,
+                modelo = modelo,
+                apelido = apelido,
+                ano = ano,
+                km = km,
+                tipo = tipoSelecionado
+            )
+
+            viewModel.cadastrarCarro(
+                novoCarro,
+                onSuccess = {
+                    carregarCarrosDoUsuario()
+                    dialog.dismiss()
+                    Toast.makeText(this, "Veículo salvo!", Toast.LENGTH_SHORT).show()
+                },
+                onFailure = { erro ->
+                    Toast.makeText(this, "Erro ao salvar: $erro", Toast.LENGTH_LONG).show()
+                }
+            )
         }
 
         Log.d("DialogTest", "Tentando mostrar o dialog")
@@ -130,22 +134,45 @@ class CarroActivity : AppCompatActivity() {
         Log.d("DialogTest", "Dialog mostrado")
     }
 
+
     inner class CarrosAdapter(private val carros: List<Carro>) :
         RecyclerView.Adapter<CarrosAdapter.CarroViewHolder>() {
 
         inner class CarroViewHolder(val binding: ItemCardCarroBinding) :
             RecyclerView.ViewHolder(binding.root)
 
-        override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): CarroViewHolder {
+        override fun onCreateViewHolder(
+            parent: android.view.ViewGroup,
+            viewType: Int
+        ): CarroViewHolder {
             val binding = ItemCardCarroBinding.inflate(layoutInflater, parent, false)
             return CarroViewHolder(binding)
         }
 
         override fun onBindViewHolder(holder: CarroViewHolder, position: Int) {
             val carro = carros[position]
-            holder.binding.txtPlaca.text = carro.placa
-            holder.binding.txtMarcaModelo.text = "${carro.marca} ${carro.modelo}"
-            holder.binding.txtDetalhes.text = "${carro.ano} • ${carro.km} km"
+
+            // Define o ícone correto com base no tipo do veículo
+            if (carro.tipo == "moto") {
+                holder.binding.ivCarIcon.setImageResource(R.drawable.ic_moto) // Certifique-se de ter 'ic_moto.xml' em res/drawable
+            } else {
+                holder.binding.ivCarIcon.setImageResource(R.drawable.ic_vehicle) // Certifique-se de ter 'ic_car.xml' em res/drawable
+            }
+
+            holder.binding.tvCarModel.text = "${carro.marca} ${carro.modelo}"
+            holder.binding.tvCarPlate.text = carro.placa
+
+            holder.binding.toggleFavoriteCar.setOnCheckedChangeListener { _, isChecked ->
+                if (isChecked) {
+                    Toast.makeText(
+                        holder.itemView.context,
+                        "${carro.placa} definido como principal!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    // TODO: Chamar o ViewModel para salvar este estado no Firebase
+                    // viewModel.definirCarroPrincipal(carro.id)
+                }
+            }
 
             holder.itemView.setOnClickListener {
                 val intent = Intent(this@CarroActivity, EditarCarroActivity::class.java).apply {
@@ -155,11 +182,11 @@ class CarroActivity : AppCompatActivity() {
                     putExtra("modelo", carro.modelo)
                     putExtra("ano", carro.ano)
                     putExtra("km", carro.km)
+                    putExtra("tipo", carro.tipo) // Envia o tipo para a tela de edição também
                 }
                 editarCarroLauncher.launch(intent)
             }
         }
-
         override fun getItemCount(): Int = carros.size
     }
 }
