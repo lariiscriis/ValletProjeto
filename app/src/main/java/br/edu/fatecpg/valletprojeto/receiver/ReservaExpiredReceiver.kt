@@ -15,7 +15,6 @@ class ReservaExpiredReceiver : BroadcastReceiver() {
         val db = FirebaseFirestore.getInstance()
         val agora = Date()
 
-        // Atualiza reservas ativas cujo fimReserva já passou
         db.collection("reserva")
             .whereEqualTo("status", "ativa")
             .get()
@@ -25,29 +24,33 @@ class ReservaExpiredReceiver : BroadcastReceiver() {
                     if (fimReserva != null && fimReserva.before(agora)) {
                         val vagaId = doc.getString("vagaId")
 
-                        // Atualiza status da reserva
+                        // Atualiza status e libera vaga em sequência
                         db.collection("reserva").document(doc.id)
                             .update("status", "finalizada")
+                            .addOnSuccessListener {
+                                if (!vagaId.isNullOrEmpty()) {
+                                    db.collection("vaga").document(vagaId)
+                                        .update("disponivel", true)
+                                }
 
-                        // Libera a vaga
-                        if (!vagaId.isNullOrEmpty()) {
-                            db.collection("vaga").document(vagaId)
-                                .update("disponivel", true)
-                        }
+                                // Exibe notificação
+                                val notificationManager =
+                                    context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                                val notification = NotificationCompat.Builder(context, ReservaViewModel.CHANNEL_ID)
+                                    .setSmallIcon(R.drawable.ic_parking)
+                                    .setContentTitle("Reserva finalizada")
+                                    .setContentText("O tempo da sua reserva terminou. A vaga foi liberada.")
+                                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                                    .setAutoCancel(true)
+                                    .build()
+
+                                notificationManager.notify(
+                                    ReservaViewModel.NOTIFICATION_ID + 4,
+                                    notification
+                                )
+                            }
                     }
                 }
-
-                // Exibe notificação pro usuário
-                val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                val notification = NotificationCompat.Builder(context, ReservaViewModel.CHANNEL_ID)
-                    .setSmallIcon(R.drawable.ic_parking)
-                    .setContentTitle("Reserva finalizada")
-                    .setContentText("O tempo da sua reserva terminou. A vaga foi liberada.")
-                    .setPriority(NotificationCompat.PRIORITY_HIGH)
-                    .setAutoCancel(true)
-                    .build()
-
-                notificationManager.notify(ReservaViewModel.NOTIFICATION_ID + 4, notification)
             }
     }
 }

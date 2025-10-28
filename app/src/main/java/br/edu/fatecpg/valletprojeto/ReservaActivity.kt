@@ -21,6 +21,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import java.util.concurrent.TimeUnit
 
 class ReservaActivity : AppCompatActivity() {
 
@@ -50,11 +53,21 @@ class ReservaActivity : AppCompatActivity() {
         val usuarioId = FirebaseAuth.getInstance().currentUser?.uid
 
         solicitarPermissaoNotificacao()
+        val checkReservaWork =
+            PeriodicWorkRequestBuilder<br.edu.fatecpg.valletprojeto.worker.CheckReservaWorker>(
+                15, TimeUnit.MINUTES
+            ).build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "CheckReservaWorker",
+            androidx.work.ExistingPeriodicWorkPolicy.KEEP,
+            checkReservaWork
+        )
+
         setupGifAnimation()
 
         viewModel = ViewModelProvider(this)[ReservaViewModel::class.java]
 
-        // ✅ Retomar reserva ao abrir via notificação
         if (usuarioId != null) {
             if (fromNotification) {
                 FirebaseFirestore.getInstance()
@@ -190,9 +203,11 @@ class ReservaActivity : AppCompatActivity() {
                         binding.btnReservar.visibility = android.view.View.GONE
                         binding.btnCancelar.visibility = android.view.View.VISIBLE
 
-                        // 🧩 Retoma contagem da reserva ativa
                         reserva.fimReserva?.toDate()?.let { fim ->
                             viewModel.retomarReservaAtiva(fim, reserva.vagaId, reserva.estacionamentoId, this)
+                        }
+                        reserva.fimReserva?.toDate()?.let { fim ->
+                            viewModel.agendarExpiracaoReserva(this, fim.time)
                         }
 
                         return@addOnSuccessListener
@@ -220,12 +235,10 @@ class ReservaActivity : AppCompatActivity() {
                         .setCancelable(false)
                         .show()
 
-                    // Esconde botões até o usuário decidir
                     binding.btnReservar.visibility = android.view.View.GONE
                     binding.btnCancelar.visibility = android.view.View.GONE
 
                 } else {
-                    // Nenhuma reserva ativa
                     binding.tvHorarioReserva.text = "Nenhuma reserva ativa encontrada"
                     binding.btnReservar.visibility = android.view.View.VISIBLE
                     binding.btnCancelar.visibility = android.view.View.GONE

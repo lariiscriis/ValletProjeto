@@ -51,9 +51,6 @@ class ReservaViewModel : ViewModel() {
         const val NOTIFICATION_ID = 1001
     }
 
-    /**
-     * 🔹 Cria uma nova reserva
-     */
     fun iniciarReserva(vagaId: String, estacionamentoId: String, tempoMaxReservaHoras: Int, context: Context) {
         _reservaStatus.value = ReservaState.Loading
 
@@ -132,9 +129,7 @@ class ReservaViewModel : ViewModel() {
             }
     }
 
-    /**
-     * 🔹 Retoma o timer de uma reserva já existente (ativa)
-     */
+
     fun retomarReservaAtiva(fimReserva: Date, vagaId: String, estacionamentoId: String, context: Context) {
         currentVagaId = vagaId
         currentEstacionamentoId = estacionamentoId
@@ -172,9 +167,7 @@ class ReservaViewModel : ViewModel() {
             }
     }
 
-    /**
-     * ⏱️ Inicia (ou reinicia) o contador regressivo
-     */
+
     private fun iniciarTimer(fimTimestamp: Long, vagaId: String, estacionamentoId: String, context: Context) {
         timer?.cancel()
 
@@ -210,10 +203,8 @@ class ReservaViewModel : ViewModel() {
         }.start()
     }
 
-    /**
-     * 🔔 Agenda notificações de aviso e expiração
-     */
-    private fun agendarExpiracaoReserva(context: Context, fimReservaMillis: Long) {
+
+    fun agendarExpiracaoReserva(context: Context, fimReservaMillis: Long) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         // Aviso 10 min antes
@@ -234,9 +225,7 @@ class ReservaViewModel : ViewModel() {
         alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, fimReservaMillis, expiraPending)
     }
 
-    /**
-     * 🔔 Cria notificações personalizadas
-     */
+
     fun criarNotificacao(
         context: Context,
         titulo: String,
