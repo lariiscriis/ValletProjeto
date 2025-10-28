@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:background="@drawable/edittext_backgroud"
+        android:background="@drawable/edittext_background"
         app:cardBackgroundColor="@color/cinza"
         app:cardCornerRadius="8dp"
         app:cardElevation="2dp"

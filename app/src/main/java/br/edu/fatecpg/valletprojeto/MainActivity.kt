@@ -57,18 +57,10 @@ class MainActivity : AppCompatActivity() {
             .addOnSuccessListener { document ->
                 if (document.exists()) {
                     val tipoUser = document.getString("tipo_user") ?: "usuario"
-                    val primeiroAcesso = document.getBoolean("primeiroAcesso") ?: true
-
-                    if (primeiroAcesso) {
-                        db.collection("usuario").document(uid)
-                            .update("primeiroAcesso", false)
-                        redirectToIntro(tipoUser, email)
+                    if (tipoUser == "admin") {
+                        checkEstacionamentoCadastrado(uid, email)
                     } else {
-                        if (tipoUser == "admin") {
-                            checkEstacionamentoCadastrado(uid, email)
-                        } else {
-                            redirectToHome(tipoUser, email)
-                        }
+                        redirectToHome(tipoUser, email)
                     }
                 } else {
                     // Usuário não encontrado → força login novamente
@@ -106,7 +98,7 @@ class MainActivity : AppCompatActivity() {
         val intent = if (tipoUser == "admin") {
             Intent(this, IntroCadastroEstacionamento::class.java)
         } else {
-            Intent(this, IntroCadastroCarro::class.java)
+            Intent(this, VeiculoActivity::class.java)
         }
         intent.putExtra("email_usuario", email)
         startActivity(intent)

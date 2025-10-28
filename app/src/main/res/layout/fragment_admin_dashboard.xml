@@ -51,7 +51,7 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/edittext_backgroud"
+                        android:background="@drawable/edittext_background"
                         android:gravity="center"
                         android:orientation="vertical"
                         android:padding="16dp">
@@ -88,7 +88,7 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/edittext_backgroud"
+                        android:background="@drawable/edittext_background"
                         android:gravity="center"
                         android:orientation="vertical"
                         android:padding="16dp">
@@ -124,7 +124,7 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/edittext_backgroud"
+                        android:background="@drawable/edittext_background"
                         android:gravity="center"
                         android:orientation="vertical"
                         android:padding="16dp">
@@ -197,7 +197,7 @@
                         <RelativeLayout
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:background="@drawable/edittext_backgroud"
+                            android:background="@drawable/edittext_background"
                             android:gravity="center">
 
                             <ImageView
@@ -230,7 +230,7 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:background="@drawable/edittext_backgroud"
+                            android:background="@drawable/edittext_background"
                             android:gravity="center"
                             android:orientation="vertical"
                             android:padding="16dp">
@@ -281,7 +281,7 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:background="@drawable/edittext_backgroud"
+                            android:background="@drawable/edittext_background"
                             android:gravity="center">
 
                             <TextView
@@ -307,7 +307,7 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:background="@drawable/edittext_backgroud"
+                            android:background="@drawable/edittext_background"
                             android:gravity="center">
 
                             <TextView
@@ -332,7 +332,7 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:background="@drawable/edittext_backgroud"
+                            android:background="@drawable/edittext_background"
                             android:gravity="center">
 
                             <TextView
@@ -378,7 +378,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/edittext_backgroud"
+                    android:background="@drawable/edittext_background"
                     android:gravity="center"
                     android:orientation="vertical"
                     android:padding="16dp"
@@ -422,7 +422,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/edittext_backgroud"
+                    android:background="@drawable/edittext_background"
                     android:gravity="center"
                     android:orientation="vertical"
                     android:padding="16dp">

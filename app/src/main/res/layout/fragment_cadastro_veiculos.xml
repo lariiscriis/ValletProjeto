@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/dialog_background"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_default="percent"
+        app:layout_constraintWidth_percent="0.9">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="24dp">
+
+            <TextView
+                android:id="@+id/tv_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/poppins_medium"
+                android:text="@string/adicionar_veiculo"
+                android:textAlignment="center"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <EditText
+                android:id="@+id/editPlaca"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginTop="16dp"
+                android:autofillHints=""
+                android:background="@drawable/edittext_background"
+                android:hint="@string/placa"
+                android:imeOptions="actionNext"
+                android:inputType="textCapCharacters"
+                android:maxLines="1"
+                android:padding="10dp"
+                android:textColor="#000000"
+                android:textColorHint="#AAAAAA"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_title" />
+
+            <EditText
+                android:id="@+id/editMarca"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginTop="12dp"
+                android:autofillHints="text"
+                android:background="@drawable/edittext_background"
+                android:hint="@string/marca"
+                android:imeOptions="actionNext"
+                android:inputType="textCapWords"
+                android:maxLines="1"
+                android:padding="10dp"
+                android:textColor="#000000"
+                android:textColorHint="#AAAAAA"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/editPlaca" />
+
+            <EditText
+                android:id="@+id/editModelo"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginTop="12dp"
+                android:autofillHints="text"
+                android:background="@drawable/edittext_background"
+                android:hint="@string/modelo"
+                android:imeOptions="actionNext"
+                android:inputType="textCapWords"
+                android:maxLines="1"
+                android:padding="10dp"
+                android:textColor="#000000"
+                android:textColorHint="#AAAAAA"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/editMarca" />
+
+            <EditText
+                android:id="@+id/editApelido"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginTop="12dp"
+                android:autofillHints="text"
+                android:background="@drawable/edittext_background"
+                android:hint="@string/apelido"
+                android:imeOptions="actionNext"
+                android:inputType="text"
+                android:maxLines="1"
+                android:padding="10dp"
+                android:textColor="#000000"
+                android:textColorHint="#AAAAAA"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/editModelo" />
+
+            <LinearLayout
+                android:id="@+id/line_ano_km"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/editApelido">
+
+                <EditText
+                    android:id="@+id/editAno"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:autofillHints="number"
+                    android:background="@drawable/edittext_background"
+                    android:hint="@string/ano"
+                    android:imeOptions="actionNext"
+                    android:inputType="phone"
+                    android:maxLength="4"
+                    android:maxLines="1"
+                    android:padding="10dp"
+                    android:textColor="#000000"
+                    android:textColorHint="#AAAAAA" />
+
+                <EditText
+                    android:id="@+id/editKM"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:autofillHints="phone"
+                    android:background="@drawable/edittext_background"
+                    android:hint="@string/KM"
+                    android:imeOptions="actionDone"
+                    android:inputType="number"
+                    android:maxLines="1"
+                    android:padding="10dp"
+                    android:textColor="#000000"
+                    android:textColorHint="#AAAAAA" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_tipo_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:fontFamily="@font/poppins_medium"
+                android:text="@string/tipo_veiculo"
+                android:textColor="@color/verdeescuro"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/line_ano_km" />
+
+            <RadioGroup
+                android:id="@+id/rg_vehicle_type"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_tipo_label">
+
+                <RadioButton
+                    android:id="@+id/rb_carro"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:fontFamily="@font/poppins"
+                    android:text="@string/carro" />
+
+                <RadioButton
+                    android:id="@+id/rb_moto"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:fontFamily="@font/poppins"
+                    android:text="@string/moto" />
+            </RadioGroup>
+
+            <Button
+                android:id="@+id/btnConfirmar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:backgroundTint="@color/verdeescuro"
+                android:fontFamily="@font/poppins_medium"
+                android:minHeight="52dp"
+                android:text="@string/confirmar"
+                android:textColor="@color/branco"
+                android:textSize="16sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/rg_vehicle_type" />
+
+            <Button
+                android:id="@+id/btnCancelar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:backgroundTint="@android:color/holo_red_dark"
+                android:fontFamily="@font/poppins_medium"
+                android:minHeight="52dp"
+                android:text="@string/cancelar"
+                android:textColor="@color/branco"
+                android:textSize="16sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/btnConfirmar" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

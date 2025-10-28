@@ -55,9 +55,7 @@ class AdminFragment : Fragment() {
         }
     }
 
-    /**
-     * Gera relatórios filtrando apenas as vagas e reservas do estacionamento logado.
-     */
+    /** Gera relatórios filtrando apenas as vagas e reservas do estacionamento logado. */
     private fun gerarEAtualizarRelatorios(estacionamentoId: String, onComplete: () -> Unit) {
         val calendario = Calendar.getInstance()
         val anoAtual = calendario.get(Calendar.YEAR)

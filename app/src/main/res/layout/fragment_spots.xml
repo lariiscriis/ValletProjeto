@@ -20,39 +20,14 @@
             app:cardCornerRadius="24dp"
             app:cardElevation="2dp">
 
-            <LinearLayout
+            <androidx.appcompat.widget.SearchView
+                android:id="@+id/sv_search"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="12dp"
-                android:background="#FFFFFF">
+                app:iconifiedByDefault="false"
+                app:queryBackground="@android:color/transparent"
+                app:queryHint="Pesquisar estacionamento" />
 
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_marginLeft="8dp"
-                    android:layout_marginRight="8dp"/>
-
-                <EditText
-                    android:id="@+id/et_search"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="@null"
-                    android:hint="Pesquisar estacionamento"
-                    android:imeOptions="actionSearch"
-                    android:minHeight="48dp"
-                    android:singleLine="true"
-                    android:textSize="14sp" />
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_marginLeft="8dp"
-                    android:layout_marginRight="8dp"
-                    android:src="@android:drawable/ic_menu_search"
-                    android:backgroundTint="@color/cinza"/>
-            </LinearLayout>
         </androidx.cardview.widget.CardView>
 
 

@@ -131,23 +131,16 @@ class LoginActivity : AppCompatActivity() {
                 if (document.exists()) {
                     val tipoUser = document.getString("tipo_user") ?: "usuario"
                     val isAdminFromDB = tipoUser == "admin"
-                    val primeiroAcesso = document.getBoolean("primeiroAcesso") ?: true
 
                     if (isAdminAttempt && !isAdminFromDB) {
                         auth.signOut()
                         Toast.makeText(this, "Acesso restrito a administradores", Toast.LENGTH_LONG)
                             .show()
                     } else {
-                        if (primeiroAcesso) {
-                            db.collection("usuario").document(uid)
-                                .update("primeiroAcesso", false)
-                            redirectToIntro(tipoUser, email)
+                        if (tipoUser == "admin") {
+                            checkEstacionamentoCadastrado(uid, email)
                         } else {
-                            if (tipoUser == "admin") {
-                                checkEstacionamentoCadastrado(uid, email)
-                            } else {
-                                redirectToHome(tipoUser, email)
-                            }
+                            redirectToHome(tipoUser, email)
                         }
                     }
                 } else {
@@ -198,7 +191,7 @@ class LoginActivity : AppCompatActivity() {
         val intent = if (tipoUser == "admin") {
             Intent(this, IntroCadastroEstacionamento::class.java)
         } else {
-            Intent(this, IntroCadastroCarro::class.java)
+            Intent(this, VeiculoActivity::class.java)
         }
         intent.putExtra("email_usuario", email)
         startActivity(intent)

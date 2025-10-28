@@ -6,21 +6,21 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import br.edu.fatecpg.valletprojeto.databinding.ActivityIntroCadastroCarroBinding
+import br.edu.fatecpg.valletprojeto.databinding.ActivityIntroCadastroVeiculoBinding
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
-class IntroCadastroCarro : AppCompatActivity() {
-    private lateinit var binding: ActivityIntroCadastroCarroBinding
+class IntroCadastroVeiculo : AppCompatActivity() {
+    private lateinit var binding: ActivityIntroCadastroVeiculoBinding
     private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        binding = ActivityIntroCadastroCarroBinding.inflate(layoutInflater)
+        binding = ActivityIntroCadastroVeiculoBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         val emailUsuario = intent.getStringExtra("email_usuario") ?: "Usuário"
@@ -56,14 +56,14 @@ class IntroCadastroCarro : AppCompatActivity() {
     }
 
     private fun setupButtonListeners() {
-        // Botão para cadastro de carro
+        // Botão para cadastro de veículo
         binding.btnIrParaCadastro.setOnClickListener {
             navigateToCarRegistration()
         }
     }
 
     private fun navigateToCarRegistration() {
-        val intent = Intent(this, CarroActivity::class.java)
+        val intent = Intent(this, VeiculoActivity::class.java)
         startActivity(intent)
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
     }

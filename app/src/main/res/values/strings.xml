@@ -1,8 +1,19 @@
 <resources>
     <string name="app_name">Vallet</string>
     <string name="cadastro_de_carros">Cadastro de Carros</string>
-    <string name="adicionar_carro">+ Adicionar Carro</string>
+    <string name="adicionar_veiculo">Adicionar Veículo</string>
     <string name="finalizar_cadastro">Finalizar Cadastro</string>
-    <string name="Próximo" />
     <string name="dados_do_estacionamento">Dados do Estacionamento</string>
+    <string name="meus_veiculos">Meus Veículos</string>
+    <string name="confirmar">CONFIRMAR</string>
+    <string name="cancelar">CANCELAR</string>
+    <string name="tipo_veiculo">Tipo de Veículo</string>
+    <string name="placa">Placa</string>
+    <string name="marca">Marca</string>
+    <string name="modelo">Modelo</string>
+    <string name="apelido">Apelido (opcional)</string>
+    <string name="ano">Ano</string>
+    <string name="KM">Km\'s</string>
+    <string name="carro">Carro</string>
+    <string name="moto">Moto</string>
 </resources>

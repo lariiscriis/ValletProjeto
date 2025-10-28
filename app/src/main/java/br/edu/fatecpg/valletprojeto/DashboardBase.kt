@@ -14,8 +14,10 @@ import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import androidx.lifecycle.lifecycleScope
-import br.edu.fatecpg.valletprojeto.dao.CarroDao.auth
+import br.edu.fatecpg.valletprojeto.dao.VeiculoDao.auth
 import br.edu.fatecpg.valletprojeto.fragments.SpotsFragment
+import br.edu.fatecpg.valletprojeto.fragments.VagaFragment
+import br.edu.fatecpg.valletprojeto.fragments.VeiculoListFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -124,6 +126,8 @@ class DashboardBase : AppCompatActivity() {
     }
 
     private fun setupNavigation() {
+        binding.bottomNavigation.menu.findItem(R.id.nav_management).isVisible = isAdmin
+
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_spots -> {
@@ -137,16 +141,15 @@ class DashboardBase : AppCompatActivity() {
                     }
                     true
                 }
+                R.id.nav_vehicles -> {
+                    replaceFragment(VeiculoListFragment())
+                    true
+                }
                 R.id.nav_management -> {
                     if (isAdmin) {
-                        val intent = Intent(this, VagaActivity::class.java)
-                        startActivity(intent)
-                        true
-                    } else {
-                        val intent = Intent(this, CarroActivity::class.java)
-                        startActivity(intent)
-                        false
+                        replaceFragment(VagaFragment())
                     }
+                    true
                 }
 
                 else -> false
@@ -187,4 +190,3 @@ class DashboardBase : AppCompatActivity() {
     }
 
 }
-

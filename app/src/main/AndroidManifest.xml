@@ -17,7 +17,7 @@
         android:theme="@style/Theme.ValletProjeto"
         tools:targetApi="31">
         <activity
-            android:name=".CarroActivity"
+            android:name=".VeiculoActivity"
             android:exported="false" />
         <activity
             android:name=".PaginaDeReservaVagas"
@@ -47,7 +47,7 @@
             android:name=".VagaActivity"
             android:exported="false" />
         <activity
-            android:name=".EditarCarroActivity"
+            android:name=".EditarVeiculoActivity"
             android:exported="false" />
         <activity
             android:name=".DashboardBase"
@@ -59,7 +59,7 @@
             android:name=".IntroCadastroEstacionamento"
             android:exported="false" />
         <activity
-            android:name=".IntroCadastroCarro"
+            android:name=".IntroCadastroVeiculo"
             android:exported="false" />
         <activity
             android:name=".MainActivity"

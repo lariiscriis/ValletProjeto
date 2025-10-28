@@ -5,12 +5,11 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.widget.SearchView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -63,16 +62,19 @@ class SpotsFragment : Fragment() {
         verificarPermissaoLocalizacao()
 
         // 🔍 Campo de pesquisa
-        binding.etSearch.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {}
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                val termo = s.toString().trim().lowercase()
+        binding.svSearch.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                val termo = newText.orEmpty().trim().lowercase()
                 val listaFiltrada = estacionamentos.filter {
                     it.nome.lowercase().contains(termo) ||
                         it.endereco?.lowercase()?.contains(termo) == true
                 }
                 adapter.submitList(listaFiltrada)
+                return true
             }
         })
     }

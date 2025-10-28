@@ -3,55 +3,55 @@ package br.edu.fatecpg.valletprojeto.dao
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FieldValue
-import br.edu.fatecpg.valletprojeto.model.Carro
+import br.edu.fatecpg.valletprojeto.model.Veiculo
 
-object CarroDao {
+object VeiculoDao {
 
     val auth = FirebaseAuth.getInstance()
     val db = FirebaseFirestore.getInstance()
 
-    fun cadastrarCarro(
-        carro: Carro,
+    fun cadastrarVeiculo(
+        veiculo: Veiculo,
         onSuccess: () -> Unit,
         onFailure: (String) -> Unit
     ) {
         val emailUsuario = auth.currentUser?.email ?: "Desconhecido"
 
-        val carroCadastrado = hashMapOf(
-            "placa" to carro.placa,
-            "marca" to carro.marca,
-            "modelo" to carro.modelo,
-            "ano" to carro.ano,
-            "km" to carro.km,
-            "tipo" to carro.tipo,
+        val veiculoCadastrado = hashMapOf(
+            "placa" to veiculo.placa,
+            "marca" to veiculo.marca,
+            "modelo" to veiculo.modelo,
+            "ano" to veiculo.ano,
+            "km" to veiculo.km,
+            "tipo" to veiculo.tipo,
             "usuarioEmail" to emailUsuario,
             "data_cadastro" to FieldValue.serverTimestamp()
         )
-        carro.id = carro.placa
-        db.collection("carro")
-            .document(carro.id)
-            .set(carroCadastrado)
+        veiculo.id = veiculo.placa
+        db.collection("veiculo")
+            .document(veiculo.id)
+            .set(veiculoCadastrado)
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { onFailure(it.message ?: "Erro desconhecido") }
 
     }
 
-    fun listarCarrosDoUsuario(
-        onSuccess: (List<Carro>) -> Unit,
+    fun listarVeiculosDoUsuario(
+        onSuccess: (List<Veiculo>) -> Unit,
         onFailure: (String) -> Unit
     ) {
         val emailUsuario = FirebaseAuth.getInstance().currentUser?.email ?: return
 
         FirebaseFirestore.getInstance()
-            .collection("carro")
+            .collection("veiculo")
             .whereEqualTo("usuarioEmail", emailUsuario)
             .get()
             .addOnSuccessListener { result ->
-                val lista = mutableListOf<Carro>()
+                val lista = mutableListOf<Veiculo>()
                 for (doc in result) {
-                    val carro = doc.toObject(Carro::class.java)
-                    carro.id = doc.id
-                    lista.add(carro)
+                    val veiculo = doc.toObject(Veiculo::class.java)
+                    veiculo.id = doc.id
+                    lista.add(veiculo)
                 }
                 onSuccess(lista)
             }
