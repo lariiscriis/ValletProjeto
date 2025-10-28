@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
 import br.edu.fatecpg.valletprojeto.R
@@ -41,6 +42,16 @@ class VeiculoFragment : DialogFragment() {
         binding.btnConfirmar.setOnClickListener {
             cadastrarVeiculo()
         }
+
+        binding.btnCancelar.setOnClickListener {
+            AlertDialog.Builder(requireContext())
+                .setTitle("Cancelar cadastro")
+                .setMessage("Deseja realmente cancelar o cadastro do veículo?")
+                .setPositiveButton("Sim") { _, _ -> dismiss() }
+                .setNegativeButton("Não", null)
+                .show()
+        }
+
     }
 
     override fun onStart() {
