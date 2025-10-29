@@ -35,7 +35,6 @@ class AdminFragment : Fragment() {
 
         val user = auth.currentUser
         if (user != null) {
-            // 🔍 Buscar estacionamento do admin logado
             db.collection("estacionamento")
                 .whereEqualTo("adminUid", user.uid)
                 .get()
@@ -55,7 +54,6 @@ class AdminFragment : Fragment() {
         }
     }
 
-    /** Gera relatórios filtrando apenas as vagas e reservas do estacionamento logado. */
     private fun gerarEAtualizarRelatorios(estacionamentoId: String, onComplete: () -> Unit) {
         val calendario = Calendar.getInstance()
         val anoAtual = calendario.get(Calendar.YEAR)
@@ -75,7 +73,6 @@ class AdminFragment : Fragment() {
             set(Calendar.MILLISECOND, 999)
         }
 
-        // 🔍 Busca vagas apenas do estacionamento logado
         db.collection("vaga")
             .whereEqualTo("estacionamentoId", estacionamentoId)
             .get()
@@ -83,78 +80,100 @@ class AdminFragment : Fragment() {
                 val vagaIds = vagasSnapshot.documents.map { it.id }
 
                 if (vagaIds.isNotEmpty()) {
-                    // 🔍 Busca reservas apenas das vagas desse estacionamento
                     db.collection("reserva")
                         .whereIn("vagaId", vagaIds)
                         .whereGreaterThanOrEqualTo("inicioReserva", Timestamp(inicioMes.time))
                         .get()
                         .addOnSuccessListener { reservasMensais ->
-                        val totalReservasMensais = reservasMensais.size()
-                        var receitaEstimanda = 0.0
-                        val usoVagaDia = HashMap<String, Int>()
-                        var reservasDia = 0
-                        val horariosReservas = HashMap<Int, Int>()
-                        val precoPorVaga = vagasSnapshot.associate {
-                            it.id to (it.getDouble("preco") ?: 0.0)
-                        }
 
-                        reservasMensais.forEach { reservaDoc ->
-                            val inicioReserva = reservaDoc.getTimestamp("inicioReserva")?.toDate()
-                            val fimReserva = reservaDoc.getTimestamp("fimReserva")?.toDate()
-                            val vagaId = reservaDoc.getString("vagaId") ?: ""
-                            if (inicioReserva != null && fimReserva != null) {
-                                val preco = precoPorVaga[vagaId] ?: 0.0
-                                val horas = (fimReserva.time - inicioReserva.time) / (1000 * 60 * 60).toDouble()
-                                receitaEstimanda += preco * horas
+                            var receitaEstimanda = 0.0
+                            val usoVagaMes = HashMap<String, Int>()
+                            val usoVagaDia = HashMap<String, Int>()
+                            val horariosReservas = HashMap<Int, Int>()
+                            var reservasDia = 0
 
-                                if (inicioReserva.after(inicioDia.time) && inicioReserva.before(fimDia.time)) {
-                                    reservasDia++
-                                    usoVagaDia[vagaId] = usoVagaDia.getOrDefault(vagaId, 0) + 1
+                            val precoPorVaga = vagasSnapshot.associate {
+                                it.id to (it.getDouble("preco") ?: 0.0)
+                            }
+                            val vagaNomes = vagasSnapshot.associate {
+                                it.id to (it.getString("numero") ?: it.id)
+                            }
 
-                                    val cal = Calendar.getInstance().apply { time = inicioReserva }
-                                    val hora = cal.get(Calendar.HOUR_OF_DAY)
-                                    horariosReservas[hora] = horariosReservas.getOrDefault(hora, 0) + 1
+                            reservasMensais.forEach { reservaDoc ->
+                                val inicioReserva = reservaDoc.getTimestamp("inicioReserva")?.toDate()
+                                val fimReserva = reservaDoc.getTimestamp("fimReserva")?.toDate()
+                                val vagaId = reservaDoc.getString("vagaId") ?: return@forEach
+
+                                if (inicioReserva != null && fimReserva != null) {
+                                    val preco = precoPorVaga[vagaId] ?: 0.0
+                                    val horas = (fimReserva.time - inicioReserva.time) / (1000 * 60 * 60).toDouble()
+                                    receitaEstimanda += preco * horas
+
+                                    usoVagaMes[vagaId] = usoVagaMes.getOrDefault(vagaId, 0) + 1
+
+                                    if (inicioReserva.after(inicioDia.time) && inicioReserva.before(fimDia.time)) {
+                                        reservasDia++
+                                        usoVagaDia[vagaId] = usoVagaDia.getOrDefault(vagaId, 0) + 1
+
+                                        val cal = Calendar.getInstance().apply { time = inicioReserva }
+                                        val hora = cal.get(Calendar.HOUR_OF_DAY)
+                                        horariosReservas[hora] = horariosReservas.getOrDefault(hora, 0) + 1
+                                    }
                                 }
                             }
-                        }
 
-                        val peakHours = horariosReservas.maxByOrNull { it.value }?.let {
-                            val h1 = it.key; val h2 = (h1 + 1) % 24
-                            "%02d:00 - %02d:00".format(h1, h2)
-                        } ?: "N/A"
+                            val peakHours = horariosReservas.maxByOrNull { it.value }?.let {
+                                val h1 = it.key; val h2 = (h1 + 1) % 24
+                                "%02d:00 - %02d:00".format(h1, h2)
+                            } ?: "N/A"
 
-                        val vagasMaisUsadas = usoVagaDia.entries
-                            .sortedByDescending { it.value }
-                            .take(3)
-                            .associate { it.key to "${it.value} vezes" }
+                            val vagasMaisUsadas = usoVagaMes.entries
+                                .sortedByDescending { it.value }
+                                .take(3)
+                                .associate { (vagaNomes[it.key] ?: it.key) to it.value }
 
-                        val relatorioDiario = hashMapOf("peakHours" to peakHours)
-                        val relatorioVagas = vagasMaisUsadas
-                        val relatorioMensal = hashMapOf(
-                            "monthlyReservations" to totalReservasMensais,
-                            "estimatedRevenue" to receitaEstimanda
-                        )
 
-                        val batch = db.batch()
-                        batch.set(db.collection("RelatorioDiario_$estacionamentoId").document("horarioPico"), relatorioDiario)
-                        batch.set(db.collection("RelatorioDiario_$estacionamentoId").document("vagasMaisUsadas"), relatorioVagas)
-                        batch.set(db.collection("RelatorioMensal_$estacionamentoId").document("resumo"), relatorioMensal)
-
-                        batch.commit()
-                            .addOnSuccessListener {
-                                Log.d("AdminFragment", "Relatórios atualizados para $estacionamentoId")
-                                onComplete()
+                            val vagasUsadasHoje = usoVagaDia.mapKeys {
+                                vagaNomes[it.key] ?: it.key
                             }
+
+                            val relatorioDiario = hashMapOf(
+                                "reservasDia" to reservasDia,
+                                "peakHours" to peakHours,
+                                "vagasUsadasHoje" to vagasUsadasHoje
+                            )
+
+
+                            val relatorioVagas = vagasMaisUsadas
+
+                            val relatorioMensal = hashMapOf(
+                                "totalReservasMes" to reservasMensais.size(),
+                                "estimatedRevenue" to receitaEstimanda
+                            )
+
+                            val batch = db.batch()
+
+                            val relatoriosRef = db.collection("relatorios").document(estacionamentoId)
+                            batch.set(relatoriosRef.collection("diario").document("dados"), relatorioDiario)
+                            batch.set(relatoriosRef.collection("diario").document("vagasMaisUsadasHoje"), relatorioVagas)
+                            batch.set(relatoriosRef.collection("mensal").document("resumo"), relatorioMensal)
+
+                            batch.commit()
+                                .addOnSuccessListener {
+                                    onComplete()
+                                }
+                                .addOnFailureListener {
+                                    onComplete()
+                                }
                         }
                         .addOnFailureListener {
                             Log.e("AdminFragment", "Erro ao buscar reservas do estacionamento", it)
                             onComplete()
                         }
                 } else {
-                    Log.d("AdminFragment", "Não há vagas para este estacionamento")
+                    Log.d("AdminFragment", "Nenhuma vaga encontrada para este estacionamento")
                     onComplete()
                 }
-
             }
             .addOnFailureListener {
                 Log.e("AdminFragment", "Erro ao buscar vagas do estacionamento", it)
@@ -165,17 +184,58 @@ class AdminFragment : Fragment() {
     private fun loadAdminDashboardData(estacionamentoId: String) {
         if (!isAdded || _binding == null) return
 
-        db.collection("RelatorioDiario_$estacionamentoId").document("horarioPico").get()
+        val relatoriosRef = db.collection("relatorios").document(estacionamentoId)
+
+        relatoriosRef.collection("diario").document("dados").get()
             .addOnSuccessListener {
-                binding.tvPeakHours.text = it.getString("peakHours") ?: "N/A"
+                val peakHours = it.getString("peakHours") ?: "N/A"
+                val reservasDia = it.getLong("reservasDia") ?: 0
+                binding.tvPeakHours.text = peakHours
+            }
+            .addOnFailureListener {
+                Log.e("AdminFragment", "Erro ao carregar relatório diário", it)
             }
 
-        db.collection("RelatorioMensal_$estacionamentoId").document("resumo").get()
+        relatoriosRef.collection("mensal").document("resumo").get()
             .addOnSuccessListener {
-                val monthly = it.getLong("monthlyReservations") ?: 0
+                val monthly = it.getLong("totalReservasMes") ?: 0
                 val revenue = it.getDouble("estimatedRevenue") ?: 0.0
                 binding.tvMonthlyReservations.text = monthly.toString()
                 binding.tvEstimatedRevenue.text = "R$ %.2f".format(revenue)
+            }
+            .addOnFailureListener {
+                Log.e("AdminFragment", "Erro ao carregar relatório mensal", it)
+            }
+
+        relatoriosRef.collection("diario").document("vagasMaisUsadasHoje").get()
+            .addOnSuccessListener { snapshot ->
+                if (snapshot.exists()) {
+                    val vagasMap = snapshot.data as? Map<String, Long> ?: emptyMap()
+                    val top3 = vagasMap.entries
+                        .sortedByDescending { it.value }
+                        .take(3)
+                        .map { it.key to it.value }
+
+
+                    val spots = listOf(binding.tvSpotA1, binding.tvSpotB2, binding.tvSpotB3)
+                    spots.forEachIndexed { index, textView ->
+                        if (index < top3.size) {
+                            val (vaga, _) = top3[index]
+                            textView.text = vaga
+                        } else {
+                            textView.text = "--"
+                        }
+                    }
+
+
+                } else {
+                    listOf(binding.tvSpotA1, binding.tvSpotB2, binding.tvSpotB3).forEach {
+                        it.text = "--"
+                    }
+                }
+            }
+            .addOnFailureListener {
+                Log.e("AdminFragment", "Erro ao carregar top 3 vagas usadas", it)
             }
 
         db.collection("vaga")
@@ -191,6 +251,9 @@ class AdminFragment : Fragment() {
                 binding.tvOccupiedSpots.text = occupiedSpots.toString()
                 binding.tvAvailableSpots.text = availableSpots.toString()
                 binding.tvOccupancyRate.text = "$occupancyRate%"
+            }
+            .addOnFailureListener {
+                Log.e("AdminFragment", "Erro ao carregar vagas em tempo real", it)
             }
     }
 
