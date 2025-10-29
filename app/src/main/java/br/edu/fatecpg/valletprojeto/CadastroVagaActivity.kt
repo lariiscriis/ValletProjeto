@@ -20,10 +20,23 @@ class CadastroVagaActivity : AppCompatActivity() {
 
         db = Firebase.firestore
 
+        val estacionamentoId = intent.getStringExtra("estacionamentoId") ?: ""
+        if (estacionamentoId.isNotEmpty()) {
+            db.collection("estacionamento").document(estacionamentoId).get()
+                .addOnSuccessListener { doc ->
+                    val precoHora = doc.getDouble("valorHora") ?: 0.0
+                    binding.edtPrecoHora.setText(precoHora.toString())
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Erro ao buscar preço do estacionamento.", Toast.LENGTH_SHORT).show()
+                }
+        }
+
         binding.btnCadastrarVaga.setOnClickListener {
             cadastrarNovaVaga()
         }
     }
+
 
     private fun cadastrarNovaVaga() {
         val estacionamentoId = intent.getStringExtra("estacionamentoId") ?: ""
