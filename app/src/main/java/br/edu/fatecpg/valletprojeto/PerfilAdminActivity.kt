@@ -7,6 +7,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import br.edu.fatecpg.valletprojeto.databinding.ActivityPerfilAdminBinding
+import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -37,7 +38,6 @@ class PerfilAdminActivity : AppCompatActivity() {
 
         binding.progressBar.visibility = View.VISIBLE
 
-        // 🔹 Busca o documento do usuário logado
         db.collection("usuario")
             .whereEqualTo("email", email)
             .get()
@@ -50,10 +50,24 @@ class PerfilAdminActivity : AppCompatActivity() {
 
                 val userDoc = snapshot.documents.first()
                 val nomeAdmin = userDoc.getString("nome") ?: ""
-                val telefoneAdmin = userDoc.getString("telefone") ?: ""
                 val nomeEmpresa = userDoc.getString("nome_empresa")
+                val fotoUrl = userDoc.getString("fotoPerfil")
 
-                // Popula dados do administrador
+                binding.tvNomeAdmin.text = "Nome: $nomeAdmin"
+                binding.tvEmailAdmin.text = "Email: $email"
+
+// 🔹 Carregar foto do perfil
+                if (!fotoUrl.isNullOrEmpty()) {
+                    Glide.with(this)
+                        .load(fotoUrl)
+                        .placeholder(R.drawable.estacionamento_foto)
+                        .error(R.drawable.estacionamento_foto)
+                        .circleCrop()
+                        .into(binding.imgFotoEstacionamento)
+                } else {
+                    binding.imgFotoEstacionamento.setImageResource(R.drawable.estacionamento_foto)
+                }
+
                 binding.tvNomeAdmin.text = "Nome: $nomeAdmin"
                 binding.tvEmailAdmin.text = "Email: $email"
 
@@ -74,7 +88,6 @@ class PerfilAdminActivity : AppCompatActivity() {
 
                         val est = estSnap.documents.first()
 
-                        // ✅ Popula todos os dados do estacionamento
                         binding.tvNomeEstacionamento.text = "Nome: ${est.getString("nome") ?: "-"}"
                         binding.tvCnpj.text = "CNPJ: ${est.getString("cnpj") ?: "-"}"
                         binding.tvTelefoneEstacionamento.text = "Telefone: ${est.getString("telefone") ?: "-"}"

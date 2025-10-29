@@ -54,7 +54,6 @@ class FavoriteParkingAdapter(
                     }
             }
 
-            // 🔹 Inicia listener assim que o item aparece
             iniciarListenerVagas()
 
             binding.tvParkingName.text = estacionamento.nome
@@ -62,7 +61,6 @@ class FavoriteParkingAdapter(
                 if (estacionamento.estaAberto()) "ABERTO" else "FECHADO"
             binding.tvParkingPrice.text = "R$%.2f/h".format(estacionamento.valorHora)
 
-            // Atualiza ícone de favorito
             atualizarIconeFavorito(estacionamento.id)
 
             binding.ivFavorite.setOnClickListener {
@@ -86,7 +84,6 @@ class FavoriteParkingAdapter(
                                     "Adicionado aos favoritos",
                                     Toast.LENGTH_SHORT
                                 ).show()
-                                // 🔁 Atualiza listener quando favoritar
                                 iniciarListenerVagas()
                             }
                         } else {
@@ -98,7 +95,6 @@ class FavoriteParkingAdapter(
                                         "Removido dos favoritos",
                                         Toast.LENGTH_SHORT
                                     ).show()
-                                    // 🔁 Atualiza listener quando desfavoritar
                                     iniciarListenerVagas()
                                 }
                         }

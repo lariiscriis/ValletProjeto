@@ -10,24 +10,24 @@ data class Estacionamento(
     val dataCadastro: Any? = null,
     val endereco: String = "",
     val cep: String = "",
-    val quantidadeVagasTotal: Int = 0,
     val tiposVagasComum: Boolean = false,
     val tiposVagasIdosoPcd: Boolean = false,
     val quantidadeVagasComum: Int? = null,
     val quantidadeVagasIdosoPcd: Int? = null,
     val possuiCobertura: Boolean = false,
     val numeroPavimentos: Int? = null,
-    val valorHora: Double = 0.0,
     val valorDiario: Double = 0.0,
     val tempoMaxReservaHoras: Int = 2,
     val toleranciaReservaMinutos: Int = 10,
     val fotoEstacionamentoUri: String? = null,
-    val horarioAbertura: String = "",
-    val horarioFechamento: String = "",
     var vagasDisponiveis: Int? = null,
     var distanciaMetros: Int? = null,
     var latitude: Double? = 0.0,
-    var longitude: Double? = 0.0
+    var longitude: Double? = 0.0,
+    val quantidadeVagasTotal: Int? = null,
+    val horarioAbertura: String? = null,
+    val horarioFechamento: String? = null,
+    val valorHora: Double? = null,
 )
 {
     fun estaAberto(): Boolean {
@@ -42,7 +42,6 @@ data class Estacionamento(
 
             if (abertura != null && fechamento != null && agora != null) {
                 if (fechamento.before(abertura)) {
-                    // Caso feche após meia-noite
                     agora.after(abertura) || agora.before(fechamento)
                 } else {
                     agora.after(abertura) && agora.before(fechamento)

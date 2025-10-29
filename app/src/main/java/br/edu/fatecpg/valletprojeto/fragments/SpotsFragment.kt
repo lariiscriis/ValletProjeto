@@ -50,23 +50,18 @@ class SpotsFragment : Fragment() {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
 
+        // Adapter e RecyclerView
         adapter = SimpleParkingAdapter { estacionamento ->
-            val intent = Intent(requireContext(), VagaActivity::class.java)
-            intent.putExtra("estacionamentoId", estacionamento.id)
-            startActivity(intent)
+            startActivity(Intent(requireContext(), VagaActivity::class.java).apply {
+                putExtra("estacionamentoId", estacionamento.id)
+            })
         }
 
         binding.rvOtherParkings.layoutManager = LinearLayoutManager(requireContext())
         binding.rvOtherParkings.adapter = adapter
 
-        verificarPermissaoLocalizacao()
-
-        // 🔍 Campo de pesquisa
         binding.svSearch.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                return false
-            }
-
+            override fun onQueryTextSubmit(query: String?) = false
             override fun onQueryTextChange(newText: String?): Boolean {
                 val termo = newText.orEmpty().trim().lowercase()
                 val listaFiltrada = estacionamentos.filter {
@@ -77,32 +72,16 @@ class SpotsFragment : Fragment() {
                 return true
             }
         })
-    }
 
-    private fun carregarFavoritos(usuarioId: String?, callback: (List<String>) -> Unit) {
-        if (usuarioId == null) {
-            callback(emptyList())
-            return
-        }
-
-        db.collection("favoritos")
-            .whereEqualTo("usuarioId", usuarioId)
-            .get()
-            .addOnSuccessListener { snapshot ->
-                val favoritosIds = snapshot.documents.mapNotNull { it.getString("estacionamentoId") }
-                callback(favoritosIds)
-            }
-            .addOnFailureListener { callback(emptyList()) }
+        verificarPermissaoLocalizacao()
     }
 
     private fun verificarPermissaoLocalizacao() {
         val context = requireContext()
-        if (ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+            == PackageManager.PERMISSION_GRANTED
         ) {
-            obterLocalizacaoUsuario()
+            carregarLocalizacao()
         } else {
             ActivityCompat.requestPermissions(
                 requireActivity(),
@@ -111,7 +90,8 @@ class SpotsFragment : Fragment() {
             )
         }
     }
-    private fun obterLocalizacaoUsuario() {
+
+    private fun carregarLocalizacao() {
         if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
             != PackageManager.PERMISSION_GRANTED
         ) {
@@ -119,25 +99,34 @@ class SpotsFragment : Fragment() {
             return
         }
 
-        fusedLocationClient.getCurrentLocation(
-            Priority.PRIORITY_HIGH_ACCURACY,
-            null
-        ).addOnSuccessListener { location ->
-            if (location != null) {
+        fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
+            .addOnSuccessListener { location ->
                 val usuarioId = FirebaseAuth.getInstance().currentUser?.uid
                 carregarFavoritos(usuarioId) { favoritosIds ->
+                    if (!isAdded) return@carregarFavoritos
                     carregarEstacionamentos(location, favoritosIds)
                 }
-            } else {
-                Toast.makeText(requireContext(), "Não foi possível obter sua localização.", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener {
+                context?.let {
+                    Toast.makeText(it, "Erro ao obter localização.", Toast.LENGTH_SHORT).show()
+                }
                 carregarEstacionamentos(null)
             }
-        }.addOnFailureListener {
-            Toast.makeText(requireContext(), "Erro ao obter localização.", Toast.LENGTH_SHORT).show()
-            carregarEstacionamentos(null)
-        }
     }
 
+    private fun carregarFavoritos(usuarioId: String?, callback: (List<String>) -> Unit) {
+        if (usuarioId == null) { callback(emptyList()); return }
+        db.collection("favoritos")
+            .whereEqualTo("usuarioId", usuarioId)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                if (!isAdded) return@addOnSuccessListener
+                val favoritosIds = snapshot.documents.mapNotNull { it.getString("estacionamentoId") }
+                callback(favoritosIds)
+            }
+            .addOnFailureListener { callback(emptyList()) }
+    }
 
     private fun carregarEstacionamentos(
         userLocation: Location?,
@@ -145,88 +134,60 @@ class SpotsFragment : Fragment() {
     ) {
         db.collection("estacionamento").get()
             .addOnSuccessListener { snapshot ->
+                if (!isAdded) return@addOnSuccessListener
                 estacionamentos.clear()
-                if (snapshot.isEmpty) {
-                    adapter.submitList(emptyList())
-                    return@addOnSuccessListener
+
+                snapshot.documents.forEach { doc ->
+                    val est = doc.toObject(Estacionamento::class.java) ?: return@forEach
+                    val id = doc.id
+                    val lat = doc.getDouble("latitude") ?: doc.getString("latitude")?.toDoubleOrNull()
+                    val lon = doc.getDouble("longitude") ?: doc.getString("longitude")?.toDoubleOrNull()
+
+                    val distanciaMetros = if (lat != null && lon != null && userLocation != null) {
+                        Location("").apply { latitude = lat; longitude = lon }
+                            .let { userLocation.distanceTo(it).roundToInt() }
+                    } else null
+
+
+                    estacionamentos.add(est.copy(
+                        id = id,
+                        distanciaMetros = distanciaMetros
+                    ))
                 }
 
-                var carregados = 0
-                val total = snapshot.size()
+                val listaOrdenada = if (userLocation != null) {
+                    estacionamentos.sortedBy { it.distanciaMetros ?: Int.MAX_VALUE }
+                } else estacionamentos
 
-                for (doc in snapshot.documents) {
-                    val est = doc.toObject(Estacionamento::class.java)
-                    est?.let {
-                        val id = doc.id
-                        val lat = doc.getDouble("latitude")
-                        val lon = doc.getDouble("longitude")
-                        var distanciaMetros: Int? = null
+                adapter.submitList(listaOrdenada)
 
-                        if (userLocation != null && lat != null && lon != null) {
-                            val estLoc = Location("").apply {
-                                latitude = lat
-                                longitude = lon
-                            }
-                            distanciaMetros = userLocation.distanceTo(estLoc).roundToInt()
-                        }
-
-                        // Consulta vagas disponíveis
-                        db.collection("vaga")
-                            .whereEqualTo("estacionamentoId", id)
-                            .whereEqualTo("ocupada", false)
-                            .get()
-                            .addOnSuccessListener { vagasSnapshot ->
-                                val vagasDisponiveis = vagasSnapshot.size()
-                                val atualizado = it.copy(
-                                    id = id,
-                                    distanciaMetros = distanciaMetros,
-                                    vagasDisponiveis = vagasDisponiveis
-                                )
-                                estacionamentos.add(atualizado)
-                            }
-                            .addOnCompleteListener {
-                                carregados++
-                                if (carregados == total) {
-                                    val listaOrdenada = estacionamentos.sortedBy { it.distanciaMetros ?: Int.MAX_VALUE }
-                                    adapter.submitList(listaOrdenada)
-                                    val favoritos = estacionamentos.filter { it.id in favoritosIds }
-                                    atualizarFavoritosUI(favoritos)
-                                }
-                            }
-                    }
-                }
+                // Atualiza favoritos
+                val favoritos = estacionamentos.filter { it.id in favoritosIds }
+                atualizarFavoritosUI(favoritos)
             }
             .addOnFailureListener {
-                Toast.makeText(requireContext(), "Erro ao carregar estacionamentos", Toast.LENGTH_SHORT).show()
+                context?.let {
+                    Toast.makeText(it, "Erro ao carregar estacionamentos", Toast.LENGTH_SHORT).show()
+                }
             }
     }
 
     private fun atualizarFavoritosUI(favoritos: List<Estacionamento>) {
-        if (_binding == null || !isAdded) return
-
-        val adapter = FavoriteParkingAdapter(favoritos) { estacionamento ->
+        if (!isAdded || _binding == null) return
+        binding.rvFavorites.layoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        binding.rvFavorites.adapter = FavoriteParkingAdapter(favoritos) { estacionamento ->
             startActivity(Intent(requireContext(), VagaActivity::class.java).apply {
                 putExtra("estacionamentoId", estacionamento.id)
             })
         }
-
-        binding.rvFavorites.layoutManager =
-            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-        binding.rvFavorites.adapter = adapter
     }
 
-
-
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
+        requestCode: Int, permissions: Array<String>, grantResults: IntArray
     ) {
-        if (requestCode == 1001 &&
-            grantResults.isNotEmpty() &&
-            grantResults[0] == PackageManager.PERMISSION_GRANTED
-        ) {
-            obterLocalizacaoUsuario()
+        if (requestCode == 1001 && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            carregarLocalizacao()
         } else {
             carregarEstacionamentos(null)
         }

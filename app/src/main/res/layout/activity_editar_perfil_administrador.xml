@@ -23,213 +23,291 @@
             app:strokeWidth="1dp">
 
             <LinearLayout
-                android:layout_width="370dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="24dp">
 
-                <!-- Título -->
+                <!-- Foto de Perfil -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:layout_gravity="center_horizontal"
+                    app:cardCornerRadius="60dp"
+                    app:cardElevation="6dp"
+                    app:strokeColor="#EEEEEE"
+                    app:strokeWidth="1dp">
 
-                <!-- Seção Dados Pessoais -->
-                <TextView
+                    <ImageView
+                        android:id="@+id/imgFotoEditar"
+                        android:layout_width="120dp"
+                        android:layout_height="120dp"
+                        android:layout_marginEnd="16dp"
+                        android:contentDescription="Foto do perfil"
+                        android:scaleType="centerCrop"
+                        android:adjustViewBounds="true"
+                        android:src="@drawable/ic_default_profile" />
+                </com.google.android.material.card.MaterialCardView>
+
+
+                <!-- Botão Alterar Foto -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAlterarFoto"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:layout_marginBottom="24dp"
+                    android:backgroundTint="@color/verdeescuro"
                     android:fontFamily="@font/poppins_medium"
-                    android:letterSpacing="0.02"
-                    android:text="Editar Perfil do Administrador"
-                    android:textColor="@android:color/black"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
+                    android:text="ALTERAR FOTO"
+                    android:textColor="@color/branco" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:fontFamily="@font/poppins_medium"
-                    android:letterSpacing="0.1"
-                    android:text="DADOS PESSOAIS"
-                    android:textColor="@color/verdeescuro"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
-                <!-- Campo Nome -->
-                <com.google.android.material.textfield.TextInputLayout
+                <!-- Card do Formulário -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/form_card"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    app:boxBackgroundMode="outline"
-                    app:boxCornerRadiusBottomEnd="8dp"
-                    app:boxCornerRadiusBottomStart="8dp"
-                    app:boxCornerRadiusTopEnd="8dp"
-                    app:boxCornerRadiusTopStart="8dp"
-                    app:boxStrokeColor="@color/verdeclaro"
-                    app:hintTextColor="@color/cinza">
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="8dp">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/edtNomeAdmin"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/edittext_background"
-                        android:hint="Nome"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp" />
-                </com.google.android.material.textfield.TextInputLayout>
+                        android:orientation="vertical"
+                        android:padding="24dp">
 
-                <!-- Campo Email -->
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    app:boxBackgroundMode="outline"
-                    app:boxCornerRadiusBottomEnd="8dp"
-                    app:boxCornerRadiusBottomStart="8dp"
-                    app:boxCornerRadiusTopEnd="8dp"
-                    app:boxCornerRadiusTopStart="8dp"
-                    app:boxStrokeColor="@color/verdeclaro"
-                    app:hintTextColor="@color/cinza">
+                        <!-- Seção: Informações do Administrador -->
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:fontFamily="@font/poppins_medium"
+                            android:text="Informações do Administrador"
+                            android:textColor="#046C4E"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/edtEmailAdmin"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/edittext_background"
-                        android:hint="Email"
-                        android:inputType="textEmailAddress"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp" />
-                </com.google.android.material.textfield.TextInputLayout>
+                        <!-- Nome -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp">
 
-                <!-- Campo Telefone -->
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    app:boxBackgroundMode="outline"
-                    app:boxCornerRadiusBottomEnd="8dp"
-                    app:boxCornerRadiusBottomStart="8dp"
-                    app:boxCornerRadiusTopEnd="8dp"
-                    app:boxCornerRadiusTopStart="8dp"
-                    app:boxStrokeColor="@color/verdeclaro"
-                    app:hintTextColor="@color/cinza">
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/edtNomeAdmin"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="Nome completo"
+                                android:inputType="textPersonName"
+                                android:textColor="#121212" />
+                        </com.google.android.material.textfield.TextInputLayout>
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/edtTelefoneAdmin"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/edittext_background"
-                        android:hint="Telefone"
-                        android:inputType="phone"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp" />
-                </com.google.android.material.textfield.TextInputLayout>
+                        <!-- Email -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp">
 
-                <!-- Seção Estacionamento -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:layout_marginBottom="8dp"
-                    android:fontFamily="@font/poppins_medium"
-                    android:letterSpacing="0.1"
-                    android:text="DADOS DO ESTACIONAMENTO"
-                    android:textColor="@color/verdeescuro"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/edtEmailAdmin"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="Email"
+                                android:inputType="textEmailAddress"
+                                android:textColor="#121212" />
+                        </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Campo Nome Estacionamento -->
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    app:boxBackgroundMode="outline"
-                    app:boxCornerRadiusBottomEnd="8dp"
-                    app:boxCornerRadiusBottomStart="8dp"
-                    app:boxCornerRadiusTopEnd="8dp"
-                    app:boxCornerRadiusTopStart="8dp"
-                    app:boxStrokeColor="@color/verdeclaro"
-                    app:hintTextColor="@color/cinza">
+                        <!-- Telefone -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="16dp">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/edtNomeEstacionamento"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/edittext_background"
-                        android:hint="Nome do Estacionamento"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp" />
-                </com.google.android.material.textfield.TextInputLayout>
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/edtTelefoneAdmin"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="Telefone"
+                                android:inputType="phone"
+                                android:textColor="#121212" />
+                        </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Campo Endereço -->
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    app:boxBackgroundMode="outline"
-                    app:boxCornerRadiusBottomEnd="8dp"
-                    app:boxCornerRadiusBottomStart="8dp"
-                    app:boxCornerRadiusTopEnd="8dp"
-                    app:boxCornerRadiusTopStart="8dp"
-                    app:boxStrokeColor="@color/verdeclaro"
-                    app:hintTextColor="@color/cinza">
+                        <!-- Seção: Estacionamento -->
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:fontFamily="@font/poppins_medium"
+                            android:text="Informações do Estacionamento"
+                            android:textColor="#046C4E"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/edtEnderecoEstacionamento"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/edittext_background"
-                        android:hint="Endereço"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp" />
-                </com.google.android.material.textfield.TextInputLayout>
+                        <!-- Nome -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp">
 
-                <!-- Campo Número de Vagas -->
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    app:boxBackgroundMode="outline"
-                    app:boxCornerRadiusBottomEnd="8dp"
-                    app:boxCornerRadiusBottomStart="8dp"
-                    app:boxCornerRadiusTopEnd="8dp"
-                    app:boxCornerRadiusTopStart="8dp"
-                    app:boxStrokeColor="@color/verdeclaro"
-                    app:hintTextColor="@color/cinza">
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/edtNomeEstacionamento"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="Nome do Estacionamento"
+                                android:inputType="textCapWords"
+                                android:textColor="#121212" />
+                        </com.google.android.material.textfield.TextInputLayout>
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/edtVagasEstacionamento"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/edittext_background"
-                        android:hint="Número de vagas"
-                        android:inputType="number"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp" />
-                </com.google.android.material.textfield.TextInputLayout>
+                        <!-- CNPJ -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp">
 
-                <!-- Campo Horário -->
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="24dp"
-                    app:boxBackgroundMode="outline"
-                    app:boxCornerRadiusBottomEnd="8dp"
-                    app:boxCornerRadiusBottomStart="8dp"
-                    app:boxCornerRadiusTopEnd="8dp"
-                    app:boxCornerRadiusTopStart="8dp"
-                    app:boxStrokeColor="@color/verdeclaro"
-                    app:hintTextColor="@color/cinza">
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/edt_cnpj"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="CNPJ"
+                                android:inputType="number"
+                                android:textColor="#121212" />
+                        </com.google.android.material.textfield.TextInputLayout>
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/edtHorarioEstacionamento"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/edittext_background"
-                        android:hint="Horário de funcionamento"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp" />
-                </com.google.android.material.textfield.TextInputLayout>
+                        <!-- Endereço -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/edtEnderecoEstacionamento"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="Endereço"
+                                android:inputType="textPostalAddress"
+                                android:textColor="#121212" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <!-- CEP -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/edt_cep"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="CEP"
+                                android:inputType="number"
+                                android:textColor="#121212" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <!-- Cidade -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/edt_cidade"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="Cidade"
+                                android:inputType="textCapWords"
+                                android:textColor="#121212" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <!-- Estado -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/edt_estado"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="Estado"
+                                android:inputType="textCapCharacters"
+                                android:maxLength="2"
+                                android:textColor="#121212" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <!-- Total de Vagas -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/edtVagasEstacionamento"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="Total de Vagas"
+                                android:inputType="number"
+                                android:textColor="#121212" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <!-- Horário -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/edtHorarioAbertura"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="Horário de Abertura"
+                                android:textColor="#121212" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/edtHorarioFechamento"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="Horário de Fechamento"
+                                android:textColor="#121212" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Valor da Hora -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/edt_valor_hora"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="Valor por Hora (R$)"
+                                android:inputType="numberDecimal"
+                                android:textColor="#121212" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
 
                 <!-- Botão Salvar -->
                 <com.google.android.material.button.MaterialButton
@@ -237,8 +315,8 @@
                     style="@style/Widget.MaterialComponents.Button"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
+                    android:layout_marginTop="24dp"
                     android:fontFamily="@font/poppins_medium"
-                    android:letterSpacing="0"
                     android:text="SALVAR ALTERAÇÕES"
                     android:textAllCaps="true"
                     android:textColor="@android:color/white"
@@ -246,7 +324,17 @@
                     app:backgroundTint="@color/verdeescuro"
                     app:cornerRadius="28dp"
                     app:rippleColor="@color/verdeescuro" />
-
+                <Button
+                    android:id="@+id/btnCancelar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:backgroundTint="#ED3327"
+                    android:fontFamily="@font/poppins_medium"
+                    android:minHeight="52dp"
+                    android:text="CANCELAR"
+                    android:textColor="#FFF"
+                    android:textSize="16sp" />
                 <!-- ProgressBar -->
                 <ProgressBar
                     android:id="@+id/progressBar"
@@ -256,6 +344,7 @@
                     android:layout_marginTop="16dp"
                     android:visibility="gone"
                     app:indicatorColor="@color/verdeescuro" />
+
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>

@@ -34,14 +34,27 @@
                 android:dividerPadding="8dp">
 
                 <!-- FOTO -->
-                <ImageView
-                    android:id="@+id/imgFotoEstacionamento"
-                    android:layout_width="match_parent"
-                    android:layout_height="200dp"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/estacionamento_foto"
-                    android:contentDescription="Foto do estacionamento"
-                    android:layout_marginBottom="16dp" />
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="20dp"
+                    app:cardCornerRadius="60dp"
+                    app:cardElevation="6dp"
+                    app:strokeColor="#EEEEEE"
+                    app:strokeWidth="1dp">
+
+                    <ImageView
+                        android:id="@+id/imgFotoEstacionamento"
+                        android:layout_width="120dp"
+                        android:layout_height="120dp"
+                        android:layout_marginEnd="16dp"
+                        android:adjustViewBounds="true"
+                        android:contentDescription="Foto do perfil"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_default_profile" />
+                </com.google.android.material.card.MaterialCardView>
+
                 <!-- INFORMAÇÕES Administrador -->
                 <TextView
                     android:layout_width="match_parent"

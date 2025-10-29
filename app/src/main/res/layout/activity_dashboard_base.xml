@@ -28,15 +28,27 @@
                 android:padding="10dp"
                 android:paddingVertical="16dp">
 
-                <ImageView
-                    android:id="@+id/iv_profile_image"
+
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="60dp"
                     android:layout_height="60dp"
-                    android:layout_marginEnd="16dp"
-                    android:contentDescription="Foto do perfil"
-                    android:src="@drawable/ic_default_profile"
-                    />
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginRight="16dp"
+                    app:cardCornerRadius="60dp"
+                    app:cardElevation="6dp"
+                    app:strokeColor="#EEEEEE"
+                    app:strokeWidth="1dp">
 
+                    <ImageView
+                        android:id="@+id/iv_profile_image"
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
+                        android:layout_marginEnd="16dp"
+                        android:contentDescription="Foto do perfil"
+                        android:scaleType="centerCrop"
+                        android:adjustViewBounds="true"
+                        android:src="@drawable/ic_default_profile" />
+                </com.google.android.material.card.MaterialCardView>
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

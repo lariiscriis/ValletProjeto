@@ -12,16 +12,24 @@ import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
-import java.text.SimpleDateFormat
-import java.util.*
 
 class SimpleParkingAdapter(
     private val onClick: (Estacionamento) -> Unit
 ) : RecyclerView.Adapter<SimpleParkingAdapter.ViewHolder>() {
 
     private val lista = mutableListOf<Estacionamento>()
+    private val listeners = mutableMapOf<String, ListenerRegistration>()
+    private val db = FirebaseFirestore.getInstance()
+    private val favoritoRef = db.collection("favoritos")
+    private val usuarioId = FirebaseAuth.getInstance().currentUser?.uid
 
     fun submitList(novaLista: List<Estacionamento>) {
+        val idsAtuais = novaLista.map { it.id }.toSet()
+        listeners.keys.filter { it !in idsAtuais }.forEach { id ->
+            listeners[id]?.remove()
+            listeners.remove(id)
+        }
+
         lista.clear()
         lista.addAll(novaLista)
         notifyDataSetChanged()
@@ -30,143 +38,109 @@ class SimpleParkingAdapter(
     inner class ViewHolder(private val binding: ItemParkingBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        private val favoritoRef = FirebaseFirestore.getInstance().collection("favoritos")
-        private val usuarioId = FirebaseAuth.getInstance().currentUser?.uid
-
         fun bind(estacionamento: Estacionamento) {
-            val aberto = verificarSeEstaAberto(
-                estacionamento.horarioAbertura ?: "",
-                estacionamento.horarioFechamento ?: ""
-            )
-
-            val db = FirebaseFirestore.getInstance()
-            var vagasListener: ListenerRegistration? = null
-
-            // 🔹 Função que inicia o listener em tempo real
-            fun iniciarListenerVagas() {
-                // Remove listener anterior, se houver (evita duplicação)
-                vagasListener?.remove()
-
-                vagasListener = db.collection("vaga")
-                    .whereEqualTo("estacionamentoId", estacionamento.id)
-                    .whereEqualTo("disponivel", true)
-                    .addSnapshotListener { snapshot, e ->
-                        if (e != null) {
-                            binding.tvTavInfo.text = "Vagas disponíveis: -"
-                            return@addSnapshotListener
-                        }
-
-                        val vagasDisponiveis = snapshot?.size() ?: 0
-                        binding.tvTavInfo.text = "Vagas disponíveis: $vagasDisponiveis"
-                        estacionamento.vagasDisponiveis = vagasDisponiveis
-                    }
-            }
-
-            // 🔹 Inicia listener assim que o item aparece
-            iniciarListenerVagas()
-
+            // Nome, status e preço
             binding.tvParkingName.text = estacionamento.nome
-            binding.tvParkingStatus.text =
-                if (estacionamento.estaAberto()) "ABERTO" else "FECHADO"
+            binding.tvParkingStatus.text = if (estacionamento.estaAberto()) "ABERTO" else "FECHADO"
             binding.tvParkingPrice.text = "R$%.2f/h".format(estacionamento.valorHora)
 
-            // Atualiza ícone de favorito
+            // Endereço
+            binding.tvParkingAddress.text = estacionamento.endereco
+
+            // Distância
+            binding.tvParkingDistance.text = estacionamento.distanciaMetros?.let { "$it m" } ?: "Distância não disponível"
+
+            // Foto
+            Glide.with(binding.root.context)
+                .load(estacionamento.fotoEstacionamentoUri)
+                .placeholder(R.drawable.estacionamento_foto)
+                .centerCrop() // ajusta escala corretamente
+                .into(binding.ivParkingImage)
+
+            // Favorito
             atualizarIconeFavorito(estacionamento.id)
-
             binding.ivFavorite.setOnClickListener {
-                if (usuarioId == null) return@setOnClickListener
+                usuarioId?.let { toggleFavorito(estacionamento.id) }
+            }
 
-                favoritoRef.whereEqualTo("usuarioId", usuarioId)
-                    .whereEqualTo("estacionamentoId", estacionamento.id)
+            // Botão vagas
+            binding.btnViewSpots.setOnClickListener {
+                val context = binding.root.context
+                val vagaViewModel = VagaViewModel()
+                if (estacionamento.estaAberto()) {
+                    vagaViewModel.verificarSeTemVagas(estacionamento.id) { temVagas ->
+                        if (temVagas) onClick(estacionamento)
+                        else Toast.makeText(context, "Nenhuma vaga disponível.", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    Toast.makeText(context, "O estacionamento está fechado.", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            iniciarListenerVagas(estacionamento)
+        }
+
+
+        private fun toggleFavorito(estacionamentoId: String) {
+            usuarioId?.let { uid ->
+                favoritoRef.whereEqualTo("usuarioId", uid)
+                    .whereEqualTo("estacionamentoId", estacionamentoId)
                     .get()
                     .addOnSuccessListener { snapshot ->
+                        val context = binding.root.context
                         if (snapshot.isEmpty) {
-                            // Adiciona favorito
-                            favoritoRef.add(
-                                mapOf(
-                                    "usuarioId" to usuarioId,
-                                    "estacionamentoId" to estacionamento.id
-                                )
-                            ).addOnSuccessListener {
-                                binding.ivFavorite.setImageResource(R.drawable.btn_star_on)
-                                Toast.makeText(
-                                    binding.root.context,
-                                    "Adicionado aos favoritos",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                // 🔁 Atualiza listener quando favoritar
-                                iniciarListenerVagas()
-                            }
+                            favoritoRef.add(mapOf("usuarioId" to uid, "estacionamentoId" to estacionamentoId))
+                                .addOnSuccessListener {
+                                    binding.ivFavorite.setImageResource(R.drawable.btn_star_on)
+                                    Toast.makeText(context, "Adicionado aos favoritos", Toast.LENGTH_SHORT).show()
+                                }
                         } else {
                             snapshot.documents.first().reference.delete()
                                 .addOnSuccessListener {
                                     binding.ivFavorite.setImageResource(R.drawable.btn_star_off)
-                                    Toast.makeText(
-                                        binding.root.context,
-                                        "Removido dos favoritos",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                    // 🔁 Atualiza listener quando desfavoritar
-                                    iniciarListenerVagas()
+                                    Toast.makeText(context, "Removido dos favoritos", Toast.LENGTH_SHORT).show()
                                 }
                         }
                     }
             }
-
-            Glide.with(binding.root.context)
-                .load(estacionamento.fotoEstacionamentoUri)
-                .placeholder(R.drawable.estacionamento_foto)
-                .into(binding.ivParkingImage)
-
-            binding.btnViewSpots.setOnClickListener {
-                val context = binding.root.context
-                val vagaViewModel = VagaViewModel()
-                if (aberto) {
-                    vagaViewModel.verificarSeTemVagas(estacionamento.id) { temVagas ->
-                        if (temVagas) onClick(estacionamento)
-                        else Toast.makeText(context, "Nenhuma vaga disponível.", Toast.LENGTH_SHORT)
-                            .show()
-                    }
-                } else {
-                    Toast.makeText(context, "O estacionamento está fechado.", Toast.LENGTH_SHORT)
-                        .show()
-                }
-            }
         }
-
 
         private fun atualizarIconeFavorito(estacionamentoId: String) {
-            if (usuarioId == null) return
-            favoritoRef.whereEqualTo("usuarioId", usuarioId)
-                .whereEqualTo("estacionamentoId", estacionamentoId)
-                .get()
-                .addOnSuccessListener { snapshot ->
-                    if (snapshot.isEmpty) {
-                        binding.ivFavorite.setImageResource(R.drawable.btn_star_off)
-                    } else {
-                        binding.ivFavorite.setImageResource(R.drawable.btn_star_on)
+            usuarioId?.let { uid ->
+                favoritoRef.whereEqualTo("usuarioId", uid)
+                    .whereEqualTo("estacionamentoId", estacionamentoId)
+                    .get()
+                    .addOnSuccessListener { snapshot ->
+                        binding.ivFavorite.setImageResource(
+                            if (snapshot.isEmpty) R.drawable.btn_star_off else R.drawable.btn_star_on
+                        )
                     }
-                }
-        }
-
-        private fun verificarSeEstaAberto(horaAbertura: String, horaFechamento: String): Boolean {
-            return try {
-                if (horaAbertura.isBlank() || horaFechamento.isBlank()) return true
-                val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
-                val agora = sdf.parse(sdf.format(Date()))
-                val abertura = sdf.parse(horaAbertura)
-                val fechamento = sdf.parse(horaFechamento)
-                if (abertura != null && fechamento != null && agora != null) {
-                    if (fechamento.before(abertura)) {
-                        agora.after(abertura) || agora.before(fechamento)
-                    } else {
-                        agora.after(abertura) && agora.before(fechamento)
-                    }
-                } else false
-            } catch (e: Exception) {
-                true
             }
         }
+        private fun atualizarInfo(estacionamento: Estacionamento, vagasDisponiveis: Int? = null) {
+            val distanciaTexto = estacionamento.distanciaMetros?.let {
+                if (it >= 1000) "%.1f km".format(it / 1000.0) else "$it m"
+            } ?: "Distância indisponível"
+
+            val vagasTexto = vagasDisponiveis?.let { " • Vagas disponíveis: $it" } ?: ""
+
+            binding.tvTavInfo.text = "$distanciaTexto$vagasTexto"
+        }
+        private fun iniciarListenerVagas(estacionamento: Estacionamento) {
+            val estacionamentoId = estacionamento.id
+            listeners[estacionamentoId]?.remove()
+
+            val listener = db.collection("vaga")
+                .whereEqualTo("estacionamentoId", estacionamentoId)
+                .whereEqualTo("disponivel", true)
+                .addSnapshotListener { snapshot, _ ->
+                    val vagasDisponiveis = snapshot?.size() ?: 0
+                    binding.tvTavInfo.text = "Vagas disponíveis: $vagasDisponiveis"
+                }
+
+            listeners[estacionamentoId] = listener
+        }
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
