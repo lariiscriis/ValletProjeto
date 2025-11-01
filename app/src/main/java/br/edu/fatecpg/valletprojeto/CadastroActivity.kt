@@ -43,11 +43,6 @@ class CadastroActivity : AppCompatActivity() {
             finish()
         }
 
-        binding.botaoLoginAdmin.setOnClickListener {
-            startActivity(Intent(this, LoginActivity::class.java).putExtra("tipoCadastro", "admin"))
-            finish()
-        }
-
         binding.btnCadastrar.setOnClickListener {
             val usuario = Usuario(
                 email = binding.edtEmail.text.toString().trim(),
@@ -58,22 +53,10 @@ class CadastroActivity : AppCompatActivity() {
             )
             cadastrar(usuario)
         }
-
-        binding.btnCadastrarAdmin.setOnClickListener {
-            val usuario = Usuario(
-                email = binding.edtEmailAdmin.text.toString().trim(),
-                nome = binding.edtNomeEmpresa.text.toString().trim(),
-                senha = binding.edtSenhaAdmin.text.toString().trim(),
-                tipoUser = "admin",
-                nomeEmpresa = binding.edtNomeEmpresa.text.toString().trim(),
-                cargo = binding.edtCargoAdmin.text.toString().trim()
-            )
-            cadastrar(usuario)
-        }
     }
 
     private fun cadastrar(usuario: Usuario) {
-        if (usuario.email.isEmpty() || usuario.senha.isEmpty() || usuario.nome.isEmpty()) {
+        if (usuario.email.isEmpty() || usuario.senha.isEmpty() || usuario.nome.isEmpty() || usuario.cnh!!.isEmpty()) {
             Toast.makeText(this, "Preencha todos os campos obrigatórios", Toast.LENGTH_SHORT).show()
             return
         }
@@ -92,7 +75,7 @@ class CadastroActivity : AppCompatActivity() {
             },
             onError = { msg ->
                 binding.progressOverlay.visibility = View.GONE
-                Toast.makeText(this, msg ?: "Erro ao cadastrar usuário", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
             }
         )
     }

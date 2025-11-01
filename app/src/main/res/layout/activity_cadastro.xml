@@ -109,7 +109,7 @@
                 android:background="@drawable/edittext_background"
                 android:ems="10"
                 android:hint="Digite seu Email"
-                android:inputType="text"
+                android:inputType="textEmailAddress"
                 android:padding="12dp"
                 android:textColor="#8A8A8A"
                 tools:ignore="Autofill,HardcodedText,TextContrastCheck,VisualLintTextFieldSize" />
@@ -277,198 +277,61 @@
         android:id="@+id/layout_cadastro_admin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="gone"
+        android:gravity="center"
         android:orientation="vertical"
-        android:layout_marginBottom="4dp"
         android:padding="32dp"
-        android:textAlignment="center"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="visible">
 
-
-        <TextView
-            android:id="@+id/textView11_admin"
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Email"
-            android:textColor="#121212"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            tools:ignore="HardcodedText" />
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp"
+            app:contentPadding="24dp">
 
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="70dp">
-
-            <EditText
-                android:id="@+id/edt_email_admin"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/edittext_background"
-                android:ems="10"
-                android:hint="Digite seu Email"
-                android:inputType="text"
-                android:padding="12dp"
-                android:textColor="#8A8A8A"
-                tools:ignore="Autofill,HardcodedText,TextContrastCheck,VisualLintTextFieldSize" />
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical">
 
-            <ImageView
-                android:id="@+id/emailimg_admin"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_gravity="end|center_vertical"
-                android:layout_marginEnd="12dp"
-                android:src="@drawable/email"
-                app:srcCompat="@drawable/email"
-                tools:ignore="ContentDescription" />
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/email"
+                    android:layout_marginBottom="16dp"
+                    app:tint="#046C4E"
+                    tools:ignore="ContentDescription" />
 
-        </FrameLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:fontFamily="@font/poppins"
+                    android:text="Se você é um administrador de estacionamento e deseja cadastrá-lo em nosso app, entre em contato com nossa equipe:"
+                    android:textAlignment="center"
+                    android:textColor="@android:color/black"
+                    android:textSize="16sp" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="Nome da Empresa"
-            android:textColor="#121212"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            tools:ignore="HardcodedText" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/poppins_semibold"
+                    android:text="email@gmail.com"
+                    android:autoLink="email"
+                    android:textColorLink="#046C4E"
+                    android:textAlignment="center"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
 
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="70dp">
+            </LinearLayout>
 
-
-            <EditText
-                android:id="@+id/edt_nome_empresa"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/edittext_background"
-                android:ems="10"
-                android:hint="Digite o nome"
-                android:inputType="text"
-                android:padding="12dp"
-                android:textColor="#8A8A8A"
-                tools:ignore="Autofill,HardcodedText,TextContrastCheck" />
-
-            <ImageView
-                android:id="@+id/nomeimg_admin"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_gravity="end|center_vertical"
-                android:layout_marginEnd="12dp"
-                android:src="@drawable/nome"
-                app:srcCompat="@drawable/nome"
-                tools:ignore="ContentDescription" />
-        </FrameLayout>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="Cargo"
-            android:textColor="#121212"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            tools:ignore="HardcodedText" />
-
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="70dp">
-
-            <EditText
-                android:id="@+id/edt_cargo_admin"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/edittext_background"
-                android:ems="10"
-                android:hint="Digite seu cargo na empresa"
-                android:inputType="text"
-                android:padding="12dp"
-                android:textColor="#8A8A8A"
-                tools:ignore="Autofill,HardcodedText,TextContrastCheck,VisualLintTextFieldSize" />
-
-            <ImageView
-                android:id="@+id/cnhimg_admin"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_gravity="end|center_vertical"
-                android:layout_marginEnd="12dp"
-                android:src="@drawable/cnh"
-                app:srcCompat="@drawable/cnh"
-                tools:ignore="ContentDescription" />
-
-        </FrameLayout>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="Senha"
-            android:textColor="#121212"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            tools:ignore="HardcodedText" />
-
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="70dp">
-
-            <EditText
-                android:id="@+id/edt_senha_admin"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/edittext_background"
-                android:ems="10"
-                android:hint="Digite sua Senha"
-                android:inputType="textPassword"
-                android:padding="12dp"
-                android:textColor="#8A8A8A"
-                tools:ignore="Autofill,HardcodedText,TextContrastCheck,VisualLintTextFieldSize" />
-
-            <ImageView
-                android:id="@+id/senhaimg_admin"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_gravity="end|center_vertical"
-                android:layout_marginEnd="12dp"
-                android:src="@drawable/senha"
-                app:srcCompat="@drawable/senha"
-                tools:ignore="ContentDescription" />
-
-        </FrameLayout>
-
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btn_cadastrar_admin"
-            style="@android:style/Widget.Button"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginTop="22dp"
-            android:background="@drawable/button_background"
-            android:minHeight="48dp"
-            android:text="Cadastrar Administrador"
-            android:textColor="#fff"
-            android:textSize="20sp"
-
-            android:textStyle="bold"
-            tools:ignore="HardcodedText,VisualLintButtonSize" />
-
-        <TextView
-            android:id="@+id/botaoLogin_admin"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="15dp"
-            android:text="Já tem uma conta? Faça Login como administrador!"
-            android:textAlignment="center"
-            tools:ignore="HardcodedText" />
-
-
+        </androidx.cardview.widget.CardView>
     </LinearLayout>
     <FrameLayout
         android:id="@+id/progressOverlay"

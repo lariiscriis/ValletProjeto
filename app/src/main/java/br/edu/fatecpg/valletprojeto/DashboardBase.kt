@@ -127,6 +127,8 @@ class DashboardBase : AppCompatActivity() {
 
     private fun setupNavigation() {
         binding.bottomNavigation.menu.findItem(R.id.nav_management).isVisible = isAdmin
+        binding.bottomNavigation.menu.findItem(R.id.nav_spots).isVisible = !isAdmin
+        binding.bottomNavigation.menu.findItem(R.id.nav_vehicles).isVisible = !isAdmin
 
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {

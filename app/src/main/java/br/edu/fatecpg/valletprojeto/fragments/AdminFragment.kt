@@ -217,7 +217,7 @@ class AdminFragment : Fragment() {
                         .map { it.key to it.value }
 
 
-                    val spots = listOf(binding.tvSpotA1, binding.tvSpotB2, binding.tvSpotB3)
+                    val spots = listOf(binding.txvVaga1, binding.txvVaga2, binding.txvVaga3)
                     spots.forEachIndexed { index, textView ->
                         if (index < top3.size) {
                             val (vaga, _) = top3[index]
@@ -229,7 +229,7 @@ class AdminFragment : Fragment() {
 
 
                 } else {
-                    listOf(binding.tvSpotA1, binding.tvSpotB2, binding.tvSpotB3).forEach {
+                    listOf(binding.txvVaga1, binding.txvVaga2, binding.txvVaga3).forEach {
                         it.text = "--"
                     }
                 }
@@ -247,7 +247,7 @@ class AdminFragment : Fragment() {
                 val availableSpots = totalSpots - occupiedSpots
                 val occupancyRate = if (totalSpots > 0) (occupiedSpots * 100 / totalSpots) else 0
 
-                binding.tvTotalSpots.text = totalSpots.toString()
+                binding.txvTotalVagas.text = totalSpots.toString()
                 binding.tvOccupiedSpots.text = occupiedSpots.toString()
                 binding.tvAvailableSpots.text = availableSpots.toString()
                 binding.tvOccupancyRate.text = "$occupancyRate%"
