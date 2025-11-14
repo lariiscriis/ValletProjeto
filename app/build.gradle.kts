@@ -3,7 +3,6 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.google.gms.google.services)
     id("kotlin-kapt")
-
 }
 
 android {
@@ -16,7 +15,6 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -29,72 +27,76 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     kotlinOptions {
         jvmTarget = "11"
     }
 
     buildFeatures {
         viewBinding = true
-    }
-
-    buildFeatures {
         dataBinding = true
     }
-
-
 }
+
 dependencies {
-    implementation(libs.firebase.firestore.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
-    implementation(libs.androidx.activity)
-    implementation(libs.androidx.constraintlayout)
-    implementation(libs.firebase.storage.ktx)
-    implementation(libs.androidx.media3.common.ktx)
-    implementation("com.google.android.gms:play-services-location:21.3.0")
+
+    // Firebase (use sempre versão estável e consistente)
+    implementation("com.google.firebase:firebase-auth:22.3.1")
     implementation("com.google.firebase:firebase-firestore:25.1.1")
-    implementation("com.google.firebase:firebase-auth:23.1.0")
+    implementation(libs.firebase.storage.ktx)
+    implementation(libs.firebase.firestore.ktx)
 
-    // Retrofit para requisições HTTP
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.3")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.3")
-
-    // Corrotinas (opcional, mas recomendado)
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-    // Coroutines para programação assíncrona
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
-
-
+    // AndroidX core
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
-    implementation(libs.firebase.auth)
-    implementation("androidx.cardview:cardview:1.0.0")
-    implementation("com.google.android.material:material:1.6.0")
-    implementation("com.github.bumptech.glide:glide:4.16.0")
-    implementation(libs.androidx.work.runtime.ktx)
-    kapt("com.github.bumptech.glide:compiler:4.16.0")
+
+    // Location
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+
+    // Media3
+    implementation(libs.androidx.media3.common.ktx)
+
+    // Retrofit + OkHttp
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
+    // Lifecycle / ViewModel
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.3")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.3")
+
+    // Coroutines (somente UMA versão, a correta)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    // Outros componentes UI
+    implementation("androidx.cardview:cardview:1.0.0")
     implementation("androidx.fragment:fragment-ktx:1.8.1")
+
+    // Glide
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    kapt("com.github.bumptech.glide:compiler:4.16.0")
+
+    // WorkManager
+    implementation(libs.androidx.work.runtime.ktx)
+
+    // Testes
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-
 }
+
 kapt {
     correctErrorTypes = true
     useBuildCache = true
     javacOptions {
         option("-Xlanguage-version", "2.0")
     }
-
-
 }
