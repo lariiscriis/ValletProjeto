@@ -15,6 +15,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import androidx.lifecycle.lifecycleScope
 import br.edu.fatecpg.valletprojeto.dao.VeiculoDao.auth
+import br.edu.fatecpg.valletprojeto.fragments.OccupationFragment
 import br.edu.fatecpg.valletprojeto.fragments.SpotsFragment
 import br.edu.fatecpg.valletprojeto.fragments.VagaFragment
 import br.edu.fatecpg.valletprojeto.fragments.VeiculoListFragment
@@ -126,19 +127,30 @@ class DashboardBase : AppCompatActivity() {
     }
 
     private fun setupNavigation() {
-        binding.bottomNavigation.menu.findItem(R.id.nav_management).isVisible = isAdmin
+        val menu = binding.bottomNavigation.menu
+
+        menu.findItem(R.id.nav_vehicles).isVisible = !isAdmin
+        menu.findItem(R.id.nav_management).isVisible = isAdmin
+
+        val navSpots = menu.findItem(R.id.nav_spots)
+        if (isAdmin) {
+            navSpots.title = "Vagas Ocupadas"
+            navSpots.setIcon(R.drawable.ic_parking)
+        } else {
+            navSpots.title = "Estacionamentos"
+            navSpots.setIcon(R.drawable.ic_parking)
+        }
 
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_spots -> {
-                    replaceFragment(SpotsFragment())
+                    if (isAdmin) replaceFragment(OccupationFragment())
+                    else replaceFragment(SpotsFragment())
                     true
                 }
                 R.id.nav_dashboard -> {
-                    when (isAdmin) {
-                        true -> replaceFragment(AdminFragment())
-                        false -> replaceFragment(MotoristaFragment())
-                    }
+                    if (isAdmin) replaceFragment(AdminFragment())
+                    else replaceFragment(MotoristaFragment())
                     true
                 }
                 R.id.nav_vehicles -> {
@@ -146,16 +158,14 @@ class DashboardBase : AppCompatActivity() {
                     true
                 }
                 R.id.nav_management -> {
-                    if (isAdmin) {
-                        replaceFragment(VagaFragment())
-                    }
+                    if (isAdmin) replaceFragment(VagaFragment())
                     true
                 }
-
                 else -> false
             }
         }
     }
+
 
     private fun loadInitialFragment() {
         when (isAdmin) {

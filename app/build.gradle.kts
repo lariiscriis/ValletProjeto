@@ -60,6 +60,8 @@ dependencies {
 
     // Location
     implementation("com.google.android.gms:play-services-location:21.3.0")
+// build.gradle (app)
+    implementation ("com.firebase:geofire-android-common:3.2.0")
 
     // Media3
     implementation(libs.androidx.media3.common.ktx)

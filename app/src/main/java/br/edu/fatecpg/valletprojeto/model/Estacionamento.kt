@@ -28,6 +28,8 @@ data class Estacionamento(
     val horarioAbertura: String? = null,
     val horarioFechamento: String? = null,
     val valorHora: Double? = null,
+    val geohash: String? = null,
+
 )
 {
     fun estaAberto(): Boolean {
