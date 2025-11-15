@@ -24,6 +24,7 @@ class VagaFragment : Fragment() {
     private lateinit var viewModel: VagaViewModel
     private var _binding: FragmentVagaBinding? = null
     private val binding get() = _binding!!
+    private lateinit var vagasAdapter: VagasAdapter // Mantenha uma instância do adapter
     private var isAdmin: Boolean = false
     private var estacionamentoId: String? = null
 
@@ -31,7 +32,7 @@ class VagaFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentVagaBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -41,60 +42,100 @@ class VagaFragment : Fragment() {
 
         viewModel = ViewModelProvider(this)[VagaViewModel::class.java]
 
+        // A lógica de UI será iniciada após a verificação do usuário
+        verificarUsuarioAdmin()
+    }
+
+    private fun verificarUsuarioAdmin() {
         val userId = FirebaseAuth.getInstance().currentUser?.uid
-        val db = FirebaseFirestore.getInstance()
-
-        if (userId != null) {
-            db.collection("usuario").document(userId).get()
-                .addOnSuccessListener { document ->
-                    val tipo = document.getString("tipo_user")
-                    isAdmin = tipo == "admin"
-
-                    if (isAdmin) {
-                        val emailAdmin = FirebaseAuth.getInstance().currentUser?.email
-                        if (emailAdmin != null) {
-                            db.collection("estacionamento")
-                                .whereEqualTo("adminEmail", emailAdmin)
-                                .get()
-                                .addOnSuccessListener { querySnapshot ->
-                                    if (!querySnapshot.isEmpty) {
-                                        estacionamentoId = querySnapshot.documents[0].id
-                                        setupUI()
-                                    } else {
-                                        Toast.makeText(requireContext(), "Estacionamento não encontrado para este admin", Toast.LENGTH_SHORT).show()
-                                        setupUI()
-                                    }
-                                }
-                                .addOnFailureListener {
-                                    Toast.makeText(requireContext(), "Erro ao buscar estacionamento do admin", Toast.LENGTH_SHORT).show()
-                                    setupUI()
-                                }
-                        } else {
-                            Toast.makeText(requireContext(), "E-mail do admin não encontrado", Toast.LENGTH_SHORT).show()
-                            setupUI()
-                        }
-                    } else {
-                        // Lógica para não-admins, se necessário
-                        setupUI()
-                    }
-                }
-                .addOnFailureListener {
-                    Toast.makeText(requireContext(), "Erro ao verificar tipo de usuário", Toast.LENGTH_SHORT).show()
-                    setupUI()
-                }
-        } else {
-            Toast.makeText(requireContext(), "Usuário não logado", Toast.LENGTH_SHORT).show()
-            setupUI()
+        if (userId == null) {
+            // Lidar com o caso de usuário não logado, talvez mostrar uma mensagem
+            binding.fabAdd.visibility = View.GONE
+            return
         }
+
+        val db = FirebaseFirestore.getInstance()
+        db.collection("usuario").document(userId).get()
+            .addOnSuccessListener { document ->
+                if (activity == null || !isAdded) return@addOnSuccessListener // Evita crash se o fragmento for destruído
+
+                isAdmin = document.getString("tipo_user") == "admin"
+                if (isAdmin) {
+                    // Se for admin, busca o ID do seu estacionamento
+                    buscarEstacionamentoDoAdmin()
+                } else {
+                    // Se não for admin, esta tela pode não fazer sentido ou deveria mostrar outra coisa.
+                    // Por enquanto, vamos apenas desabilitar as funções de admin.
+                    binding.fabAdd.visibility = View.GONE
+                }
+            }
+            .addOnFailureListener {
+                if (activity == null || !isAdded) return@addOnFailureListener
+                Toast.makeText(requireContext(), "Erro ao verificar tipo de usuário.", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun buscarEstacionamentoDoAdmin() {
+        val emailAdmin = FirebaseAuth.getInstance().currentUser?.email ?: return
+        FirebaseFirestore.getInstance().collection("estacionamento")
+            .whereEqualTo("adminEmail", emailAdmin)
+            .limit(1) // Pega apenas o primeiro estacionamento do admin
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (activity == null || !isAdded) return@addOnSuccessListener
+
+                if (!querySnapshot.isEmpty) {
+                    estacionamentoId = querySnapshot.documents[0].id
+                    // Agora que temos o ID, configuramos o resto da UI
+                    setupUI()
+                } else {
+                    Toast.makeText(requireContext(), "Nenhum estacionamento encontrado para este admin.", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .addOnFailureListener {
+                if (activity == null || !isAdded) return@addOnFailureListener
+                Toast.makeText(requireContext(), "Erro ao buscar estacionamento do admin.", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun setupUI() {
-        setupListeners()
         setupRecyclerView()
         setupObservers()
+        setupListeners()
 
+        // 1. CORREÇÃO: Chama a nova função do ViewModel
         estacionamentoId?.let {
-            viewModel.fetchVagasPorEstacionamento(it)
+            viewModel.fetchVagasComFiltro(it, "Todos") // Filtro inicial "Todos"
+        }
+    }
+
+    private fun setupRecyclerView() {
+        // 2. CORREÇÃO: Crie o adapter UMA VEZ, sem passar a lista
+        vagasAdapter = VagasAdapter(
+            isAdmin = this.isAdmin,
+            onEditClick = { vaga ->
+                startActivity(Intent(requireContext(), EditarVagaActivity::class.java).apply {
+                    putExtra("vagaId", vaga.id)
+                })
+            },
+            onDeleteClick = { vaga ->
+                showDeleteDialog(vaga)
+            }
+        )
+        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerView.adapter = vagasAdapter
+    }
+
+    private fun setupObservers() {
+        viewModel.vagas.observe(viewLifecycleOwner) { vagas ->
+            // 3. CORREÇÃO: Use submitList para atualizar o adapter
+            vagasAdapter.submitList(vagas)
+        }
+
+        viewModel.errorMessage.observe(viewLifecycleOwner) { message ->
+            message?.let {
+                Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -107,38 +148,11 @@ class VagaFragment : Fragment() {
                     intent.putExtra("estacionamentoId", it)
                     startActivity(intent)
                 } ?: run {
-                    Toast.makeText(requireContext(), "Estacionamento não encontrado", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "ID do estacionamento não disponível.", Toast.LENGTH_SHORT).show()
                 }
             }
         } else {
             binding.fabAdd.visibility = View.GONE
-        }
-    }
-
-    private fun setupRecyclerView() {
-        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-    }
-
-    private fun setupObservers() {
-        viewModel.vagas.observe(viewLifecycleOwner) { vagas ->
-            binding.recyclerView.adapter = VagasAdapter(
-                vagas,
-                isAdmin = isAdmin,
-                onEditClick = { vaga ->
-                    startActivity(Intent(requireContext(), EditarVagaActivity::class.java).apply {
-                        putExtra("vagaId", vaga.id)
-                    })
-                },
-                onDeleteClick = { vaga ->
-                    showDeleteDialog(vaga)
-                }
-            )
-        }
-
-        viewModel.errorMessage.observe(viewLifecycleOwner) { message ->
-            message?.let {
-                Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
-            }
         }
     }
 
