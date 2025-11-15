@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import br.edu.fatecpg.valletprojeto.R
-//import br.edu.fatecpg.valletprojeto.dao.ParkingSpot
 import br.edu.fatecpg.valletprojeto.model.Vaga
 
 class ParkingSpotAdapter(
@@ -23,7 +22,6 @@ class ParkingSpotAdapter(
             tvSpotNumber.text = spot.numero
             tvSpotStatus.text = if (spot.disponivel) "Disponível" else "Reservada"
 
-            // Muda a cor com base no status
             tvSpotStatus.setTextColor(
                 if (!spot.disponivel) Color.parseColor("#F44336")
                 else Color.parseColor("#4CAF50")

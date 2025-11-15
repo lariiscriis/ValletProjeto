@@ -44,6 +44,37 @@ class SpotsViewModel(application: Application) : AndroidViewModel(application) {
     val error: LiveData<String?> = _error
 
     private var allParkingsMasterList: List<Estacionamento> = listOf()
+    private val _navigateToVagas = MutableLiveData<Event<String>>()
+    val navigateToVagas: LiveData<Event<String>> = _navigateToVagas
+
+    private val _toastMessage = MutableLiveData<Event<String>>()
+    val toastMessage: LiveData<Event<String>> = _toastMessage
+
+    fun onEstacionamentoClicked(estacionamento: Estacionamento) {
+        if (!estacionamento.estaAberto()) {
+            _toastMessage.value = Event("O estacionamento está fechado.")
+            return
+        }
+        viewModelScope.launch {
+            try {
+                val snapshot = withContext(Dispatchers.IO) {
+                    db.collection("vaga")
+                        .whereEqualTo("estacionamentoId", estacionamento.id)
+                        .whereEqualTo("disponivel", true)
+                        .limit(1)
+                        .get()
+                        .await()
+                }
+                if (!snapshot.isEmpty) {
+                    _navigateToVagas.value = Event(estacionamento.id)
+                } else {
+                    _toastMessage.value = Event("Nenhuma vaga disponível no momento.")
+                }
+            } catch (e: Exception) {
+                _toastMessage.value = Event("Erro ao verificar vagas: ${e.message}")
+            }
+        }
+    }
 
     fun loadData(useLocation: Boolean = true) {
         if (_isLoading.value == true) return
@@ -105,8 +136,6 @@ class SpotsViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    // SpotsViewModel.kt
-
     private suspend fun fetchParkingsNear(location: Location): List<Estacionamento> = withContext(Dispatchers.IO) {
         Log.d("SpotsViewModel", "Executando fetchParkingsNear em ${Thread.currentThread().name}")
         val center = GeoLocation(location.latitude, location.longitude)
@@ -124,14 +153,11 @@ class SpotsViewModel(application: Application) : AndroidViewModel(application) {
         val snapshots = Tasks.await(Tasks.whenAllSuccess<QuerySnapshot>(tasks))
         Log.d("SpotsViewModel", "Geohash query retornou ${snapshots.sumOf { it.size() }} documentos brutos.")
 
-        // --- INÍCIO DA MUDANÇA COM LOGS ---
         val matchingDocs = snapshots.flatMap { snap ->
             snap.documents.filter { doc ->
-                // Tenta ler como Double, se falhar, tenta ler como String e converter.
                 val lat = doc.get("latitude") as? Double ?: (doc.get("latitude") as? String)?.toDoubleOrNull() ?: 0.0
                 val lng = doc.get("longitude") as? Double ?: (doc.get("longitude") as? String)?.toDoubleOrNull() ?: 0.0
 
-                // Se lat ou lng for 0.0, é um sinal de alerta.
                 if (lat == 0.0 || lng == 0.0) {
                     Log.w("SpotsViewModel", "ALERTA: Coordenadas inválidas para o doc ${doc.id}. Lat: $lat, Lng: $lng")
                 }
@@ -182,6 +208,40 @@ class SpotsViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun toggleFavoriteStatus(estacionamento: Estacionamento) {
+        val userId = auth.currentUser?.uid ?: return
+        val isCurrentlyFavorite = _favoriteParkings.value?.any { it.id == estacionamento.id } == true
+
+        viewModelScope.launch(Dispatchers.IO) {
+            val favoritoRef = db.collection("favoritos")
+                .whereEqualTo("usuarioId", userId)
+                .whereEqualTo("estacionamentoId", estacionamento.id)
+
+            if (isCurrentlyFavorite) {
+                favoritoRef.get().await().documents.firstOrNull()?.reference?.delete()?.await()
+            } else {
+                db.collection("favoritos").add(
+                    mapOf("usuarioId" to userId, "estacionamentoId" to estacionamento.id)
+                ).await()
+            }
+        }
+
+        val currentFavorites = _favoriteParkings.value?.toMutableList() ?: mutableListOf()
+        val currentOthers = _parkings.value?.toMutableList() ?: mutableListOf()
+
+        if (isCurrentlyFavorite) {
+            currentFavorites.removeAll { it.id == estacionamento.id }
+            currentOthers.add(0, estacionamento)
+            _favoriteParkings.postValue(currentFavorites)
+            _parkings.postValue(currentOthers.sortedBy { it.distanciaMetros ?: Int.MAX_VALUE })
+        } else {
+            currentOthers.removeAll { it.id == estacionamento.id }
+            currentFavorites.add(estacionamento)
+            _parkings.postValue(currentOthers)
+            _favoriteParkings.postValue(currentFavorites)
+        }
+    }
+
     fun searchParkings(query: String) {
         val filteredList = if (query.isBlank()) {
             allParkingsMasterList.filterNot { it.id in (_favoriteParkings.value?.map { fav -> fav.id } ?: emptySet()) }
@@ -192,5 +252,18 @@ class SpotsViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
         _parkings.value = filteredList
+    }
+}
+open class Event<out T>(private val content: T) {
+    var hasBeenHandled = false
+        private set
+
+    fun getContentIfNotHandled(): T? {
+        return if (hasBeenHandled) {
+            null
+        } else {
+            hasBeenHandled = true
+            content
+        }
     }
 }

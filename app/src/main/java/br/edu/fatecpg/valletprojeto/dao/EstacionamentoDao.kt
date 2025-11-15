@@ -7,7 +7,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 
-// Removida a classe externa desnecessária, usando apenas o 'object'
 object EstacionamentoDao {
     private val auth = FirebaseAuth.getInstance()
     private val db = FirebaseFirestore.getInstance()
@@ -21,7 +20,6 @@ object EstacionamentoDao {
         val docRef = db.collection("estacionamento").document()
         val idGerado = docRef.id
 
-        // 1. Calcular o Geohash
         val lat = est.latitude
         val lon = est.longitude
         val geohash = if (lat != null && lon != null) {
@@ -30,7 +28,6 @@ object EstacionamentoDao {
             null
         }
 
-        // 2. Montar o objeto de dados para salvar
         val data = hashMapOf(
             "id" to idGerado,
             "nome" to est.nome,
@@ -57,10 +54,9 @@ object EstacionamentoDao {
             "dataCadastro" to FieldValue.serverTimestamp(),
             "latitude" to (lat ?: 0.0),
             "longitude" to (lon ?: 0.0),
-            "geohash" to geohash // Campo geohash incluído
+            "geohash" to geohash
         )
 
-        // 3. Salvar no Firestore
         docRef.set(data)
             .addOnSuccessListener {
                 onSuccess()

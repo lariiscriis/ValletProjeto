@@ -22,60 +22,45 @@ class VagaActivity : AppCompatActivity() {
     private var isAdmin: Boolean = false
     private var estacionamentoId: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        binding = ActivityVagaBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+            binding = ActivityVagaBinding.inflate(layoutInflater)
+            setContentView(binding.root)
 
-        viewModel = ViewModelProvider(this)[VagaViewModel::class.java]
+            viewModel = ViewModelProvider(this)[VagaViewModel::class.java]
 
-        val userId = FirebaseAuth.getInstance().currentUser?.uid
-        val db = FirebaseFirestore.getInstance()
+            estacionamentoId = intent.getStringExtra("estacionamentoId")
 
-        estacionamentoId = intent.getStringExtra("estacionamentoId")
+            if (estacionamentoId == null) {
+                Toast.makeText(this, "Erro: ID do estacionamento não fornecido.", Toast.LENGTH_LONG).show()
+                finish()
+                return
+            }
 
-        if (userId != null) {
+            verificarTipoUsuario()
+
+            setupUI()
+        }
+
+        private fun verificarTipoUsuario() {
+            val userId = FirebaseAuth.getInstance().currentUser?.uid
+            if (userId == null) {
+                isAdmin = false
+                return
+            }
+
+            val db = FirebaseFirestore.getInstance()
             db.collection("usuario").document(userId).get()
                 .addOnSuccessListener { document ->
                     val tipo = document.getString("tipo_user")
                     isAdmin = tipo == "admin"
-
-                    if (isAdmin) {
-                        val emailAdmin = FirebaseAuth.getInstance().currentUser?.email
-                        if (emailAdmin != null) {
-                            db.collection("estacionamento")
-                                .whereEqualTo("adminEmail", emailAdmin)
-                                .get()
-                                .addOnSuccessListener { querySnapshot ->
-                                    if (!querySnapshot.isEmpty) {
-                                        estacionamentoId = querySnapshot.documents[0].id
-                                        setupUI()
-                                    } else {
-                                        Toast.makeText(this, "Estacionamento não encontrado para este admin", Toast.LENGTH_SHORT).show()
-                                        setupUI()
-                                    }
-                                }
-                                .addOnFailureListener {
-                                    Toast.makeText(this, "Erro ao buscar estacionamento do admin", Toast.LENGTH_SHORT).show()
-                                    setupUI()
-                                }
-                        } else {
-                            Toast.makeText(this, "E-mail do admin não encontrado", Toast.LENGTH_SHORT).show()
-                            setupUI()
-                        }
-                    } else {
-                        setupUI()
-                    }
+                    setupListeners()
                 }
                 .addOnFailureListener {
-                    Toast.makeText(this, "Erro ao verificar tipo de usuário", Toast.LENGTH_SHORT).show()
-                    setupUI()
+                    isAdmin = false
+                    setupListeners()
                 }
-        } else {
-            Toast.makeText(this, "Usuário não logado", Toast.LENGTH_SHORT).show()
-            setupUI()
         }
-    }
 
     private fun setupUI() {
         setupListeners()

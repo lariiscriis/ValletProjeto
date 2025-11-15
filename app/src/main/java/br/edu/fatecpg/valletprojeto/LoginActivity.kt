@@ -28,10 +28,7 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Força atualização do provedor TLS ANTES do Firebase
         tryUpdateTlsProvider()
-
-        // Bypassa executor que obrigaria reCAPTCHA
         blockFirebaseRecaptcha()
 
         enableEdgeToEdge()
@@ -42,26 +39,17 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
         setupUI()
     }
 
-    /* ----------------------------------------------------------
-       PATCH 1: Força atualização do TLS (ProviderInstaller)
-       ---------------------------------------------------------- */
     private fun tryUpdateTlsProvider() {
         providerInstallAttempted = true
         ProviderInstaller.installIfNeededAsync(this, this)
     }
 
     override fun onProviderInstalled() {
-        // TLS atualizado com sucesso, seguimos a vida
     }
 
     override fun onProviderInstallFailed(errorCode: Int, recoveryIntent: Intent?) {
-        // Se falhar, seguimos com TLS nativo (melhor que travar o Firebase 60s)
     }
 
-    /* ----------------------------------------------------------
-       PATCH 2: Remove execução assíncrona do FirebaseAuth
-       que invocaria reCAPTCHA/SafetyNet
-       ---------------------------------------------------------- */
     private fun blockFirebaseRecaptcha() {
         try {
             val field = FirebaseAuth::class.java.getDeclaredField("executor")
@@ -69,10 +57,6 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
             field.set(Firebase.auth, Executor { runnable -> runnable.run() })
         } catch (_: Exception) {}
     }
-
-    /* ----------------------------------------------------------
-       Continuação do seu código original (intocado)
-       ---------------------------------------------------------- */
 
     private fun setupUI() {
         setupLoginType()

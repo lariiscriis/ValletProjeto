@@ -1,4 +1,3 @@
-// SpotsFragment.kt
 package br.edu.fatecpg.valletprojeto.fragments
 
 import android.Manifest
@@ -27,20 +26,18 @@ class SpotsFragment : Fragment() {
     private var _binding: FragmentSpotsBinding? = null
     private val binding get() = _binding!!
 
-    // Use o viewModels() para instanciar o ViewModel
     private val viewModel: SpotsViewModel by viewModels()
 
     private lateinit var simpleAdapter: SimpleParkingAdapter
     private lateinit var favoriteAdapter: FavoriteParkingAdapter
 
-    // Novo launcher para permissões, mais moderno e seguro
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) {
-                viewModel.loadData() // Carrega os dados se a permissão for concedida
+                viewModel.loadData()
             } else {
                 Toast.makeText(requireContext(), "Permissão de localização negada.", Toast.LENGTH_SHORT).show()
-                viewModel.loadData(useLocation = false) // Carrega sem localização
+                viewModel.loadData(useLocation = false)
             }
         }
 
@@ -52,7 +49,7 @@ class SpotsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupRecyclerViews() // Chamada corrigida aqui
+        setupRecyclerViews()
         setupSearchView()
         observeViewModel()
 
@@ -60,22 +57,25 @@ class SpotsFragment : Fragment() {
     }
 
     private fun setupRecyclerViews() {
-        // Adapter para "Outros Estacionamentos"
-        simpleAdapter = SimpleParkingAdapter { estacionamento ->
-            val intent = Intent(requireContext(), VagaActivity::class.java)
-            intent.putExtra("estacionamentoId", estacionamento.id)
-            startActivity(intent)
-        }
+        simpleAdapter = SimpleParkingAdapter(
+            onFavoriteClicked = { estacionamento ->
+                viewModel.toggleFavoriteStatus(estacionamento)
+            },
+            onItemClicked = { estacionamento ->
+                viewModel.onEstacionamentoClicked(estacionamento)
+            }
+        )
         binding.rvOtherParkings.layoutManager = LinearLayoutManager(requireContext())
         binding.rvOtherParkings.adapter = simpleAdapter
 
-        // **CORREÇÃO APLICADA AQUI**
-        // O construtor agora só recebe a ação de clique, sem a lista.
-        favoriteAdapter = FavoriteParkingAdapter { estacionamento ->
-            val intent = Intent(requireContext(), VagaActivity::class.java)
-            intent.putExtra("estacionamentoId", estacionamento.id)
-            startActivity(intent)
-        }
+        favoriteAdapter = FavoriteParkingAdapter(
+            onFavoriteClicked = { estacionamento ->
+                viewModel.toggleFavoriteStatus(estacionamento)
+            },
+            onItemClicked = { estacionamento ->
+                viewModel.onEstacionamentoClicked(estacionamento)
+            }
+        )
         binding.rvFavorites.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         binding.rvFavorites.adapter = favoriteAdapter
     }
@@ -94,12 +94,13 @@ class SpotsFragment : Fragment() {
         viewModel.isLoading.observe(viewLifecycleOwner, Observer { isLoading ->
             binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         })
+
         viewModel.parkings.observe(viewLifecycleOwner, Observer { parkings ->
             simpleAdapter.submitList(parkings)
         })
 
         viewModel.favoriteParkings.observe(viewLifecycleOwner, Observer { favorites ->
-            favoriteAdapter.updateFavorites(favorites)
+            favoriteAdapter.submitList(favorites)
         })
 
         viewModel.error.observe(viewLifecycleOwner, Observer { errorMessage ->
@@ -107,8 +108,21 @@ class SpotsFragment : Fragment() {
                 Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
             }
         })
-    }
 
+        viewModel.toastMessage.observe(viewLifecycleOwner, Observer { event ->
+            event.getContentIfNotHandled()?.let { message ->
+                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+            }
+        })
+
+        viewModel.navigateToVagas.observe(viewLifecycleOwner, Observer { event ->
+            event.getContentIfNotHandled()?.let { estacionamentoId ->
+                val intent = Intent(requireContext(), VagaActivity::class.java)
+                intent.putExtra("estacionamentoId", estacionamentoId)
+                startActivity(intent)
+            }
+        })
+    }
 
 
     private fun verificarPermissaoLocalizacao() {
@@ -117,10 +131,9 @@ class SpotsFragment : Fragment() {
                 requireContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED -> {
-                viewModel.loadData() // Permissão já concedida
+                viewModel.loadData()
             }
             else -> {
-                // Solicita a permissão
                 requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
             }
         }
@@ -128,6 +141,6 @@ class SpotsFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null // Evita memory leaks
+        _binding = null
     }
 }

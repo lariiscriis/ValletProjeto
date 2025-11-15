@@ -54,7 +54,6 @@ class DashboardBase : AppCompatActivity() {
         setupButtonListeners()
     }
 
-
     private fun verificarTipoUsuario() {
         val email = FirebaseAuth.getInstance().currentUser?.email
 
@@ -165,7 +164,6 @@ class DashboardBase : AppCompatActivity() {
             }
         }
     }
-
 
     private fun loadInitialFragment() {
         when (isAdmin) {
