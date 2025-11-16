@@ -3,61 +3,69 @@ package br.edu.fatecpg.valletprojeto.worker
 import android.app.NotificationManager
 import android.content.Context
 import androidx.core.app.NotificationCompat
-import androidx.work.Worker
+import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import br.edu.fatecpg.valletprojeto.R
-import br.edu.fatecpg.valletprojeto.viewmodel.ReservaViewModel
-import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.tasks.await
 import java.util.*
 
 class CheckReservaWorker(
-    context: Context,
+    private val context: Context,
     workerParams: WorkerParameters
-) : Worker(context, workerParams) {
+) : CoroutineWorker(context, workerParams) {
 
-    private val db = FirebaseFirestore.getInstance()
-
-    override fun doWork(): Result {
+    override suspend fun doWork(): Result {
+        val db = Firebase.firestore
         val agora = Date()
 
-        db.collection("reserva")
-            .whereEqualTo("status", "ativa")
-            .get()
-            .addOnSuccessListener { docs ->
-                for (doc in docs) {
-                    val fimReserva = doc.getTimestamp("fimReserva")?.toDate()
-                    if (fimReserva != null && fimReserva.before(agora)) {
-                        val vagaId = doc.getString("vagaId")
+        try {
+            val snapshot = db.collection("reserva")
+                .whereEqualTo("status", "ativa")
+                .whereLessThan("fimReserva", agora)
+                .get()
+                .await()
 
-                        db.collection("reserva").document(doc.id)
-                            .update("status", "finalizada")
-                            .addOnSuccessListener {
-                                if (!vagaId.isNullOrEmpty()) {
-                                    db.collection("vaga").document(vagaId)
-                                        .update("disponivel", true)
-                                }
-
-                                // Notificação de finalização
-                                val notificationManager =
-                                    applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                                val notification = NotificationCompat.Builder(applicationContext, ReservaViewModel.CHANNEL_ID)
-                                    .setSmallIcon(R.drawable.ic_parking)
-                                    .setContentTitle("Reserva finalizada automaticamente")
-                                    .setContentText("Sua reserva expirou e a vaga foi liberada.")
-                                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                                    .setAutoCancel(true)
-                                    .build()
-
-                                notificationManager.notify(
-                                    ReservaViewModel.NOTIFICATION_ID + 7,
-                                    notification
-                                )
-                            }
-                    }
-                }
+            if (snapshot.isEmpty) {
+                return Result.success()
             }
 
-        // Retorna sucesso (mesmo que async)
-        return Result.success()
+            for (doc in snapshot.documents) {
+                val vagaId = doc.getString("vagaId")
+
+                db.collection("reserva").document(doc.id)
+                    .update("status", "finalizada")
+                    .await()
+
+                if (!vagaId.isNullOrEmpty()) {
+                    db.collection("vaga").document(vagaId)
+                        .update("disponivel", true)
+                        .await()
+                }
+
+                enviarNotificacao(vagaId ?: "desconhecida")
+            }
+
+            return Result.success()
+
+        } catch (e: Exception) {
+            return Result.failure()
+        }
+    }
+
+    private fun enviarNotificacao(vagaId: String) {
+        val notificationManager =
+            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        val notification = NotificationCompat.Builder(context, NotificationConstants.RESERVA_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_parking)
+            .setContentTitle("Reserva Finalizada")
+            .setContentText("Sua reserva para a vaga $vagaId expirou e foi finalizada.")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true)
+            .build()
+
+        notificationManager.notify(System.currentTimeMillis().toInt(), notification)
     }
 }

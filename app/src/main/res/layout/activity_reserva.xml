@@ -1,125 +1,191 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- activity_reserva.xml -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/rootLayout"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="32dp"
-    android:gravity="center_horizontal"
-    android:orientation="vertical"
-    android:background="@android:color/white">
+    android:fillViewport="true">
 
-    <!-- Vaga em destaque -->
-    <TextView
-        android:id="@+id/tvVagaId"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
-        android:fontFamily="@font/poppins_medium"
-        android:letterSpacing="0.1"
-        android:text="VAGA: A-013"
-        android:textAllCaps="true"
-        android:textColor="@android:color/black"
-        android:textSize="28sp"
-        android:textStyle="bold" />
-
-    <!-- Tempo máximo -->
-    <TextView
-        android:id="@+id/tvTempoMaximo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="32dp"
-        android:fontFamily="@font/poppins_medium"
-        android:text="Tempo máximo: 2 horas"
-        android:textColor="#757575"
-        android:textSize="16sp" />
-
-    <!-- Círculo com carro -->
-    <FrameLayout
-        android:layout_width="216dp"
-        android:layout_height="205dp"
-        android:layout_marginBottom="32dp"
-        android:background="@drawable/circle_progress_background">
-
-        <ImageView
-            android:id="@+id/gifCarro"
-            android:layout_width="126dp"
-            android:layout_height="120dp"
-            android:layout_gravity="center" />
-    </FrameLayout>
-
-    <TextView
-        android:id="@+id/tvTimer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="32dp"
-        android:fontFamily="@font/poppins_medium"
-        android:text="00:00"
-        android:textColor="@color/preto"
-        android:textSize="48sp"
-        android:textStyle="bold" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnReservar"
-        style="@style/Widget.MaterialComponents.Button"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginBottom="16dp"
-        android:fontFamily="@font/poppins_medium"
-        android:insetTop="0dp"
-        android:insetBottom="0dp"
-        android:text="RESERVAR"
-        android:textAllCaps="true"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
-        app:backgroundTint="@color/verdeescuro"
-        app:cornerRadius="28dp"
-        app:rippleColor="#B71C1C"
-        app:strokeColor="#D32F2F"
-        app:strokeWidth="0dp" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnCancelar"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:text="CANCELAR"
-        android:textSize="16sp"
-        android:textAllCaps="true"
-        android:textColor="#D32F2F"
-        android:visibility="gone"
-        android:layout_marginBottom="24dp"
-        app:cornerRadius="28dp"
-        app:strokeColor="#D32F2F"
-        app:strokeWidth="2dp"/>
-
-    <!-- Horário reserva -->
-    <TextView
-        android:id="@+id/tvHorarioReserva"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:fontFamily="@font/poppins_medium"
-        android:letterSpacing="0.05"
-        android:text="Horário: 12:00 - 14:00"
-        android:textColor="#757575"
-        android:textSize="14sp" />
-
-    <!-- ProgressBar estilizada -->
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:visibility="gone"
-        android:layout_marginTop="24dp"
-        android:indeterminateTint="#D32F2F"
-
-        />
-
-    <TextView
-        android:id="@+id/textView4"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-  />
-</LinearLayout>
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Card de Informações da Vaga e Veículo (permanece o mesmo ) -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="16dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="#E0E0E0"
+            android:layout_marginBottom="24dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/tv_vaga_numero"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textStyle="bold"
+                    android:textSize="20sp"
+                    android:textColor="@color/verdeescuro"
+                    tools:text="Vaga A-01" />
+
+                <TextView
+                    android:id="@+id/tv_vaga_detalhes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    tools:text="Tipo: Carro • Local: Térreo" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="?android:attr/listDivider"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginBottom="12dp"/>
+
+                <TextView
+                    android:id="@+id/tv_veiculo_info"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawablePadding="8dp"
+                    android:gravity="center_vertical"
+                    tools:text="Veículo: Fiat Mobi (ABC-1234 )" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Círculo com o carro (sempre visível) -->
+        <FrameLayout
+            android:layout_width="220dp"
+            android:layout_height="220dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/circle_progress_background">
+
+            <ImageView
+                android:id="@+id/gif_carro"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_gravity="center"
+                tools:src="@drawable/reserva_carro"/>
+        </FrameLayout>
+
+        <!-- Container para o seletor de tempo OU o timer -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:animateLayoutChanges="true">
+
+            <!-- Grupo de Seleção de Tempo (visível ANTES da reserva) -->
+            <LinearLayout
+                android:id="@+id/layout_config_reserva"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Selecione o tempo da reserva"
+                    android:layout_marginBottom="8dp"/>
+
+                <TextView
+                    android:id="@+id/tv_tempo_selecionado"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="36sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/preto"
+                    tools:text="01:00" />
+
+                <com.google.android.material.slider.Slider
+                    android:id="@+id/slider_tempo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/slider"
+                    android:stepSize="1.0"
+                    android:value="1.0"
+                    android:valueFrom="1.0"
+                    android:valueTo="4.0" />
+            </LinearLayout>
+
+            <!-- Grupo do Timer (visível DURANTE a reserva) -->
+            <LinearLayout
+                android:id="@+id/layout_timer_reserva"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tempo Restante"/>
+
+                <TextView
+                    android:id="@+id/tv_timer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="48sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/preto"
+                    tools:text="59:59" />
+
+                <TextView
+                    android:id="@+id/tv_horario_reserva"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="Reserva das 14:00 às 15:00" />
+            </LinearLayout>
+
+        </FrameLayout>
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+
+        <!-- Botões de Ação (permanecem os mesmos) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_reservar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Confirmar Reserva"
+            app:backgroundTint="@color/verdeescuro"
+            android:layout_marginTop="24dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_renovar"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Renovar por +1 hora"
+            android:visibility="gone"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_cancelar"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cancelar Reserva"
+            android:textColor="@android:color/holo_red_dark"
+            android:visibility="gone"/>
+
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"/>
+
+    </LinearLayout>
+</ScrollView>

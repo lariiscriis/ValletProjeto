@@ -58,17 +58,30 @@
 
         </LinearLayout>
 
-        <ToggleButton
-            android:id="@+id/toggle_favorite_car"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:background="@drawable/star"
+<!--        <CheckBox-->
+<!--            android:id="@+id/toggle_favorite_car"-->
+<!--            android:layout_width="48dp"-->
+<!--            android:layout_height="48dp"-->
+<!--            android:background="@drawable/star"-->
+<!--            android:contentDescription="Marcar como veículo principal"-->
+<!--            android:textOff=""-->
+<!--            android:textOn=""-->
+<!--            app:layout_constraintBottom_toBottomOf="parent"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            app:layout_constraintTop_toTopOf="parent" />-->
+
+        <ImageView
+            android:id="@+id/iv_favorite_toggle"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/btn_star_off"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
             android:contentDescription="Marcar como veículo principal"
-            android:textOff=""
-            android:textOn=""
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            tools:src="@drawable/btn_star_on" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

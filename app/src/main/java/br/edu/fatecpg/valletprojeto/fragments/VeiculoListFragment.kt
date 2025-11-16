@@ -2,6 +2,7 @@ package br.edu.fatecpg.valletprojeto.fragments
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,7 +11,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import br.edu.fatecpg.valletprojeto.EditarVeiculoActivity
 import br.edu.fatecpg.valletprojeto.R
@@ -21,6 +24,7 @@ import br.edu.fatecpg.valletprojeto.databinding.ItemCardVeiculoBinding
 import br.edu.fatecpg.valletprojeto.model.Veiculo
 import br.edu.fatecpg.valletprojeto.viewmodel.VeiculoViewModel
 import br.edu.fatecpg.valletprojeto.viewmodel.VeiculoViewModelFactory
+import com.google.firebase.auth.FirebaseAuth
 
 class VeiculoListFragment : Fragment() {
 
@@ -32,7 +36,6 @@ class VeiculoListFragment : Fragment() {
     }
 
     private lateinit var veiculosAdapter: VeiculosAdapter
-    private val veiculosCadastrados = mutableListOf<Veiculo>()
 
     private val editarVeiculoLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -67,12 +70,11 @@ class VeiculoListFragment : Fragment() {
         veiculoFragment.show(parentFragmentManager, "VeiculoFragment")
     }
 
-    private fun carregarVeiculosDoUsuario() {
+    fun carregarVeiculosDoUsuario() {
         viewModel.listarVeiculosDoUsuario(
             onSuccess = { lista ->
-                veiculosCadastrados.clear()
-                veiculosCadastrados.addAll(lista)
-                veiculosAdapter.notifyDataSetChanged()
+                Log.d("VeiculoListFragment", "Veículos carregados: ${lista.size}")
+                veiculosAdapter.submitList(lista)
             },
             onFailure = { erro ->
                 Toast.makeText(requireContext(), "Erro ao carregar veículos: $erro", Toast.LENGTH_LONG).show()
@@ -81,7 +83,28 @@ class VeiculoListFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        veiculosAdapter = VeiculosAdapter(veiculosCadastrados)
+        veiculosAdapter = VeiculosAdapter(
+            onToggleClick = { veiculo ->
+                val userId = FirebaseAuth.getInstance().currentUser?.uid
+                if (userId != null) {
+                    viewModel.definirVeiculoPadrao(veiculo.id, userId) { sucesso ->
+                        if (sucesso) {
+                            Toast.makeText(requireContext(), "${veiculo.modelo} definido como padrão.", Toast.LENGTH_SHORT).show()
+                            carregarVeiculosDoUsuario()
+                        } else {
+                            Toast.makeText(requireContext(), "Erro ao definir veículo padrão.", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            },
+            onItemClick = { veiculo ->
+                val intent = Intent(requireContext(), EditarVeiculoActivity::class.java).apply {
+                    putExtra("veiculoId", veiculo.id)
+                }
+                editarVeiculoLauncher.launch(intent)
+            }
+        )
+
         binding.rvCarList.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = veiculosAdapter
@@ -92,54 +115,57 @@ class VeiculoListFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
+}
 
-    inner class VeiculosAdapter(private val veiculos: List<Veiculo>) :
-        RecyclerView.Adapter<VeiculosAdapter.VeiculoViewHolder>() {
+class VeiculosAdapter(
+    private val onToggleClick: (Veiculo) -> Unit,
+    private val onItemClick: (Veiculo) -> Unit
+) : ListAdapter<Veiculo, VeiculosAdapter.VeiculoViewHolder>(VeiculoDiffCallback) {
 
-        inner class VeiculoViewHolder(val binding: ItemCardVeiculoBinding) :
-            RecyclerView.ViewHolder(binding.root)
+    inner class VeiculoViewHolder(val binding: ItemCardVeiculoBinding) :
+        RecyclerView.ViewHolder(binding.root) {
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VeiculoViewHolder {
-            val binding = ItemCardVeiculoBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-            return VeiculoViewHolder(binding)
-        }
-
-        override fun onBindViewHolder(holder: VeiculoViewHolder, position: Int) {
-            val veiculo = veiculos[position]
-
-            if (veiculo.tipo == "moto") {
-                holder.binding.ivCarIcon.setImageResource(R.drawable.ic_moto)
+        fun bind(veiculo: Veiculo) {
+            binding.tvCarModel.text = "${veiculo.marca} ${veiculo.modelo}"
+            binding.tvCarPlate.text = veiculo.placa
+            binding.ivCarIcon.setImageResource(
+                if (veiculo.tipo == "moto") R.drawable.ic_moto else R.drawable.ic_vehicle
+            )
+            if (veiculo.padrao) {
+                binding.ivFavoriteToggle.setImageResource(R.drawable.btn_star_on)
             } else {
-                holder.binding.ivCarIcon.setImageResource(R.drawable.ic_vehicle)
+                binding.ivFavoriteToggle.setImageResource(R.drawable.btn_star_off)
             }
 
-            holder.binding.tvCarModel.text = "${veiculo.marca} ${veiculo.modelo}"
-            holder.binding.tvCarPlate.text = veiculo.placa
-
-            holder.binding.toggleFavoriteCar.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) {
-                    Toast.makeText(
-                        holder.itemView.context,
-                        "${veiculo.placa} definido como principal!",
-                        Toast.LENGTH_SHORT
-                    ).show()
+            binding.ivFavoriteToggle.setOnClickListener {
+                if (!veiculo.padrao) {
+                    onToggleClick(veiculo)
                 }
             }
 
-            holder.itemView.setOnClickListener {
-                val intent = Intent(requireContext(), EditarVeiculoActivity::class.java).apply {
-                    putExtra("veiculoId", veiculo.id)
-                    putExtra("placa", veiculo.placa)
-                    putExtra("marca", veiculo.marca)
-                    putExtra("modelo", veiculo.modelo)
-                    putExtra("ano", veiculo.ano)
-                    putExtra("km", veiculo.km)
-                    putExtra("tipo", veiculo.tipo)
-                }
-                editarVeiculoLauncher.launch(intent)
+            itemView.setOnClickListener {
+                onItemClick(veiculo)
             }
         }
+    }
 
-        override fun getItemCount(): Int = veiculos.size
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VeiculoViewHolder {
+        val binding = ItemCardVeiculoBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return VeiculoViewHolder(binding)
+    }
+
+    override fun onBindViewHolder(holder: VeiculoViewHolder, position: Int) {
+        holder.bind(getItem(position))
+    }
+
+    companion object {
+        private val VeiculoDiffCallback = object : DiffUtil.ItemCallback<Veiculo>() {
+            override fun areItemsTheSame(oldItem: Veiculo, newItem: Veiculo): Boolean {
+                return oldItem.id == newItem.id
+            }
+            override fun areContentsTheSame(oldItem: Veiculo, newItem: Veiculo): Boolean {
+                return oldItem == newItem
+            }
+        }
     }
 }

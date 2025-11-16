@@ -1,275 +1,284 @@
 package br.edu.fatecpg.valletprojeto.viewmodel
 
-import android.app.*
+import android.app.AlarmManager
+import android.app.Application
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.CountDownTimer
 import android.util.Log
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import br.edu.fatecpg.valletprojeto.R
-import br.edu.fatecpg.valletprojeto.ReservaActivity
+import androidx.lifecycle.viewModelScope
+import br.edu.fatecpg.valletprojeto.model.Reserva
+import br.edu.fatecpg.valletprojeto.model.Vaga
+import br.edu.fatecpg.valletprojeto.model.Veiculo
+import br.edu.fatecpg.valletprojeto.receiver.ReservaAvisoReceiver
+import br.edu.fatecpg.valletprojeto.receiver.ReservaExpiredReceiver
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import java.text.SimpleDateFormat
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.util.*
-import android.Manifest
-import android.content.pm.PackageManager
-import br.edu.fatecpg.valletprojeto.receiver.ReservaAvisoReceiver
-import br.edu.fatecpg.valletprojeto.receiver.ReservaExpiredReceiver
+import java.util.concurrent.TimeUnit
 
-sealed class ReservaState {
-    object Loading : ReservaState()
-    data class Success(val reservaId: String) : ReservaState()
-    data class Error(val message: String) : ReservaState()
+
+sealed class ReservaUIState {
+    object Initial : ReservaUIState()
+    data class Idle(val vaga: Vaga, val veiculo: Veiculo) : ReservaUIState()
+    object Loading : ReservaUIState()
+    data class Active(val reserva: Reserva, val vaga: Vaga, val veiculo: Veiculo) : ReservaUIState()
+    data class Finished(val message: String) : ReservaUIState()
+    data class Error(val message: String) : ReservaUIState()
 }
 
-class ReservaViewModel : ViewModel() {
+class ReservaViewModel(application: Application) : AndroidViewModel(application) {
 
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
-    private val _tempoRestante = MutableLiveData("00:00")
+    private val _uiState = MutableLiveData<ReservaUIState>(ReservaUIState.Initial)
+    val uiState: LiveData<ReservaUIState> = _uiState
+
+    private val _tempoRestante = MutableLiveData<String>()
     val tempoRestante: LiveData<String> = _tempoRestante
 
-    private val _reservaStatus = MutableLiveData<ReservaState>()
-    val reservaStatus: LiveData<ReservaState> = _reservaStatus
-
     private var timer: CountDownTimer? = null
-    private var currentReservaId: String? = null
-    private var currentVagaId: String? = null
-    private var currentEstacionamentoId: String? = null
+    private var idReservaAtiva: String? = null
 
-    companion object {
-        const val CHANNEL_ID = "reserva_channel"
-        const val NOTIFICATION_ID = 1001
-    }
+    private var idVagaAtiva: String? = null
 
-    fun iniciarReserva(vagaId: String, estacionamentoId: String, tempoMaxReservaHoras: Int, context: Context) {
-        _reservaStatus.value = ReservaState.Loading
+    fun carregarDadosIniciais(vagaId: String) {
+        viewModelScope.launch {
+            _uiState.value = ReservaUIState.Loading
+            try {
+                val vagaDoc = db.collection("vaga").document(vagaId).get().await()
 
-        val userId = auth.currentUser?.uid ?: run {
-            _reservaStatus.value = ReservaState.Error("Usuário não autenticado")
-            Log.e("ReservaVM", "Usuário não autenticado")
-            return
-        }
-
-        if (vagaId.isBlank() || estacionamentoId.isBlank()) {
-            _reservaStatus.value = ReservaState.Error("Dados da vaga/estacionamento inválidos")
-            return
-        }
-
-        db.collection("reserva")
-            .whereEqualTo("usuarioId", userId)
-            .whereEqualTo("status", "ativa")
-            .get()
-            .addOnSuccessListener { docs ->
-                if (!docs.isEmpty) {
-                    _reservaStatus.value = ReservaState.Error("Você já possui uma reserva ativa")
-                    return@addOnSuccessListener
+                val vaga = vagaDoc.toObject(Vaga::class.java)?.apply {
+                    id = vagaDoc.id
                 }
 
-                val agora = Timestamp.now()
-                val fimMillis = agora.toDate().time + tempoMaxReservaHoras * 60L * 60L * 1000L
-                val fimReserva = Timestamp(Date(fimMillis))
+                val veiculoAsync = async { buscarVeiculoPadrao() }
+                val reservaAtivaAsync = async { buscarReservaAtiva(vagaId) }
 
-                val reservaMap = hashMapOf(
-                    "usuarioId" to userId,
-                    "vagaId" to vagaId,
-                    "estacionamentoId" to estacionamentoId,
-                    "inicioReserva" to agora,
-                    "fimReserva" to fimReserva,
-                    "status" to "ativa"
+                val veiculo = veiculoAsync.await()
+                val reservaAtiva = reservaAtivaAsync.await()
+
+                if (vaga != null && veiculo != null) {
+                    if (reservaAtiva != null) {
+                        _uiState.value = ReservaUIState.Active(reservaAtiva, vaga, veiculo)
+                        iniciarTimer(reservaAtiva.fimReserva!!.toDate())
+                    } else {
+                        _uiState.value = ReservaUIState.Idle(vaga, veiculo)
+                    }
+                } else {
+                    _uiState.value = ReservaUIState.Error("Vaga ou veículo padrão não encontrado.")
+                }
+            } catch (e: Exception) {
+                _uiState.value = ReservaUIState.Error("Erro ao carregar dados: ${e.message}")
+            }
+        }
+    }
+
+    fun agendarNotificacoes(context: Context, reserva: Reserva) {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val fimReservaMillis = reserva.fimReserva?.toDate()?.time ?: return
+        val avisoIntent = Intent(context, ReservaAvisoReceiver::class.java).apply {
+            putExtra("vagaId", reserva.vagaId)
+            putExtra("estacionamentoId", reserva.estacionamentoId)
+        }
+        val avisoPendingIntent = PendingIntent.getBroadcast(
+            context,
+            reserva.id.hashCode(),
+            avisoIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val avisoMillis = fimReservaMillis - TimeUnit.MINUTES.toMillis(10)
+        if (avisoMillis > System.currentTimeMillis()) {
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, avisoMillis, avisoPendingIntent)
+        }
+
+        val expiraIntent = Intent(context, ReservaExpiredReceiver::class.java)
+        val expiraPendingIntent = PendingIntent.getBroadcast(
+            context,
+            reserva.id.hashCode() + 1,
+            expiraIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, fimReservaMillis, expiraPendingIntent)
+    }
+
+    fun criarReserva(vagaId: String, estacionamentoId: String, horas: Int) {
+        idVagaAtiva = vagaId
+        viewModelScope.launch {
+            _uiState.value = ReservaUIState.Loading
+            val userId = auth.currentUser?.uid ?: return@launch
+            try {
+                val agora = Timestamp.now()
+                val fimReserva = Timestamp(Date(agora.toDate().time + TimeUnit.HOURS.toMillis(horas.toLong())))
+
+                val novaReserva = Reserva(
+                    usuarioId = userId,
+                    vagaId = vagaId,
+                    estacionamentoId = estacionamentoId,
+                    status = "ativa",
+                    inicioReserva = agora,
+                    fimReserva = fimReserva
                 )
 
-                db.collection("reserva")
-                    .add(reservaMap)
-                    .addOnSuccessListener { docRef ->
-                        currentReservaId = docRef.id
-                        currentVagaId = vagaId
-                        currentEstacionamentoId = estacionamentoId
+                val docRef = db.collection("reserva").add(novaReserva).await()
+                idReservaAtiva = docRef.id
 
-                        db.collection("vaga").document(vagaId)
-                            .update("disponivel", false)
-                            .addOnSuccessListener {
-                                _reservaStatus.value = ReservaState.Success(docRef.id)
-
-                                val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
-                                val inicioStr = sdf.format(agora.toDate())
-                                val fimStr = sdf.format(fimReserva.toDate())
-
-                                criarNotificacao(
-                                    context,
-                                    "Reserva Confirmada",
-                                    "Vaga $vagaId reservada das $inicioStr às $fimStr",
-                                    vagaId,
-                                    estacionamentoId
-                                )
-
-                                iniciarTimer(fimReserva.toDate().time, vagaId, estacionamentoId, context)
-                                agendarExpiracaoReserva(context, fimReserva.toDate().time)
-                            }
-                            .addOnFailureListener { eUpdate ->
-                                db.collection("reserva").document(docRef.id).delete()
-                                _reservaStatus.value = ReservaState.Error("Erro ao reservar vaga: ${eUpdate.message}")
-                            }
-                    }
-                    .addOnFailureListener { e ->
-                        _reservaStatus.value = ReservaState.Error("Erro ao criar reserva: ${e.message}")
-                    }
+                db.collection("vaga").document(vagaId).update("disponivel", false).await()
+                val reservaCriada = novaReserva.apply { id = docRef.id }
+                agendarNotificacoes(getApplication(), reservaCriada)
+                carregarDadosIniciais(vagaId)
+            } catch (e: Exception) {
+                _uiState.value = ReservaUIState.Error("Erro ao criar reserva: ${e.message}")
             }
-            .addOnFailureListener { e ->
-                _reservaStatus.value = ReservaState.Error("Erro ao verificar reservas: ${e.message}")
-            }
-    }
-
-
-    fun retomarReservaAtiva(fimReserva: Date, vagaId: String, estacionamentoId: String, context: Context) {
-        currentVagaId = vagaId
-        currentEstacionamentoId = estacionamentoId
-        iniciarTimer(fimReserva.time, vagaId, estacionamentoId, context)
-        Log.d("ReservaVM", "Timer retomado para reserva ativa ($vagaId)")
-    }
-
-    /**
-     * 🔹 Cancela uma reserva ativa
-     */
-    fun cancelarReserva(context: Context, vagaId: String, estacionamentoId: String) {
-        val reservaId = currentReservaId ?: run {
-            _reservaStatus.value = ReservaState.Error("Reserva não encontrada")
-            return
         }
-
-        db.collection("reserva").document(reservaId)
-            .update("status", "cancelada")
-            .addOnSuccessListener {
-                db.collection("vaga").document(vagaId)
-                    .update("disponivel", true)
-                    .addOnSuccessListener {
-                        timer?.cancel()
-                        _tempoRestante.value = "00:00"
-                        _reservaStatus.value = ReservaState.Success("cancelada")
-
-                        criarNotificacao(context, "Reserva Cancelada", "Sua reserva foi cancelada.", vagaId, estacionamentoId)
-                    }
-                    .addOnFailureListener { e ->
-                        _reservaStatus.value = ReservaState.Error("Reserva cancelada, mas falha ao liberar vaga: ${e.message}")
-                    }
-            }
-            .addOnFailureListener { e ->
-                _reservaStatus.value = ReservaState.Error("Erro ao cancelar reserva: ${e.message}")
-            }
     }
 
+    fun renovarReserva(reserva: Reserva) {
+        viewModelScope.launch {
+            val idReserva = reserva.id
+            val idVaga = reserva.vagaId
 
-    private fun iniciarTimer(fimTimestamp: Long, vagaId: String, estacionamentoId: String, context: Context) {
+            Log.d("Renovacao", "Iniciando renovação para reservaId: $idReserva, vagaId: $idVaga")
+
+            _uiState.value = ReservaUIState.Loading
+            try {
+                val proximaReserva = db.collection("reserva")
+                    .whereEqualTo("vagaId", idVaga)
+                    .whereGreaterThan("inicioReserva", reserva.fimReserva!!)
+                    .orderBy("inicioReserva")
+                    .limit(1)
+                    .get().await()
+
+                if (!proximaReserva.isEmpty) {
+                    Log.w("Renovacao", "Falha: Já existe uma reserva futura para a vaga $idVaga.")
+                    _uiState.value = ReservaUIState.Error("Não é possível renovar. Vaga já reservada para o próximo horário.")
+                    carregarDadosIniciais(idVaga)
+                    return@launch
+                }
+
+                val novoFim = Timestamp(Date(reserva.fimReserva.toDate().time + TimeUnit.HOURS.toMillis(1)))
+
+                Log.d("Renovacao", "Atualizando reserva $idReserva com novo fim: $novoFim")
+                db.collection("reserva").document(idReserva).update("fimReserva", novoFim).await()
+
+                Log.d("Renovacao", "Renovação bem-sucedida. Recarregando dados...")
+                carregarDadosIniciais(idVaga)
+
+            } catch (e: Exception) {
+                Log.e("Renovacao", "ERRO CRÍTICO durante a renovação: ${e.message}", e)
+                _uiState.value = ReservaUIState.Error("Erro ao renovar: ${e.message}")
+            }
+        }
+    }
+
+    fun cancelarReserva(vaga: Vaga) {
+        viewModelScope.launch {
+            _uiState.value = ReservaUIState.Loading
+            val userId = auth.currentUser?.uid
+
+            Log.d("Cancelamento", "Iniciando cancelamento para vagaId: ${vaga.id}")
+
+            if (userId == null) {
+                Log.e("Cancelamento", "Falha: Usuário não autenticado.")
+                _uiState.value = ReservaUIState.Error("Usuário não autenticado.")
+                return@launch
+            }
+            Log.d("Cancelamento", "Usuário autenticado: $userId")
+
+            try {
+                Log.d("Cancelamento", "Executando query com: usuarioId=${userId}, vagaId=${vaga.id}, status=ativa")
+
+                val reservaAtivaSnapshot = db.collection("reserva")
+                    .whereEqualTo("usuarioId", userId)
+                    .whereEqualTo("vagaId", vaga.id)
+                    .whereEqualTo("status", "ativa")
+                    .limit(1)
+                    .get()
+                    .await()
+
+                val reservaDoc = reservaAtivaSnapshot.documents.firstOrNull()
+
+                if (reservaDoc == null) {
+                    Log.e("Cancelamento", "FALHA: Nenhuma reserva ativa encontrada com os critérios da query.")
+                    _uiState.value = ReservaUIState.Error("Nenhuma reserva ativa encontrada para cancelar.")
+                    return@launch
+                }
+
+                Log.d("Cancelamento", "SUCESSO: Reserva encontrada, ID do documento: ${reservaDoc.id}. Iniciando batch...")
+
+                val batch = db.batch()
+                batch.update(reservaDoc.reference, "status", "cancelada")
+                val vagaRef = db.collection("vaga").document(vaga.id)
+                batch.update(vagaRef, "disponivel", true)
+
+                Log.d("Cancelamento", "Executando batch.commit()...")
+                batch.commit().await()
+
+                timer?.cancel()
+                Log.d("Cancelamento", "Batch commit bem-sucedido. Reserva cancelada.")
+                _uiState.value = ReservaUIState.Finished("Reserva cancelada com sucesso.")
+
+            } catch (e: Exception) {
+                Log.e("Cancelamento", "ERRO CRÍTICO durante o cancelamento: ${e.message}", e)
+                _uiState.value = ReservaUIState.Error("Erro ao cancelar: ${e.message}")
+            }
+        }
+    }
+
+    private suspend fun buscarVeiculoPadrao(): Veiculo? {
+        val userId = auth.currentUser?.uid ?: return null
+        return db.collection("veiculo")
+            .whereEqualTo("usuarioId", userId)
+            .whereEqualTo("padrao", true)
+            .limit(1).get().await()
+            .toObjects(Veiculo::class.java).firstOrNull()
+    }
+
+    private suspend fun buscarReservaAtiva(vagaId: String): Reserva? {
+        val userId = auth.currentUser?.uid ?: return null
+        val snapshot = db.collection("reserva")
+            .whereEqualTo("usuarioId", userId)
+            .whereEqualTo("vagaId", vagaId)
+            .whereEqualTo("status", "ativa")
+            .limit(1)
+            .get()
+            .await()
+
+        if (snapshot.isEmpty) return null
+
+        val doc = snapshot.documents.first()
+        return doc.toObject(Reserva::class.java)?.apply {
+            id = doc.id
+        }
+    }
+
+    private fun iniciarTimer(dataFim: Date) {
         timer?.cancel()
-
-        val tempoRestanteMs = fimTimestamp - System.currentTimeMillis()
+        val tempoRestanteMs = dataFim.time - System.currentTimeMillis()
         if (tempoRestanteMs <= 0) {
-            _tempoRestante.value = "00:00"
+            _tempoRestante.postValue("00:00:00")
             return
         }
-
         timer = object : CountDownTimer(tempoRestanteMs, 1000) {
             override fun onTick(millisUntilFinished: Long) {
-                val minutos = (millisUntilFinished / 1000) / 60
-                val segundos = (millisUntilFinished / 1000) % 60
-                _tempoRestante.value = String.format("%02d:%02d", minutos, segundos)
-
-                if (minutos == 10L && segundos == 0L) {
-                    criarNotificacao(context, "Aviso", "Faltam 10 minutos para sua reserva acabar!", vagaId, estacionamentoId)
-                }
+                val horas = TimeUnit.MILLISECONDS.toHours(millisUntilFinished)
+                val minutos = TimeUnit.MILLISECONDS.toMinutes(millisUntilFinished) % 60
+                val segundos = TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished) % 60
+                _tempoRestante.postValue(String.format("%02d:%02d:%02d", horas, minutos, segundos))
             }
-
             override fun onFinish() {
-                _tempoRestante.value = "00:00"
-                criarNotificacao(context, "Reserva Finalizada", "Sua reserva foi finalizada.", vagaId, estacionamentoId)
-
-                currentReservaId?.let { reservaId ->
-                    db.collection("reserva").document(reservaId)
-                        .update("status", "finalizada")
-                }
-
-                db.collection("vaga").document(vagaId)
-                    .update("disponivel", true)
+                _tempoRestante.postValue("Expirada")
             }
         }.start()
-    }
-
-
-    fun agendarExpiracaoReserva(context: Context, fimReservaMillis: Long) {
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
-        // Aviso 10 min antes
-        val avisoIntent = Intent(context, ReservaAvisoReceiver::class.java)
-        val avisoPending = PendingIntent.getBroadcast(
-            context, 1, avisoIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        val avisoMillis = fimReservaMillis - 10 * 60 * 1000
-        if (avisoMillis > System.currentTimeMillis()) {
-            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, avisoMillis, avisoPending)
-        }
-
-        // Expiração
-        val expiraIntent = Intent(context, ReservaExpiredReceiver::class.java)
-        val expiraPending = PendingIntent.getBroadcast(
-            context, 2, expiraIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, fimReservaMillis, expiraPending)
-    }
-
-
-    fun criarNotificacao(
-        context: Context,
-        titulo: String,
-        texto: String,
-        vagaId: String = "",
-        estacionamentoId: String = ""
-    ) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(CHANNEL_ID, "Reserva", NotificationManager.IMPORTANCE_HIGH)
-            val manager = context.getSystemService(NotificationManager::class.java)
-            manager.createNotificationChannel(channel)
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
-            != PackageManager.PERMISSION_GRANTED) {
-            Log.w("ReservaVM", "Sem permissão para enviar notificações.")
-            return
-        }
-
-        val intent = Intent(context, ReservaActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            putExtra("FROM_NOTIFICATION", true)
-            if (vagaId.isNotEmpty()) putExtra("vagaId", vagaId)
-            if (estacionamentoId.isNotEmpty()) putExtra("estacionamentoId", estacionamentoId)
-        }
-
-        val pendingIntent = PendingIntent.getActivity(
-            context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_parking)
-            .setContentTitle(titulo)
-            .setContentText(texto)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setContentIntent(pendingIntent)
-            .setAutoCancel(true)
-
-        try {
-            NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, builder.build())
-        } catch (e: SecurityException) {
-            Log.e("ReservaVM", "Erro ao postar notificação: ${e.message}")
-        }
     }
 
     override fun onCleared() {

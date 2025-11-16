@@ -14,7 +14,6 @@ import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import androidx.lifecycle.lifecycleScope
-import br.edu.fatecpg.valletprojeto.dao.VeiculoDao.auth
 import br.edu.fatecpg.valletprojeto.fragments.OccupationFragment
 import br.edu.fatecpg.valletprojeto.fragments.SpotsFragment
 import br.edu.fatecpg.valletprojeto.fragments.VagaFragment
@@ -26,6 +25,7 @@ import kotlinx.coroutines.tasks.await
 class DashboardBase : AppCompatActivity() {
     private lateinit var binding: ActivityDashboardBaseBinding
     private var isAdmin = true
+    private val auth = FirebaseAuth.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

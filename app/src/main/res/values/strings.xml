@@ -16,4 +16,5 @@
     <string name="KM">Km\'s</string>
     <string name="carro">Carro</string>
     <string name="moto">Moto</string>
+    <string name="slider">Slider de tempo</string>
 </resources>

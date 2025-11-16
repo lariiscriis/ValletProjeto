@@ -3,7 +3,7 @@ package br.edu.fatecpg.valletprojeto.viewmodel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import br.edu.fatecpg.valletprojeto.dao.VagaDao // Verifique se o import está correto
+import br.edu.fatecpg.valletprojeto.dao.VagaDao
 import br.edu.fatecpg.valletprojeto.model.Vaga
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -18,9 +18,8 @@ class VagaViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
-    // 1. Definição da coleção de vagas, que estava faltando
     private val vagasCollection = db.collection("vaga")
-    private val vagaDao = VagaDao() // Se você ainda usa o DAO para cadastrar
+    private val vagaDao = VagaDao()
 
     val vagas = MutableLiveData<List<Vaga>>()
     val errorMessage = MutableLiveData<String>()
@@ -30,17 +29,13 @@ class VagaViewModel : ViewModel() {
 
     fun fetchVagasComFiltro(estacionamentoId: String, tipoFiltro: String? = null, precoMax: Double? = null) {
         viewModelScope.launch {
-            // Se o filtro for nulo, busca o tipo do veículo padrão
             val tipoVaga = tipoFiltro ?: buscarVeiculoPadraoTipo()
-
-            // Se o tipo de vaga for "Todos", não aplicamos filtro de tipo
             val tipoFinal = if (tipoVaga.equals("Todos", ignoreCase = true)) null else tipoVaga
 
             aplicarListenerComFiltros(estacionamentoId, tipoFinal, precoMax)
         }
     }
 
-    // Busca o tipo do veículo padrão do usuário em uma thread de background
     private suspend fun buscarVeiculoPadraoTipo(): String? = withContext(Dispatchers.IO) {
         val userId = auth.currentUser?.uid ?: return@withContext null
         try {
@@ -53,7 +48,6 @@ class VagaViewModel : ViewModel() {
 
             val tipo = veiculoSnapshot.documents.firstOrNull()?.getString("tipo")
 
-            // Atualiza o LiveData na thread principal
             withContext(Dispatchers.Main) {
                 veiculoPadraoTipo.value = tipo
             }
@@ -66,16 +60,15 @@ class VagaViewModel : ViewModel() {
     private fun aplicarListenerComFiltros(estacionamentoId: String, tipo: String?, precoMax: Double?) {
         listenerRegistration?.remove()
 
-        // Constrói a query dinamicamente
         var query: Query = vagasCollection
             .whereEqualTo("estacionamentoId", estacionamentoId)
-            .whereEqualTo("disponivel", true) // Sempre busca apenas vagas disponíveis
+            .whereEqualTo("disponivel", true)
 
         if (tipo != null) {
             if (tipo.equals("Preferencial", ignoreCase = true)) {
                 query = query.whereEqualTo("preferencial", true)
             } else {
-                query = query.whereEqualTo("tipo", tipo.lowercase()) // Salve o tipo em minúsculas no DB
+                query = query.whereEqualTo("tipo", tipo.lowercase())
             }
         }
 
@@ -97,12 +90,10 @@ class VagaViewModel : ViewModel() {
         }
     }
 
-    // 2. Função para cadastrar vaga, que estava faltando
     fun cadastrarVaga(vaga: Vaga, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
         vagaDao.cadastrarVaga(vaga, onSuccess, onFailure)
     }
 
-    // 3. Funções de verificar e deletar agora usam a 'vagasCollection' definida
     fun verificarSeTemVagas(estacionamentoId: String, onResult: (Boolean) -> Unit) {
         if (estacionamentoId.isBlank()) {
             onResult(false)

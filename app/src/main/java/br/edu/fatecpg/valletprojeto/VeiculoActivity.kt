@@ -2,31 +2,27 @@ package br.edu.fatecpg.valletprojeto
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import br.edu.fatecpg.valletprojeto.dao.UsuarioDao
-import br.edu.fatecpg.valletprojeto.dao.VeiculoDao
 import br.edu.fatecpg.valletprojeto.databinding.ActivityVeiculoBinding
 import br.edu.fatecpg.valletprojeto.databinding.ItemCardVeiculoBinding
 import br.edu.fatecpg.valletprojeto.fragments.VeiculoFragment
 import br.edu.fatecpg.valletprojeto.model.Veiculo
 import br.edu.fatecpg.valletprojeto.viewmodel.VeiculoViewModel
-import br.edu.fatecpg.valletprojeto.viewmodel.VeiculoViewModelFactory
+import com.google.firebase.auth.FirebaseAuth
 
 class VeiculoActivity : AppCompatActivity() {
     private lateinit var binding: ActivityVeiculoBinding
-    private val veiculosCadastrados = mutableListOf<Veiculo>()
-    val viewModel: VeiculoViewModel by viewModels {
-        VeiculoViewModelFactory(UsuarioDao(), VeiculoDao)
-    }
+    private val viewModel: VeiculoViewModel by viewModels()
     private lateinit var veiculosAdapter: VeiculosAdapter
 
     private val editarVeiculoLauncher = registerForActivityResult(
@@ -39,15 +35,8 @@ class VeiculoActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         binding = ActivityVeiculoBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
 
         binding.fabAddCar.setOnClickListener {
             val veiculoFragment = VeiculoFragment()
@@ -61,9 +50,7 @@ class VeiculoActivity : AppCompatActivity() {
     fun carregarVeiculosDoUsuario() {
         viewModel.listarVeiculosDoUsuario(
             onSuccess = { lista ->
-                veiculosCadastrados.clear()
-                veiculosCadastrados.addAll(lista)
-                veiculosAdapter.notifyDataSetChanged()
+                veiculosAdapter.submitList(lista)
             },
             onFailure = { erro ->
                 Toast.makeText(this, "Erro ao carregar veículos: $erro", Toast.LENGTH_LONG).show()
@@ -71,63 +58,91 @@ class VeiculoActivity : AppCompatActivity() {
         )
     }
 
+    fun onVeiculoCadastrado() {
+        carregarVeiculosDoUsuario()
+    }
+
     private fun setupRecyclerView() {
-        veiculosAdapter = VeiculosAdapter(veiculosCadastrados)
+        veiculosAdapter = VeiculosAdapter(
+            onToggleClick = { veiculo ->
+                val userId = FirebaseAuth.getInstance().currentUser?.uid
+                if (userId != null) {
+                    viewModel.definirVeiculoPadrao(veiculo.id, userId) { sucesso -> }
+                }
+            },
+            onItemClick = { veiculo ->
+                val intent = Intent(this, EditarVeiculoActivity::class.java).apply {
+                    putExtra("veiculoId", veiculo.id)
+                }
+                editarVeiculoLauncher.launch(intent)
+            }
+        )
         binding.rvCarList.apply {
             layoutManager = LinearLayoutManager(this@VeiculoActivity)
             adapter = veiculosAdapter
         }
     }
+}
 
-    inner class VeiculosAdapter(private val veiculos: List<Veiculo>) :
-        RecyclerView.Adapter<VeiculosAdapter.VeiculoViewHolder>() {
+class VeiculosAdapter(
+    private val onToggleClick: (Veiculo) -> Unit,
+    private val onItemClick: (Veiculo) -> Unit
+) : ListAdapter<Veiculo, VeiculosAdapter.VeiculoViewHolder>(VeiculoDiffCallback) {
 
-        inner class VeiculoViewHolder(val binding: ItemCardVeiculoBinding) :
-            RecyclerView.ViewHolder(binding.root)
+    inner class VeiculoViewHolder(val binding: ItemCardVeiculoBinding) :
+        RecyclerView.ViewHolder(binding.root) {
 
-        override fun onCreateViewHolder(
-            parent: android.view.ViewGroup,
-            viewType: Int
-        ): VeiculoViewHolder {
-            val binding = ItemCardVeiculoBinding.inflate(layoutInflater, parent, false)
-            return VeiculoViewHolder(binding)
-        }
+        fun bind(veiculo: Veiculo) {
+            // Configuração da UI (textos e ícone do veículo)
+            binding.tvCarModel.text = "${veiculo.marca} ${veiculo.modelo}"
+            binding.tvCarPlate.text = veiculo.placa
+            binding.ivCarIcon.setImageResource(
+                if (veiculo.tipo == "moto") R.drawable.ic_moto else R.drawable.ic_vehicle
+            )
 
-        override fun onBindViewHolder(holder: VeiculoViewHolder, position: Int) {
-            val veiculo = veiculos[position]
+            // --- INÍCIO DA CORREÇÃO COM ImageView ---
 
-            if (veiculo.tipo == "moto") {
-                holder.binding.ivCarIcon.setImageResource(R.drawable.ic_moto)
+            // 1. Define a imagem da estrela (cheia ou vazia) baseada no estado 'padrao'
+            if (veiculo.padrao) {
+                binding.ivFavoriteToggle.setImageResource(R.drawable.btn_star_on)
             } else {
-                holder.binding.ivCarIcon.setImageResource(R.drawable.ic_vehicle)
+                binding.ivFavoriteToggle.setImageResource(R.drawable.btn_star_off)
             }
 
-            holder.binding.tvCarModel.text = "${veiculo.marca} ${veiculo.modelo}"
-            holder.binding.tvCarPlate.text = veiculo.placa
-
-            holder.binding.toggleFavoriteCar.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) {
-                    Toast.makeText(
-                        holder.itemView.context,
-                        "${veiculo.placa} definido como principal!",
-                        Toast.LENGTH_SHORT
-                    ).show()
+            // 2. Define o listener de clique no ImageView
+            binding.ivFavoriteToggle.setOnClickListener {
+                // Só age se o usuário clicar em um veículo que AINDA NÃO É o padrão
+                if (!veiculo.padrao) {
+                    onToggleClick(veiculo)
                 }
             }
 
-            holder.itemView.setOnClickListener {
-                val intent = Intent(this@VeiculoActivity, EditarVeiculoActivity::class.java).apply {
-                    putExtra("veiculoId", veiculo.id)
-                    putExtra("placa", veiculo.placa)
-                    putExtra("marca", veiculo.marca)
-                    putExtra("modelo", veiculo.modelo)
-                    putExtra("ano", veiculo.ano)
-                    putExtra("km", veiculo.km)
-                    putExtra("tipo", veiculo.tipo)
-                }
-                editarVeiculoLauncher.launch(intent)
+            // --- FIM DA CORREÇÃO ---
+
+            // Listener para edição do item
+            itemView.setOnClickListener {
+                onItemClick(veiculo)
             }
         }
-        override fun getItemCount(): Int = veiculos.size
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VeiculoViewHolder {
+        val binding = ItemCardVeiculoBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return VeiculoViewHolder(binding)
+    }
+
+    override fun onBindViewHolder(holder: VeiculoViewHolder, position: Int) {
+        holder.bind(getItem(position))
+    }
+
+    companion object {
+        private val VeiculoDiffCallback = object : DiffUtil.ItemCallback<Veiculo>() {
+            override fun areItemsTheSame(oldItem: Veiculo, newItem: Veiculo): Boolean {
+                return oldItem.id == newItem.id
+            }
+            override fun areContentsTheSame(oldItem: Veiculo, newItem: Veiculo): Boolean {
+                return oldItem == newItem
+            }
+        }
     }
 }

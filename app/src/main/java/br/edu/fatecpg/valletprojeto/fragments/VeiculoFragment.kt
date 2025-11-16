@@ -87,14 +87,15 @@ class VeiculoFragment : DialogFragment() {
             apelido = apelido,
             ano = ano,
             km = km,
-            tipo = tipoSelecionado
+            tipo = tipoSelecionado,
+            padrao = false
         )
 
         viewModel.cadastrarVeiculo(
             novoVeiculo,
             onSuccess = {
                 Toast.makeText(requireContext(), "Veículo salvo!", Toast.LENGTH_SHORT).show()
-                (activity as? VeiculoActivity)?.carregarVeiculosDoUsuario()
+                (activity as? VeiculoActivity)?.onVeiculoCadastrado()
                 dismiss()
             },
             onFailure = { erro ->
@@ -102,6 +103,7 @@ class VeiculoFragment : DialogFragment() {
             }
         )
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()
