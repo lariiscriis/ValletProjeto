@@ -33,7 +33,6 @@ class MotoristaFragment : Fragment() {
     private lateinit var adapter: HistoricoReservasAdapter
     private val db = FirebaseFirestore.getInstance()
 
-    // Variáveis para guardar dados da reserva ativa
     private var vagaIdAtiva: String? = null
     private var estacionamentoIdAtivo: String? = null
 
@@ -48,7 +47,6 @@ class MotoristaFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.rvReservationHistory.layoutManager = GridLayoutManager(requireContext(), 1)
 
-        // Clique para abrir a reserva ativa
         binding.btnViewReservation.setOnClickListener {
             if (vagaIdAtiva != null && estacionamentoIdAtivo != null) {
                 val intent = Intent(requireContext(), ReservaActivity::class.java)
@@ -60,7 +58,6 @@ class MotoristaFragment : Fragment() {
             }
         }
 
-        // Clique para abrir a página de vagas
         binding.txvNoReservation.setOnClickListener {
             abrirPaginaDeVagas()
         }
@@ -114,7 +111,6 @@ class MotoristaFragment : Fragment() {
                         binding.txvTimeRange.text = formatarHorario(inicio, fim)
                         binding.txvTimeRemaining.text = "Reserva ativa"
 
-                        // Guardar os dados para abrir depois
                         vagaIdAtiva = vagaId
                         estacionamentoIdAtivo = estacionamentoId
                     } else {
@@ -131,7 +127,6 @@ class MotoristaFragment : Fragment() {
                 if (!temReservaAtiva) {
                     binding.cardReservaAtual.visibility = View.GONE
                     binding.txvNoReservation.visibility = View.VISIBLE
-                    // Limpa os dados da reserva ativa caso não tenha
                     vagaIdAtiva = null
                     estacionamentoIdAtivo = null
                 }

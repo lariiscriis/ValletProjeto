@@ -7,7 +7,6 @@ class ParkingSpotDao {
 
     private val db = FirebaseFirestore.getInstance()
 
-    // Função para listar todas as vagas
     fun listarTodasAsVagas(
         onSuccess: (List<Vaga>) -> Unit,
         onError: (String) -> Unit

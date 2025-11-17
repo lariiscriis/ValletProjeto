@@ -20,7 +20,7 @@ class VagaActivity : AppCompatActivity() {
 
     private lateinit var viewModel: VagaViewModel
     private lateinit var binding: ActivityVagaBinding
-    private lateinit var vagasAdapter: VagasAdapter // Mantenha uma instância do adapter
+    private lateinit var vagasAdapter: VagasAdapter
     private var isAdmin: Boolean = false
     private var estacionamentoId: String? = null
 
@@ -37,8 +37,6 @@ class VagaActivity : AppCompatActivity() {
             finish()
             return
         }
-
-        // A verificação de usuário determinará o estado de 'isAdmin' e então configurará a UI
         verificarTipoUsuario()
     }
 
@@ -46,9 +44,7 @@ class VagaActivity : AppCompatActivity() {
         setupRecyclerView()
         setupObservers()
         setupFilterListeners()
-        setupAdminFeatures() // Configura o FAB do admin
-
-        // Inicia a busca com o filtro automático
+        setupAdminFeatures()
         viewModel.fetchVagasComFiltro(estacionamentoId!!)
     }
 
@@ -56,23 +52,22 @@ class VagaActivity : AppCompatActivity() {
         val userId = FirebaseAuth.getInstance().currentUser?.uid
         if (userId == null) {
             isAdmin = false
-            setupUI() // Configura a UI para um usuário não-admin
+            setupUI()
             return
         }
 
         FirebaseFirestore.getInstance().collection("usuario").document(userId).get()
             .addOnSuccessListener { document ->
                 isAdmin = document.getString("tipo_user") == "admin"
-                setupUI() // Configura a UI com o tipo de usuário correto
+                setupUI()
             }
             .addOnFailureListener {
                 isAdmin = false
-                setupUI() // Em caso de falha, assume que não é admin
+                setupUI()
             }
     }
 
     private fun setupRecyclerView() {
-        // Crie o adapter UMA VEZ e configure-o na RecyclerView
         vagasAdapter = VagasAdapter(
             isAdmin = this.isAdmin,
             onEditClick = { vaga ->
@@ -90,7 +85,6 @@ class VagaActivity : AppCompatActivity() {
 
     private fun setupObservers() {
         viewModel.vagas.observe(this) { vagas ->
-            // Apenas submeta a nova lista. Não crie um novo adapter.
             vagasAdapter.submitList(vagas)
         }
 

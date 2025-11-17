@@ -120,38 +120,4 @@ class ReservaActivity : AppCompatActivity() {
         }
     }
 
-
-    private fun updateUiForIdle() {
-        binding.layoutConfigReserva.visibility = View.VISIBLE
-        binding.layoutTimerReserva.visibility = View.GONE
-        binding.btnReservar.visibility = View.VISIBLE
-        binding.btnRenovar.visibility = View.GONE
-        binding.btnCancelar.visibility = View.GONE
-    }
-
-    private fun updateUiForActive(reserva: Reserva, vaga: Vaga, veiculo: Veiculo) {
-        binding.layoutConfigReserva.visibility = View.GONE
-        binding.layoutTimerReserva.visibility = View.VISIBLE
-        binding.btnReservar.visibility = View.GONE
-        binding.btnRenovar.visibility = View.VISIBLE
-        binding.btnCancelar.visibility = View.VISIBLE
-
-        binding.tvVagaNumero.text = "Vaga ${vaga.numero}"
-        binding.tvVagaDetalhes.text = "Tipo: ${vaga.tipo} • Local: ${vaga.localizacao}"
-        binding.tvVeiculoInfo.text = "Veículo: ${veiculo.modelo} (${veiculo.placa})"
-
-        val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
-        val inicioStr = sdf.format(reserva.inicioReserva!!.toDate())
-        val fimStr = sdf.format(reserva.fimReserva!!.toDate())
-        binding.tvHorarioReserva.text = "Reserva das $inicioStr às $fimStr"
-
-        binding.btnRenovar.setOnClickListener { viewModel.renovarReserva(reserva) }
-        binding.btnCancelar.setOnClickListener {
-            val currentState = viewModel.uiState.value
-            if (currentState is ReservaUIState.Active) {
-                viewModel.cancelarReserva(currentState.vaga)
-            } else {
-                Toast.makeText(this, "Não há reserva ativa para cancelar.", Toast.LENGTH_SHORT).show()
-            }
-        }    }
 }

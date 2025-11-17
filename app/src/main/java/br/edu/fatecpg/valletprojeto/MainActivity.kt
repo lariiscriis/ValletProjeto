@@ -32,7 +32,6 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        // Mostra o carregamento enquanto verifica login
         binding.progressOverlay.visibility = View.VISIBLE
         binding.btnIniciar.visibility = View.GONE
 
@@ -40,7 +39,6 @@ class MainActivity : AppCompatActivity() {
         if (user != null) {
             checkUserTypeAndRedirect(user.uid, user.email ?: "")
         } else {
-            // Se não há usuário logado, esconde o loading e mostra o botão
             binding.progressOverlay.visibility = View.GONE
             binding.btnIniciar.visibility = View.VISIBLE
 
@@ -63,7 +61,6 @@ class MainActivity : AppCompatActivity() {
                         redirectToHome(tipoUser, email)
                     }
                 } else {
-                    // Usuário não encontrado → força login novamente
                     auth.signOut()
                     goToLogin()
                 }
@@ -92,17 +89,6 @@ class MainActivity : AppCompatActivity() {
                 redirectToHome("admin", email)
                 finish()
             }
-    }
-
-    private fun redirectToIntro(tipoUser: String, email: String) {
-        val intent = if (tipoUser == "admin") {
-            Intent(this, IntroCadastroEstacionamento::class.java)
-        } else {
-            Intent(this, VeiculoActivity::class.java)
-        }
-        intent.putExtra("email_usuario", email)
-        startActivity(intent)
-        finish()
     }
 
     private fun redirectToHome(tipoUser: String, email: String) {

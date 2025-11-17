@@ -21,19 +21,14 @@ class PaginaDeReservaVagas : AppCompatActivity() {
 
         parkingSpotDao = ParkingSpotDao()
 
-        // Configura o RecyclerView com layout manager logo no início
         binding.rvParkingSpots.layoutManager = GridLayoutManager(this, 3)
 
-        // Busca as vagas do Firestore de forma assíncrona
         parkingSpotDao.listarTodasAsVagas(
             onSuccess = { vagas ->
                 runOnUiThread {
                     val adapter = ParkingSpotAdapter(vagas) { vagaSelecionada ->
-                        // *** COLOQUE AQUI ***
-                        // Quando a vaga for clicada, cria o Intent e abre a ReservaActivity passando os dados da vaga
                         val intent = Intent(this, ReservaActivity::class.java).apply {
                             putExtra("VAGA_ID", vagaSelecionada.id)
-//                            putExtra("ESTACIONAMENTO_ID", vagaSelecionada.estacionamentoId)
                         }
                         startActivity(intent)
 
@@ -48,8 +43,6 @@ class PaginaDeReservaVagas : AppCompatActivity() {
                 }
             }
         )
-        binding.btnContinue.setOnClickListener {
-            // ação futura
-        }
+
     }
 }

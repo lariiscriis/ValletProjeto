@@ -24,7 +24,7 @@ class VagaFragment : Fragment() {
     private lateinit var viewModel: VagaViewModel
     private var _binding: FragmentVagaBinding? = null
     private val binding get() = _binding!!
-    private lateinit var vagasAdapter: VagasAdapter // Mantenha uma instância do adapter
+    private lateinit var vagasAdapter: VagasAdapter
     private var isAdmin: Boolean = false
     private var estacionamentoId: String? = null
 
@@ -39,17 +39,13 @@ class VagaFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         viewModel = ViewModelProvider(this)[VagaViewModel::class.java]
-
-        // A lógica de UI será iniciada após a verificação do usuário
         verificarUsuarioAdmin()
     }
 
     private fun verificarUsuarioAdmin() {
         val userId = FirebaseAuth.getInstance().currentUser?.uid
         if (userId == null) {
-            // Lidar com o caso de usuário não logado, talvez mostrar uma mensagem
             binding.fabAdd.visibility = View.GONE
             return
         }
@@ -57,15 +53,11 @@ class VagaFragment : Fragment() {
         val db = FirebaseFirestore.getInstance()
         db.collection("usuario").document(userId).get()
             .addOnSuccessListener { document ->
-                if (activity == null || !isAdded) return@addOnSuccessListener // Evita crash se o fragmento for destruído
-
+                if (activity == null || !isAdded) return@addOnSuccessListener
                 isAdmin = document.getString("tipo_user") == "admin"
                 if (isAdmin) {
-                    // Se for admin, busca o ID do seu estacionamento
                     buscarEstacionamentoDoAdmin()
                 } else {
-                    // Se não for admin, esta tela pode não fazer sentido ou deveria mostrar outra coisa.
-                    // Por enquanto, vamos apenas desabilitar as funções de admin.
                     binding.fabAdd.visibility = View.GONE
                 }
             }
@@ -79,14 +71,13 @@ class VagaFragment : Fragment() {
         val emailAdmin = FirebaseAuth.getInstance().currentUser?.email ?: return
         FirebaseFirestore.getInstance().collection("estacionamento")
             .whereEqualTo("adminEmail", emailAdmin)
-            .limit(1) // Pega apenas o primeiro estacionamento do admin
+            .limit(1)
             .get()
             .addOnSuccessListener { querySnapshot ->
                 if (activity == null || !isAdded) return@addOnSuccessListener
 
                 if (!querySnapshot.isEmpty) {
                     estacionamentoId = querySnapshot.documents[0].id
-                    // Agora que temos o ID, configuramos o resto da UI
                     setupUI()
                 } else {
                     Toast.makeText(requireContext(), "Nenhum estacionamento encontrado para este admin.", Toast.LENGTH_SHORT).show()
@@ -103,14 +94,12 @@ class VagaFragment : Fragment() {
         setupObservers()
         setupListeners()
 
-        // 1. CORREÇÃO: Chama a nova função do ViewModel
         estacionamentoId?.let {
-            viewModel.fetchVagasComFiltro(it, "Todos") // Filtro inicial "Todos"
+            viewModel.fetchVagasComFiltro(it, "Todos")
         }
     }
 
     private fun setupRecyclerView() {
-        // 2. CORREÇÃO: Crie o adapter UMA VEZ, sem passar a lista
         vagasAdapter = VagasAdapter(
             isAdmin = this.isAdmin,
             onEditClick = { vaga ->
@@ -128,7 +117,6 @@ class VagaFragment : Fragment() {
 
     private fun setupObservers() {
         viewModel.vagas.observe(viewLifecycleOwner) { vagas ->
-            // 3. CORREÇÃO: Use submitList para atualizar o adapter
             vagasAdapter.submitList(vagas)
         }
 

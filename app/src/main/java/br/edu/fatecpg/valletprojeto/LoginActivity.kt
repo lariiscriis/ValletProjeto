@@ -2,16 +2,21 @@ package br.edu.fatecpg.valletprojeto
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
 import android.util.Patterns
 import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import br.edu.fatecpg.valletprojeto.databinding.ActivityLoginBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.android.gms.security.ProviderInstaller
@@ -24,9 +29,20 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
     private val db = Firebase.firestore
     private var isAdmin = false
     private var providerInstallAttempted = false
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        try {
+            val settings = FirebaseFirestoreSettings.Builder()
+                .setPersistenceEnabled(false)
+                .build()
+            db.firestoreSettings = settings
+            Log.d("Firestore", "✅ Persistência local do Firestore desabilitada.")
+        } catch (e: Exception) {
+            Log.e("Firestore", "❌ Erro ao configurar FirestoreSettings: ${e.message}")
+        }
 
         tryUpdateTlsProvider()
         blockFirebaseRecaptcha()
@@ -45,9 +61,11 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
     }
 
     override fun onProviderInstalled() {
+        Log.d("ProviderInstaller", "✅ TLS Provider atualizado com sucesso")
     }
 
     override fun onProviderInstallFailed(errorCode: Int, recoveryIntent: Intent?) {
+        Log.w("ProviderInstaller", "⚠️ Falha ao atualizar TLS Provider: $errorCode")
     }
 
     private fun blockFirebaseRecaptcha() {
@@ -128,64 +146,152 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
     }
 
     private fun validateCredentials(email: String, senha: String): Boolean {
+        if (email.isBlank() || senha.isBlank()) {
+            Toast.makeText(this, "Preencha todos os campos", Toast.LENGTH_SHORT).show()
+            return false
+        }
+
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             Toast.makeText(this, "Formato de email inválido", Toast.LENGTH_SHORT).show()
             return false
         }
+
         if (senha.length < 6) {
             Toast.makeText(this, "A senha deve ter no mínimo 6 caracteres", Toast.LENGTH_SHORT).show()
             return false
         }
+
         return true
     }
 
     private fun loginUser(email: String, senha: String, isAdminAttempt: Boolean) {
+        Log.d("Login", "Tentando login: $email")
+
         auth.signInWithEmailAndPassword(email, senha)
             .addOnSuccessListener {
+                Log.d("Login", "✅ Firebase Auth OK: ${it.user?.uid}")
                 val user = auth.currentUser
                 if (user != null) {
-                    checkUserType(user.uid, email, isAdminAttempt)
+                    checkUserType(user.uid, user.email ?: "", isAdminAttempt)
                 } else {
                     binding.progressOverlay.visibility = View.GONE
                     Toast.makeText(this, "Erro ao obter usuário", Toast.LENGTH_SHORT).show()
                 }
             }
             .addOnFailureListener { e ->
+                Log.e("Login", "❌ Erro no Firebase Auth: ${e.message}")
                 binding.progressOverlay.visibility = View.GONE
                 handleLoginError(e)
             }
     }
 
     private fun checkUserType(uid: String, email: String, isAdminAttempt: Boolean) {
-        db.collection("usuario").document(uid).get()
-            .addOnSuccessListener { document ->
-                if (!document.exists()) {
+        Log.d("Firestore", "Buscando usuário por UID: $uid")
+
+        var isTimedOut = false
+        val timeoutRunnable = Runnable {
+            isTimedOut = true
+            binding.progressOverlay.visibility = View.GONE
+
+            AlertDialog.Builder(this)
+                .setTitle("⏱️ Tempo Esgotado")
+                .setMessage("A conexão está muito lenta. Deseja tentar novamente?")
+                .setPositiveButton("Tentar Novamente") { _, _ ->
+                    binding.progressOverlay.visibility = View.VISIBLE
+                    checkUserType(uid, email, isAdminAttempt)
+                }
+                .setNegativeButton("Cancelar") { _, _ ->
                     auth.signOut()
-                    binding.progressOverlay.visibility = View.GONE
-                    Toast.makeText(this, "Usuário não encontrado no banco de dados", Toast.LENGTH_SHORT).show()
+                }
+                .setCancelable(false)
+                .show()
+        }
+
+        mainHandler.postDelayed(timeoutRunnable, 20000)
+
+        db.collection("usuario").document(uid).get()
+            .addOnSuccessListener { documentSnapshot ->
+                mainHandler.removeCallbacks(timeoutRunnable)
+
+                if (isTimedOut) {
+                    Log.w("Firestore", "⚠️ Resposta recebida após timeout")
                     return@addOnSuccessListener
                 }
 
-                val tipoUser = document.getString("tipo_user") ?: "usuario"
+                binding.progressOverlay.visibility = View.GONE
+
+                if (!documentSnapshot.exists()) {
+                    Log.e("Firestore", "❌ Nenhum usuário encontrado com UID: $uid")
+                    handleUserNotFound()
+                    return@addOnSuccessListener
+                }
+
+                Log.d("Firestore", "✅ Usuário encontrado! ID: ${documentSnapshot.id}")
+
+                val tipoUser = documentSnapshot.getString("tipo_user") ?: "motorista"
                 val isAdminFromDB = tipoUser == "admin"
+
+                Log.d("Login", "🎯 Tipo de usuário: $tipoUser")
 
                 if (isAdminAttempt && !isAdminFromDB) {
                     auth.signOut()
-                    binding.progressOverlay.visibility = View.GONE
-                    Toast.makeText(this, "Acesso restrito a administradores", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, "❌ Acesso restrito a administradores", Toast.LENGTH_LONG).show()
                     return@addOnSuccessListener
                 }
 
-                if (tipoUser == "admin") {
+                if (isAdminFromDB) {
                     checkEstacionamentoCadastrado(uid, email)
                 } else {
                     redirectToHome(tipoUser, email)
                 }
             }
-            .addOnFailureListener {
+            .addOnFailureListener { e ->
+                mainHandler.removeCallbacks(timeoutRunnable)
+
+                if (isTimedOut) {
+                    Log.w("Firestore", "⚠️ Erro recebido após timeout")
+                    return@addOnFailureListener
+                }
+
                 binding.progressOverlay.visibility = View.GONE
-                Toast.makeText(this, "Erro ao buscar tipo de usuário: ${it.message}", Toast.LENGTH_SHORT).show()
+                Log.e("Firestore", "❌ Erro na consulta: ${e.message}")
+
+                val errorMsg = when {
+                    e.message?.contains("offline", ignoreCase = true) == true ->
+                        "Sem conexão com a internet"
+                    e.message?.contains("permission", ignoreCase = true) == true ->
+                        "🔒 Permissão negada. Verifique as regras de segurança."
+                    e.message?.contains("deadline", ignoreCase = true) == true ->
+                        "Servidor não respondeu a tempo"
+                    else -> "Erro ao conectar: ${e.message}"
+                }
+
+                AlertDialog.Builder(this)
+                    .setTitle("Erro de Conexão")
+                    .setMessage("$errorMsg\n\nDeseja tentar novamente?")
+                    .setPositiveButton("Tentar Novamente") { _, _ ->
+                        binding.progressOverlay.visibility = View.VISIBLE
+                        checkUserType(uid, email, isAdminAttempt)
+                    }
+                    .setNegativeButton("Cancelar") { _, _ ->
+                        auth.signOut()
+                    }
+                    .setCancelable(false)
+                    .show()
             }
+    }
+
+    private fun handleUserNotFound() {
+        auth.signOut()
+
+        AlertDialog.Builder(this)
+            .setTitle("Usuário Não Encontrado")
+            .setMessage("Não foi possível encontrar seus dados no sistema. Deseja fazer o cadastro?")
+            .setPositiveButton("Fazer Cadastro") { _, _ ->
+                navigateToCadastro("usuario")
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
     }
 
     private fun checkEstacionamentoCadastrado(uid: String, email: String) {
@@ -193,6 +299,8 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
             .whereEqualTo("adminUid", uid)
             .get()
             .addOnSuccessListener { result ->
+                binding.progressOverlay.visibility = View.GONE
+
                 if (result.isEmpty) {
                     val intent = Intent(this, CadastroEstacionamento::class.java)
                     intent.putExtra("email_usuario", email)
@@ -209,6 +317,7 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
     }
 
     private fun redirectToHome(tipoUser: String, email: String) {
+        Log.d("Login", "🚀 Redirecionando para home")
         val intent = Intent(this, DashboardBase::class.java)
         intent.putExtra("email_usuario", email)
         startActivity(intent)
@@ -218,9 +327,11 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
     private fun handleLoginError(e: Exception?) {
         val msg = e?.message ?: "Erro no login"
         val out = when {
-            msg.contains("badly formatted", true) -> "Email inválido"
-            msg.contains("password is invalid", true) -> "Senha incorreta"
-            msg.contains("no user record", true) -> "Usuário não encontrado"
+            msg.contains("badly formatted", ignoreCase = true) -> "Email inválido"
+            msg.contains("password is invalid", ignoreCase = true) -> "Senha incorreta"
+            msg.contains("no user record", ignoreCase = true) -> "Usuário não encontrado"
+            msg.contains("network", ignoreCase = true) -> "Erro de conexão. Verifique sua internet"
+            msg.contains("too many requests", ignoreCase = true) -> "Muitas tentativas. Aguarde um momento"
             else -> "Erro no login: $msg"
         }
         Toast.makeText(this, out, Toast.LENGTH_LONG).show()
@@ -229,9 +340,34 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
     override fun onStart() {
         super.onStart()
         val current = FirebaseAuth.getInstance().currentUser
+
         if (current != null) {
+            Log.d("Login", "🔄 Usuário já logado, verificando sessão...")
             binding.progressOverlay.visibility = View.VISIBLE
+
+            mainHandler.postDelayed({
+                if (binding.progressOverlay.visibility == View.VISIBLE) {
+                    binding.progressOverlay.visibility = View.GONE
+
+                    AlertDialog.Builder(this)
+                        .setTitle("Sessão Expirada")
+                        .setMessage("Não foi possível restaurar sua sessão. Faça login novamente.")
+                        .setPositiveButton("OK") { _, _ ->
+                            auth.signOut()
+                        }
+                        .setCancelable(false)
+                        .show()
+                }
+            }, 25000)
+
             checkUserType(current.uid, current.email ?: "", false)
+        } else {
+            binding.progressOverlay.visibility = View.GONE
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mainHandler.removeCallbacksAndMessages(null)
     }
 }

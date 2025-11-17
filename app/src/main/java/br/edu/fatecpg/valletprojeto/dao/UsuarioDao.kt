@@ -16,7 +16,7 @@ class UsuarioDao {
     ) {
         auth.createUserWithEmailAndPassword(usuario.email, usuario.senha)
             .addOnSuccessListener { result ->
-                val uid = result.user?.uid  // Pega o UID do usuário criado
+                val uid = result.user?.uid
                 if (uid != null) {
                     val data = hashMapOf(
                         "email" to usuario.email,
@@ -28,7 +28,6 @@ class UsuarioDao {
                     usuario.nomeEmpresa?.let { data["nome_empresa"] = it }
                     usuario.cargo?.let { data["cargo"] = it }
 
-                    // Salva o documento usando o UID como ID
                     db.collection("usuario").document(uid)
                         .set(data)
                         .addOnSuccessListener { onSuccess() }

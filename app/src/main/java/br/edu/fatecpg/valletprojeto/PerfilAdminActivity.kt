@@ -56,7 +56,6 @@ class PerfilAdminActivity : AppCompatActivity() {
                 binding.tvNomeAdmin.text = "Nome: $nomeAdmin"
                 binding.tvEmailAdmin.text = "Email: $email"
 
-// 🔹 Carregar foto do perfil
                 if (!fotoUrl.isNullOrEmpty()) {
                     Glide.with(this)
                         .load(fotoUrl)

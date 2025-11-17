@@ -45,11 +45,11 @@ android {
 
 dependencies {
 
-    // Firebase (use sempre versão estável e consistente)
-    implementation("com.google.firebase:firebase-auth:22.3.1")
-    implementation("com.google.firebase:firebase-firestore:25.1.1")
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
     implementation(libs.firebase.storage.ktx)
-    implementation(libs.firebase.firestore.ktx)
 
     // AndroidX core
     implementation(libs.androidx.core.ktx)
@@ -60,7 +60,6 @@ dependencies {
 
     // Location
     implementation("com.google.android.gms:play-services-location:21.3.0")
-// build.gradle (app)
     implementation ("com.firebase:geofire-android-common:3.2.0")
 
     // Media3
@@ -75,10 +74,10 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.3")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.3")
 
-    // Coroutines (somente UMA versão, a correta)
+    // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
-    // Outros componentes UI
+    // componentes UI
     implementation("androidx.cardview:cardview:1.0.0")
     implementation("androidx.fragment:fragment-ktx:1.8.1")
 
@@ -98,7 +97,4 @@ dependencies {
 kapt {
     correctErrorTypes = true
     useBuildCache = true
-    javacOptions {
-        option("-Xlanguage-version", "2.0")
-    }
 }

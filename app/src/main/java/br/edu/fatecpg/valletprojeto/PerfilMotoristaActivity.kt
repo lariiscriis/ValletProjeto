@@ -92,10 +92,8 @@ class PerfilMotoristaActivity : AppCompatActivity() {
 
                 val reservas = querySnapshot.documents
 
-                // Total de reservas
                 val totalReservas = reservas.size
 
-                // Construir histórico texto
                 val historicoReservas = reservas.joinToString("\n\n") { doc ->
                     val estacionamento = doc.getString("estacionamentoNome") ?: "Desconhecido"
                     val horarioEntrada = doc.getString("horarioEntrada") ?: "-"
@@ -103,7 +101,6 @@ class PerfilMotoristaActivity : AppCompatActivity() {
                     "Estacionamento: $estacionamento\nEntrada: $horarioEntrada\nSaída: $horarioSaida"
                 }
 
-                // Calcular tempo total de uso (assumindo horários em String formato ISO ou timestamp)
                 var tempoTotalMillis = 0L
                 reservas.forEach { doc ->
                     val entradaStr = doc.getString("horarioEntrada")
@@ -116,25 +113,21 @@ class PerfilMotoristaActivity : AppCompatActivity() {
                                 tempoTotalMillis += (saida - entrada)
                             }
                         } catch (e: Exception) {
-                            // ignorar erro de parsing
                         }
                     }
                 }
-                val tempoTotalHoras = tempoTotalMillis / (1000 * 60 * 60) // converter de ms para horas
+                val tempoTotalHoras = tempoTotalMillis / (1000 * 60 * 60)
 
-                // Calcular locais mais frequentados
                 val frequenciaLocais = mutableMapOf<String, Int>()
                 reservas.forEach { doc ->
                     val estacionamento = doc.getString("estacionamentoNome") ?: "Desconhecido"
                     frequenciaLocais[estacionamento] = (frequenciaLocais[estacionamento] ?: 0) + 1
                 }
-                // Pega os 3 mais frequentes
                 val locaisMaisFrequentados = frequenciaLocais.entries
                     .sortedByDescending { it.value }
                     .take(3)
                     .joinToString(", ") { "${it.key} (${it.value})" }
 
-                // Atualizar a UI
                 binding.txtHistoricoReservas.text = historicoReservas.ifEmpty { "Nenhum histórico" }
                 binding.txtTotalReservas.text = "Total de reservas feitas: $totalReservas"
                 binding.txtTempoTotalUso.text = "Tempo total de uso: ${tempoTotalHoras}h"

@@ -65,25 +65,4 @@ object EstacionamentoDao {
                 onFailure(e.message ?: "Erro desconhecido")
             }
     }
-
-    fun listarPorAdmin(
-        onSuccess: (List<Estacionamento>) -> Unit,
-        onFailure: (String) -> Unit
-    ) {
-        val emailAdmin = auth.currentUser?.email ?: return onFailure("Admin não autenticado")
-        db.collection("estacionamento")
-            .whereEqualTo("adminEmail", emailAdmin)
-            .get()
-            .addOnSuccessListener { res ->
-                val lista = res.documents.map { doc ->
-                    val e = doc.toObject(Estacionamento::class.java)!!
-                    e.id = doc.id
-                    e
-                }
-                onSuccess(lista)
-            }
-            .addOnFailureListener { e ->
-                onFailure(e.message ?: "Erro ao listar")
-            }
-    }
 }

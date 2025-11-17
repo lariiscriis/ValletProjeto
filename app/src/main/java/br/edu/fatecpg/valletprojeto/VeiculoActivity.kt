@@ -2,7 +2,6 @@ package br.edu.fatecpg.valletprojeto
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Toast
@@ -93,33 +92,24 @@ class VeiculosAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(veiculo: Veiculo) {
-            // Configuração da UI (textos e ícone do veículo)
             binding.tvCarModel.text = "${veiculo.marca} ${veiculo.modelo}"
             binding.tvCarPlate.text = veiculo.placa
             binding.ivCarIcon.setImageResource(
                 if (veiculo.tipo == "moto") R.drawable.ic_moto else R.drawable.ic_vehicle
             )
 
-            // --- INÍCIO DA CORREÇÃO COM ImageView ---
-
-            // 1. Define a imagem da estrela (cheia ou vazia) baseada no estado 'padrao'
             if (veiculo.padrao) {
                 binding.ivFavoriteToggle.setImageResource(R.drawable.btn_star_on)
             } else {
                 binding.ivFavoriteToggle.setImageResource(R.drawable.btn_star_off)
             }
 
-            // 2. Define o listener de clique no ImageView
             binding.ivFavoriteToggle.setOnClickListener {
-                // Só age se o usuário clicar em um veículo que AINDA NÃO É o padrão
                 if (!veiculo.padrao) {
                     onToggleClick(veiculo)
                 }
             }
 
-            // --- FIM DA CORREÇÃO ---
-
-            // Listener para edição do item
             itemView.setOnClickListener {
                 onItemClick(veiculo)
             }
