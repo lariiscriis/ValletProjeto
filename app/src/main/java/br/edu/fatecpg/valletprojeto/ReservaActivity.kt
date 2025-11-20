@@ -1,6 +1,10 @@
 package br.edu.fatecpg.valletprojeto
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -12,6 +16,7 @@ import br.edu.fatecpg.valletprojeto.model.Veiculo
 import br.edu.fatecpg.valletprojeto.viewmodel.ReservaUIState
 import br.edu.fatecpg.valletprojeto.viewmodel.ReservaViewModel
 import com.bumptech.glide.Glide
+import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -19,13 +24,21 @@ class ReservaActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityReservaBinding
     private lateinit var viewModel: ReservaViewModel
+    private val db = FirebaseFirestore.getInstance()
+
     private var vagaId: String? = null
     private var estacionamentoId: String? = null
+
+    private var estacionamentoLat: Double? = null
+    private var estacionamentoLon: Double? = null
+    private var estacionamentoNome: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityReservaBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        viewModel = ViewModelProvider(this).get(ReservaViewModel::class.java)
 
         vagaId = intent.getStringExtra("vagaId")
         estacionamentoId = intent.getStringExtra("estacionamentoId")
@@ -35,13 +48,70 @@ class ReservaActivity : AppCompatActivity() {
             finish()
             return
         }
-        viewModel = ViewModelProvider(this)[ReservaViewModel::class.java]
+
+        buscarDadosEstacionamento(estacionamentoId!!)
+
+        binding.btnVerificarRota.setOnClickListener {
+            if (estacionamentoLat != null && estacionamentoLon != null && estacionamentoNome != null) {
+                abrirRotaParaEstacionamento(
+                    this,
+                    estacionamentoLat!!,
+                    estacionamentoLon!!,
+                    estacionamentoNome!!
+                )
+            } else {
+                Toast.makeText(this, "Carregando dados do estacionamento, tente novamente.", Toast.LENGTH_SHORT).show()
+            }
+        }
 
         setupGifAnimation()
         setupListeners()
         setupObservers()
 
         viewModel.carregarDadosIniciais(vagaId!!)
+    }
+
+    private fun buscarDadosEstacionamento(id: String) {
+        db.collection("estacionamento").document(id).get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    estacionamentoLat = document.getDouble("latitude")
+                    estacionamentoLon = document.getDouble("longitude")
+                    estacionamentoNome = document.getString("nome")
+
+                    Log.d("ReservaActivity", "Dados do Estacionamento carregados: $estacionamentoNome")
+                } else {
+                    Toast.makeText(this, "Estacionamento não encontrado.", Toast.LENGTH_LONG).show()
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("ReservaActivity", "Erro ao buscar dados do estacionamento", e)
+                Toast.makeText(this, "Erro ao carregar dados do estacionamento.", Toast.LENGTH_LONG).show()
+            }
+    }
+
+    fun abrirRotaParaEstacionamento(
+        context: Context,
+        destinoLatitude: Double,
+        destinoLongitude: Double,
+        nomeDestino: String
+    ) {
+        val gmmIntentUri = Uri.parse("google.navigation:q=$destinoLatitude,$destinoLongitude")
+        val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+        mapIntent.setPackage("com.google.android.apps.maps")
+        if (mapIntent.resolveActivity(context.packageManager) != null) {
+            context.startActivity(mapIntent)
+        } else {
+            val webIntent = Intent(
+                Intent.ACTION_VIEW,
+                Uri.parse("https://www.google.com/maps/dir/?api=1&destination=$destinoLatitude,$destinoLongitude&destination_place_id=$nomeDestino" )
+            )
+            if (webIntent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(webIntent)
+            } else {
+                Toast.makeText(context, "Nenhum aplicativo de mapas encontrado.", Toast.LENGTH_LONG).show()
+            }
+        }
     }
 
     private fun setupGifAnimation() {

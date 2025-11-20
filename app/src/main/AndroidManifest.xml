@@ -19,6 +19,14 @@
         android:theme="@style/Theme.ValletProjeto"
         tools:targetApi="31">
 
+        <service
+            android:name=".service.FirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
         <meta-data
             android:name="com.google.firebase.components:io.grpc.okhttp"
             android:value="false" />

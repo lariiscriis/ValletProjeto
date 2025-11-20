@@ -20,7 +20,9 @@ import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.android.gms.security.ProviderInstaller
+import com.google.firebase.firestore.FirebaseFirestore
 import java.util.concurrent.Executor
+import com.google.firebase.messaging.FirebaseMessaging
 
 class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallListener {
 
@@ -307,7 +309,7 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
                     startActivity(intent)
                     finish()
                 } else {
-                    redirectToHome("admin", email)
+                    redirectToHome(uid, email)
                 }
             }
             .addOnFailureListener { e ->
@@ -316,7 +318,28 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
             }
     }
 
-    private fun redirectToHome(tipoUser: String, email: String) {
+    private fun redirectToHome(uid: String, email: String) {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w("LOGIN", "Falha ao obter token FCM", task.exception)
+                return@addOnCompleteListener
+            }
+
+            // 2. Salvar o token no Firestore
+            val token = task.result
+            val db = FirebaseFirestore.getInstance()
+            val tokenData = hashMapOf("fcm_token" to token)
+
+            db.collection("usuario").document(uid)
+                .set(tokenData, com.google.firebase.firestore.SetOptions.merge())
+                .addOnSuccessListener {
+                    Log.d("LOGIN", "Token FCM salvo com sucesso após o login.")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("LOGIN", "Erro ao salvar Token FCM após o login.", e)
+                }
+        }
+
         Log.d("Login", "🚀 Redirecionando para home")
         val intent = Intent(this, DashboardBase::class.java)
         intent.putExtra("email_usuario", email)
