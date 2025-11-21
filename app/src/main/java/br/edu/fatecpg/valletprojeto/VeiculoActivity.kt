@@ -72,9 +72,15 @@ class VeiculoActivity : AppCompatActivity() {
             onItemClick = { veiculo ->
                 val intent = Intent(this, EditarVeiculoActivity::class.java).apply {
                     putExtra("veiculoId", veiculo.id)
+                    putExtra("placa", veiculo.placa)
+                    putExtra("marca", veiculo.marca)
+                    putExtra("modelo", veiculo.modelo)
+                    putExtra("ano", veiculo.ano)
+                    putExtra("km", veiculo.km)
                 }
                 editarVeiculoLauncher.launch(intent)
             }
+
         )
         binding.rvCarList.apply {
             layoutManager = LinearLayoutManager(this@VeiculoActivity)

@@ -100,6 +100,11 @@ class VeiculoListFragment : Fragment() {
             onItemClick = { veiculo ->
                 val intent = Intent(requireContext(), EditarVeiculoActivity::class.java).apply {
                     putExtra("veiculoId", veiculo.id)
+                    putExtra("placa", veiculo.placa)
+                    putExtra("marca", veiculo.marca)
+                    putExtra("modelo", veiculo.modelo)
+                    putExtra("ano", veiculo.ano)
+                    putExtra("km", veiculo.km)
                 }
                 editarVeiculoLauncher.launch(intent)
             }
