@@ -55,9 +55,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:ellipsize="end"
+            android:ellipsize="middle"
             android:maxWidth="140dp"
             android:singleLine="true"
+            android:text="preço"
+            android:textAlignment="center"
             android:textColor="#666666"
             android:textSize="14sp" />
 

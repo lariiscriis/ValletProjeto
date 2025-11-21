@@ -22,7 +22,7 @@ class VagasAdapter(
     inner class VagaViewHolder(private val binding: ItemVagaBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(vaga: Vaga) {
             // Use 'binding' para acessar os componentes do layout
-            binding.tvTitulo.text = "Vaga ${vaga.numero}"
+            binding.tvTitulo.text = "${vaga.numero}"
             binding.tvLocalizacao.text = vaga.localizacao
             binding.tvPreco.text = "R$ %.2f/h".format(vaga.preco)
 
