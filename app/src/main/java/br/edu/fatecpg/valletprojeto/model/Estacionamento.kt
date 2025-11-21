@@ -1,5 +1,9 @@
 package br.edu.fatecpg.valletprojeto.model
 
+import android.location.Location
+import java.util.Calendar
+import java.util.concurrent.TimeUnit
+
 data class Estacionamento(
     var id: String = "",
     val nome: String = "",
@@ -22,37 +26,64 @@ data class Estacionamento(
     val fotoEstacionamentoUri: String? = null,
     var vagasDisponiveis: Int? = null,
     var distanciaMetros: Int? = null,
-    var latitude: Double? = 0.0,
-    var longitude: Double? = 0.0,
+    var latitude: Double = 0.0,
+    var longitude: Double = 0.0,
     val quantidadeVagasTotal: Int? = null,
-    val horarioAbertura: String? = null,
-    val horarioFechamento: String? = null,
+    val horarioAbertura: String = "8:00",
+    val horarioFechamento: String = "7:00",
     val valorHora: Double? = null,
     val geohash: String? = null,
+    val isFavorite: Boolean = false
 
 )
 {
+
+    /**
+     * Calcula a distância em metros entre a localização do usuário e o estacionamento.
+     * Retorna null se a localização do usuário ou do estacionamento for inválida.
+     */
+    fun calcularDistancia(userLocation: Location?): Int? {
+        if (userLocation == null || (latitude == 0.0 && longitude == 0.0)) {
+            return null
+        }
+
+        val estacionamentoLocation = Location("Estacionamento")
+        estacionamentoLocation.latitude = latitude
+        estacionamentoLocation.longitude = longitude
+
+        // Location.distanceTo retorna a distância em metros
+        return userLocation.distanceTo(estacionamentoLocation).toInt()
+    }
+
+    /**
+     * Verifica se o estacionamento está aberto com base no horário atual e nos horários de abertura/fechamento.
+     * Assume que os horários de abertura e fechamento estão no formato "HH:mm".
+     * Lógica corrigida para lidar corretamente com horários que passam da meia-noite.
+     */
     fun estaAberto(): Boolean {
         return try {
-            val horaAbertura = horarioAbertura ?: return true
-            val horaFechamento = horarioFechamento ?: return true
+            val now = Calendar.getInstance()
+            var currentMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE)
 
-            val sdf = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
-            val agora = sdf.parse(sdf.format(java.util.Date()))
-            val abertura = sdf.parse(horaAbertura)
-            val fechamento = sdf.parse(horaFechamento)
+            val (openHour, openMinute) = horarioAbertura.split(":").map { it.toInt() }
+            val openMinutes = openHour * 60 + openMinute
 
-            if (abertura != null && fechamento != null && agora != null) {
-                if (fechamento.before(abertura)) {
-                    agora.after(abertura) || agora.before(fechamento)
-                } else {
-                    agora.after(abertura) && agora.before(fechamento)
+            val (closeHour, closeMinute) = horarioFechamento.split(":").map { it.toInt() }
+            var closeMinutes = closeHour * 60 + closeMinute
+
+            // Trata o caso de fechar no dia seguinte (ex: 22:00 - 06:00)
+            if (closeMinutes < openMinutes) {
+                closeMinutes += 24 * 60
+                // Se o horário atual for menor que o de abertura, ele está no "dia seguinte"
+                // no contexto do ciclo de abertura/fechamento que começou no dia anterior.
+                if (currentMinutes < openMinutes) {
+                    currentMinutes += 24 * 60
                 }
-            } else {
-                true
             }
+
+            currentMinutes in openMinutes until closeMinutes
         } catch (e: Exception) {
-            e.printStackTrace()
+            // Em caso de erro de parsing, assume que está aberto para evitar bloqueio
             true
         }
     }

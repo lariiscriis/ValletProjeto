@@ -1,5 +1,6 @@
 package br.edu.fatecpg.valletprojeto.adapter
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -23,8 +24,20 @@ class FavoriteParkingAdapter(
     inner class ViewHolder(val binding: ItemFavoriteParkingBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(estacionamento: Estacionamento) {
             binding.tvParkingName.text = estacionamento.nome
-            binding.tvParkingStatus.text = if (estacionamento.estaAberto()) "ABERTO" else "FECHADO"
+            binding.tvParkingAddress.text = estacionamento.endereco
+
+            val isOpen = estacionamento.estaAberto()
+            binding.tvParkingStatus.text = if (isOpen) "ABERTO" else "FECHADO"
+            binding.tvParkingStatus.setBackgroundColor(
+                if (isOpen) Color.parseColor("#00A676") else Color.RED
+            )
+
+
             binding.tvParkingPrice.text = "R$%.2f/h".format(estacionamento.valorHora)
+
+            // Lógica para exibir a distância
+            binding.tvParkingDistance.text = formatarDistancia(estacionamento.distanciaMetros)
+
             Glide.with(binding.root.context)
                 .load(estacionamento.fotoEstacionamentoUri)
                 .placeholder(R.drawable.estacionamento_foto)
@@ -37,6 +50,12 @@ class FavoriteParkingAdapter(
             binding.ivFavorite.setImageResource(R.drawable.btn_star_on)
 
             setupVagasListener(estacionamento)
+        }
+
+        private fun formatarDistancia(metros: Int?): String {
+            return metros?.let {
+                if (it >= 1000) "%.1f km".format(it / 1000.0) else "$it m"
+            } ?: "N/A"
         }
 
         private fun setupVagasListener(estacionamento: Estacionamento) {
@@ -57,7 +76,7 @@ class FavoriteParkingAdapter(
                 return oldItem.id == newItem.id
             }
             override fun areContentsTheSame(oldItem: Estacionamento, newItem: Estacionamento): Boolean {
-                return oldItem == newItem
+                return oldItem == newItem && oldItem.distanciaMetros == newItem.distanciaMetros
             }
         }
     }

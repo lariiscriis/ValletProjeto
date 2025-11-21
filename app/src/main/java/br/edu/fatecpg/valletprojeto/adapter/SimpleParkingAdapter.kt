@@ -1,5 +1,6 @@
 package br.edu.fatecpg.valletprojeto.adapter
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -23,7 +24,12 @@ class SimpleParkingAdapter(
     inner class ViewHolder(private val binding: ItemParkingBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(estacionamento: Estacionamento) {
             binding.tvParkingName.text = estacionamento.nome
-            binding.tvParkingStatus.text = if (estacionamento.estaAberto()) "ABERTO" else "FECHADO"
+            val isOpen = estacionamento.estaAberto()
+            binding.tvParkingStatus.text = if (isOpen) "ABERTO" else "FECHADO"
+            binding.tvParkingStatus.setBackgroundColor(
+                if (isOpen) Color.parseColor("#00A676") else Color.RED
+            )
+
             binding.tvParkingPrice.text = "R$%.2f/h".format(estacionamento.valorHora)
             binding.tvParkingAddress.text = estacionamento.endereco
             binding.tvParkingDistance.text = formatarDistancia(estacionamento.distanciaMetros)
@@ -68,7 +74,7 @@ class SimpleParkingAdapter(
                 return oldItem.id == newItem.id
             }
             override fun areContentsTheSame(oldItem: Estacionamento, newItem: Estacionamento): Boolean {
-                return oldItem == newItem
+                return oldItem == newItem && oldItem.distanciaMetros == newItem.distanciaMetros
             }
         }
     }

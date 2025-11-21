@@ -48,7 +48,7 @@
 
         <TextView
             android:id="@+id/tv_tav_info"
-            android:layout_width="wrap_content"
+            android:layout_width="130dp"
             android:layout_height="30dp"
             android:layout_below="@+id/iv_parking_image"
             android:layout_alignParentEnd="true"
@@ -72,13 +72,19 @@
 
         <TextView
             android:id="@+id/tv_parking_address"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/tv_parking_name"
+            android:layout_toStartOf="@id/iv_parking_image"
+            android:layout_toLeftOf="@id/iv_parking_image"
             android:layout_marginTop="4dp"
+            android:singleLine="false"
+            android:maxLines="3"
+            android:ellipsize="none"
             android:text="Address"
             android:textColor="#666666"
             android:textSize="12sp" />
+
 
         <TextView
             android:id="@+id/tv_parking_price"
@@ -106,7 +112,7 @@
             android:layout_width="117dp"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:layout_marginBottom="6dp"
+            android:layout_marginBottom="2dp"
             android:backgroundTint="#046C4E"
             android:fontFamily="@font/poppins_medium"
             android:minHeight="40dp"

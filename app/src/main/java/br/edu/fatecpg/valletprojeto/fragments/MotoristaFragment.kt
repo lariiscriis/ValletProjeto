@@ -45,7 +45,7 @@ class MotoristaFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.rvReservationHistory.layoutManager = GridLayoutManager(requireContext(), 1)
+        binding.rvReservationHistory.layoutManager = GridLayoutManager(requireContext(), 2)
 
         binding.btnViewReservation.setOnClickListener {
             if (vagaIdAtiva != null && estacionamentoIdAtivo != null) {

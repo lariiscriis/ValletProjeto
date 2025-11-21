@@ -69,6 +69,9 @@ class SpotsViewModel(application: Application) : AndroidViewModel(application) {
                     _navigateToVagas.value = Event(estacionamento.id)
                 } else {
                     _toastMessage.value = Event("Nenhuma vaga disponível no momento.")
+                    // Atualiza o número de vagas disponíveis no objeto para refletir o estado atual
+                    val updatedParking = estacionamento.copy(vagasDisponiveis = 0)
+                    updateParkingInLists(updatedParking)
                 }
             } catch (e: Exception) {
                 _toastMessage.value = Event("Erro ao verificar vagas: ${e.message}")
@@ -85,9 +88,11 @@ class SpotsViewModel(application: Application) : AndroidViewModel(application) {
             _error.postValue(null)
 
             try {
+                // 1. Buscar localização do usuário
                 val userLocation = if (useLocation) {
                     Log.d("SpotsViewModel", "Buscando localização...")
-                    withTimeoutOrNull(10000) { getCurrentLocation() }
+                    // Reduzindo o timeout para 5 segundos para melhorar a percepção de performance
+                    withTimeoutOrNull(5000) { fetchUserLocation() }
                 } else null
 
                 if (useLocation && userLocation == null) {
@@ -111,11 +116,10 @@ class SpotsViewModel(application: Application) : AndroidViewModel(application) {
                 val allFetchedParkings = parkingsDeferred.await()
                 Log.d("SpotsViewModel", "Busca concluída. ${allFetchedParkings.size} estacionamentos encontrados.")
 
+                // 2. Calcular distância para todos os estacionamentos
+                // Usando a função calcularDistancia do modelo Estacionamento
                 val processedParkings = allFetchedParkings.map { est ->
-                    val distancia = if (userLocation != null && est.latitude != null && est.longitude != null) {
-                        val parkingLocation = Location("").apply { latitude = est.latitude!!; longitude = est.longitude!! }
-                        userLocation.distanceTo(parkingLocation).roundToInt()
-                    } else null
+                    val distancia = est.calcularDistancia(userLocation)
                     est.copy(distanciaMetros = distancia)
                 }.sortedBy { it.distanciaMetros ?: Int.MAX_VALUE }
 
@@ -198,8 +202,8 @@ class SpotsViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     @SuppressLint("MissingPermission")
-    private suspend fun getCurrentLocation(): Location? = withContext(Dispatchers.IO) {
-        Log.d("SpotsViewModel", "Executando getCurrentLocation em ${Thread.currentThread().name}")
+    private suspend fun fetchUserLocation(): Location? = withContext(Dispatchers.IO) {
+        Log.d("SpotsViewModel", "Executando fetchUserLocation em ${Thread.currentThread().name}")
         try {
             fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null).await()
         } catch (e: Exception) {
@@ -226,6 +230,7 @@ class SpotsViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
 
+        // Lógica de atualização de LiveData
         val currentFavorites = _favoriteParkings.value?.toMutableList() ?: mutableListOf()
         val currentOthers = _parkings.value?.toMutableList() ?: mutableListOf()
 
@@ -248,12 +253,32 @@ class SpotsViewModel(application: Application) : AndroidViewModel(application) {
         } else {
             allParkingsMasterList.filter {
                 (it.nome.contains(query, ignoreCase = true) || it.endereco.contains(query, ignoreCase = true)) &&
-                    it.id !in (_favoriteParkings.value?.map { fav -> fav.id } ?: emptySet())
+                        it.id !in (_favoriteParkings.value?.map { fav -> fav.id } ?: emptySet())
             }
         }
         _parkings.value = filteredList
     }
+
+    private fun updateParkingInLists(updatedParking: Estacionamento) {
+        val currentFavorites = _favoriteParkings.value?.toMutableList() ?: mutableListOf()
+        val currentOthers = _parkings.value?.toMutableList() ?: mutableListOf()
+
+        val favIndex = currentFavorites.indexOfFirst { it.id == updatedParking.id }
+        if (favIndex != -1) {
+            currentFavorites[favIndex] = updatedParking
+            _favoriteParkings.postValue(currentFavorites)
+            return
+        }
+
+        val otherIndex = currentOthers.indexOfFirst { it.id == updatedParking.id }
+        if (otherIndex != -1) {
+            currentOthers[otherIndex] = updatedParking
+            _parkings.postValue(currentOthers)
+            return
+        }
+    }
 }
+
 open class Event<out T>(private val content: T) {
     var hasBeenHandled = false
         private set

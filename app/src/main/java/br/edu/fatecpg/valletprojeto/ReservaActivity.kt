@@ -128,7 +128,10 @@ class ReservaActivity : AppCompatActivity() {
         }
         binding.btnReservar.setOnClickListener {
             val horasSelecionadas = binding.sliderTempo.value.toInt()
-            viewModel.criarReserva(vagaId!!, estacionamentoId!!, horasSelecionadas)
+            estacionamentoNome?.let { it1 ->
+                viewModel.criarReserva(vagaId!!, estacionamentoId!!,
+                    it1, horasSelecionadas)
+            }
         }
     }
 

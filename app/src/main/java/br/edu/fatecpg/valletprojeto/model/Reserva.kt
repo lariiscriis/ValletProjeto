@@ -10,5 +10,6 @@ data class Reserva(
     val inicioReserva: Timestamp? = null,
     val fimReserva: Timestamp? = null,
     val estacionamentoId : String = "",
+    val estacionamentoNome: String = "",
     val status: String = "ativa"
 )

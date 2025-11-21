@@ -111,7 +111,7 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
         alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, fimReservaMillis, expiraPendingIntent)
     }
 
-    fun criarReserva(vagaId: String, estacionamentoId: String, horas: Int) {
+    fun criarReserva(vagaId: String, estacionamentoId: String,estacionamentoNome:String, horas: Int) {
         idVagaAtiva = vagaId
         viewModelScope.launch {
             _uiState.value = ReservaUIState.Loading
@@ -124,10 +124,12 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
                     usuarioId = userId,
                     vagaId = vagaId,
                     estacionamentoId = estacionamentoId,
+                    estacionamentoNome = estacionamentoNome,
                     status = "ativa",
                     inicioReserva = agora,
                     fimReserva = fimReserva
                 )
+
 
                 val docRef = db.collection("reserva").add(novaReserva).await()
                 idReservaAtiva = docRef.id
