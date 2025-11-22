@@ -67,7 +67,6 @@ class SpotsFragment : Fragment() {
         )
         binding.rvOtherParkings.layoutManager = LinearLayoutManager(requireContext())
         binding.rvOtherParkings.adapter = simpleAdapter
-
         favoriteAdapter = FavoriteParkingAdapter(
             onFavoriteClicked = { estacionamento ->
                 viewModel.toggleFavoriteStatus(estacionamento)

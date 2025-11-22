@@ -26,7 +26,6 @@ class ReservaCriadaReceiver : BroadcastReceiver() {
             return
         }
 
-        // Intent para abrir a Activity específica da reserva
         val activityIntent = Intent(context, ReservaActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             putExtra("vagaId", vagaId)
@@ -39,14 +38,13 @@ class ReservaCriadaReceiver : BroadcastReceiver() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // Usar ID único para cada notificação
         val notificationId = System.currentTimeMillis().toInt()
 
         val notification = NotificationCompat.Builder(context, NotificationConstants.RESERVA_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_parking)
             .setContentTitle("Reserva Confirmada! ✅")
             .setContentText("Vaga $vagaId no $estacionamentoNome reservada com sucesso!")
-            .setPriority(NotificationCompat.PRIORITY_HIGH) // Aumente a prioridade
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .setStyle(NotificationCompat.BigTextStyle()

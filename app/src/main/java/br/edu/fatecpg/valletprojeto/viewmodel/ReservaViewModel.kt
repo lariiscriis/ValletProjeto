@@ -89,7 +89,6 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
         val fimReservaMillis = reserva.fimReserva?.toDate()?.time ?: return
         Log.d("Notificacoes", "Agendando notificações para reserva: ${reserva.id}")
 
-        // Notificação de aviso (10 minutos antes)
         val avisoIntent = Intent(context, ReservaAvisoReceiver::class.java).apply {
             putExtra("vagaId", reserva.vagaId)
             putExtra("estacionamentoId", reserva.estacionamentoId)
@@ -112,7 +111,6 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
             }
         }
 
-        // Notificação de expiração
         val expiraIntent = Intent(context, ReservaExpiredReceiver::class.java).apply {
             putExtra("reservaId", reserva.id)
             putExtra("vagaId", reserva.vagaId)
@@ -162,7 +160,6 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
                 db.collection("vaga").document(vagaId).update("disponivel", false).await()
                 val reservaCriada = novaReserva.apply { id = docRef.id }
 
-                // 🔥 ADICIONE ESTAS LINHAS PARA NOTIFICAÇÃO IMEDIATA
                 enviarNotificacaoReservaCriada(getApplication(), vagaId, estacionamentoNome)
 
                 agendarNotificacoes(getApplication(), reservaCriada)
@@ -173,7 +170,6 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    // 🔥 ADICIONE ESTE MÉTODO NOVO
     private fun enviarNotificacaoReservaCriada(context: Context, vagaId: String, estacionamentoNome: String) {
         val intent = Intent(context, ReservaCriadaReceiver::class.java).apply {
             putExtra("vagaId", vagaId)

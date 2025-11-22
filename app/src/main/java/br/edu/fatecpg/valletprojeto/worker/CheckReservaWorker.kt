@@ -41,15 +41,12 @@ class CheckReservaWorker(appContext: Context, workerParams: WorkerParameters) :
 
             if (status == "ativa" && fimReserva != null && fimReserva.toDate().before(Date())) {
 
-                // Finaliza reserva e libera vaga
                 val batch = db.batch()
                 batch.update(reservaRef, "status", "finalizada")
                 batch.update(vagaRef, "disponivel", true)
                 batch.commit().await()
 
                 Log.d("CheckReservaWorker", "Reserva $reservaId finalizada e vaga $vagaId liberada.")
-
-                // ENVIA NOTIFICAÇÃO
                 sendNotification(
                     title = "Reserva Finalizada",
                     message = "Sua reserva da vaga $vagaId foi encerrada."

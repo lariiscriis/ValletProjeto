@@ -35,8 +35,9 @@ class FavoriteParkingAdapter(
 
             binding.tvParkingPrice.text = "R$%.2f/h".format(estacionamento.valorHora)
 
-            // Lógica para exibir a distância
             binding.tvParkingDistance.text = formatarDistancia(estacionamento.distanciaMetros)
+            binding.btnViewSpots.setOnClickListener { onItemClicked(estacionamento) }
+
 
             Glide.with(binding.root.context)
                 .load(estacionamento.fotoEstacionamentoUri)
