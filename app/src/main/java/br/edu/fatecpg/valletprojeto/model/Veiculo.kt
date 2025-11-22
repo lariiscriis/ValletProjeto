@@ -11,6 +11,7 @@ data class Veiculo(
     var id: String = "",
     var usuarioEmail: String = "",
     var dataCadastro: String = "",
-    var padrao: Boolean = false
+    var padrao: Boolean = false,
+    var usuarioId: String = ""
 
 )

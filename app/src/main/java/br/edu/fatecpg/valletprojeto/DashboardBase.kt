@@ -18,6 +18,7 @@ import br.edu.fatecpg.valletprojeto.fragments.OccupationFragment
 import br.edu.fatecpg.valletprojeto.fragments.SpotsFragment
 import br.edu.fatecpg.valletprojeto.fragments.VagaFragment
 import br.edu.fatecpg.valletprojeto.fragments.VeiculoListFragment
+import br.edu.fatecpg.valletprojeto.worker.NotificationUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -32,6 +33,7 @@ class DashboardBase : AppCompatActivity() {
         binding = ActivityDashboardBaseBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        NotificationUtils.createNotificationChannel(this)
         verificarTipoUsuario()
         carregarDadosUsuario()
 

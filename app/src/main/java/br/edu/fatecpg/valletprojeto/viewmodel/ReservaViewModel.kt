@@ -15,6 +15,7 @@ import br.edu.fatecpg.valletprojeto.model.Reserva
 import br.edu.fatecpg.valletprojeto.model.Vaga
 import br.edu.fatecpg.valletprojeto.model.Veiculo
 import br.edu.fatecpg.valletprojeto.receiver.ReservaAvisoReceiver
+import br.edu.fatecpg.valletprojeto.receiver.ReservaCriadaReceiver
 import br.edu.fatecpg.valletprojeto.receiver.ReservaExpiredReceiver
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -86,6 +87,9 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
     fun agendarNotificacoes(context: Context, reserva: Reserva) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val fimReservaMillis = reserva.fimReserva?.toDate()?.time ?: return
+        Log.d("Notificacoes", "Agendando notificações para reserva: ${reserva.id}")
+
+        // Notificação de aviso (10 minutos antes)
         val avisoIntent = Intent(context, ReservaAvisoReceiver::class.java).apply {
             putExtra("vagaId", reserva.vagaId)
             putExtra("estacionamentoId", reserva.estacionamentoId)
@@ -96,22 +100,44 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
             avisoIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
+
         val avisoMillis = fimReservaMillis - TimeUnit.MINUTES.toMillis(10)
         if (avisoMillis > System.currentTimeMillis()) {
-            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, avisoMillis, avisoPendingIntent)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                if (alarmManager.canScheduleExactAlarms()) {
+                    alarmManager.setExact(AlarmManager.RTC_WAKEUP, avisoMillis, avisoPendingIntent)
+                }
+            } else {
+                alarmManager.setExact(AlarmManager.RTC_WAKEUP, avisoMillis, avisoPendingIntent)
+            }
         }
 
-        val expiraIntent = Intent(context, ReservaExpiredReceiver::class.java)
+        // Notificação de expiração
+        val expiraIntent = Intent(context, ReservaExpiredReceiver::class.java).apply {
+            putExtra("reservaId", reserva.id)
+            putExtra("vagaId", reserva.vagaId)
+
+        }
         val expiraPendingIntent = PendingIntent.getBroadcast(
             context,
             reserva.id.hashCode() + 1,
             expiraIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, fimReservaMillis, expiraPendingIntent)
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            if (alarmManager.canScheduleExactAlarms()) {
+                alarmManager.setExact(AlarmManager.RTC_WAKEUP, fimReservaMillis, expiraPendingIntent)
+            }
+        } else {
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, fimReservaMillis, expiraPendingIntent)
+        }
+        Log.d("Notificacoes", "Aviso agendado para: ${Date(avisoMillis)}")
+        Log.d("Notificacoes", "Expiração agendada para: ${Date(fimReservaMillis)}")
+        Log.d("Notificacoes", "Notificações agendadas para reserva ${reserva.id}")
     }
 
-    fun criarReserva(vagaId: String, estacionamentoId: String,estacionamentoNome:String, horas: Int) {
+    fun criarReserva(vagaId: String, estacionamentoId: String, estacionamentoNome: String, horas: Int) {
         idVagaAtiva = vagaId
         viewModelScope.launch {
             _uiState.value = ReservaUIState.Loading
@@ -130,12 +156,15 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
                     fimReserva = fimReserva
                 )
 
-
                 val docRef = db.collection("reserva").add(novaReserva).await()
                 idReservaAtiva = docRef.id
 
                 db.collection("vaga").document(vagaId).update("disponivel", false).await()
                 val reservaCriada = novaReserva.apply { id = docRef.id }
+
+                // 🔥 ADICIONE ESTAS LINHAS PARA NOTIFICAÇÃO IMEDIATA
+                enviarNotificacaoReservaCriada(getApplication(), vagaId, estacionamentoNome)
+
                 agendarNotificacoes(getApplication(), reservaCriada)
                 carregarDadosIniciais(vagaId)
             } catch (e: Exception) {
@@ -144,6 +173,15 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    // 🔥 ADICIONE ESTE MÉTODO NOVO
+    private fun enviarNotificacaoReservaCriada(context: Context, vagaId: String, estacionamentoNome: String) {
+        val intent = Intent(context, ReservaCriadaReceiver::class.java).apply {
+            putExtra("vagaId", vagaId)
+            putExtra("estacionamentoNome", estacionamentoNome)
+        }
+        context.sendBroadcast(intent)
+        Log.d("Notificacoes", "Notificação de reserva criada enviada para vaga: $vagaId")
+    }
     fun renovarReserva(reserva: Reserva) {
         viewModelScope.launch {
             val idReserva = reserva.id
