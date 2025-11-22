@@ -69,6 +69,9 @@
             android:name=".CadastroVagaActivity"
             android:exported="false" />
         <activity
+            android:name=".HistoricoReservasActivity"
+            android:exported="false" />
+        <activity
             android:name=".VagaActivity"
             android:exported="false" />
         <activity

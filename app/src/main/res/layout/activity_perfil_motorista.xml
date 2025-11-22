@@ -304,4 +304,21 @@
             </LinearLayout>
         </ScrollView>
     </com.google.android.material.card.MaterialCardView>
+    <FrameLayout
+        android:id="@+id/progressOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#fff"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_gravity="center" />
+    </FrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

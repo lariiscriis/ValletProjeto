@@ -325,7 +325,6 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
                 return@addOnCompleteListener
             }
 
-            // 2. Salvar o token no Firestore
             val token = task.result
             val db = FirebaseFirestore.getInstance()
             val tokenData = hashMapOf("fcm_token" to token)

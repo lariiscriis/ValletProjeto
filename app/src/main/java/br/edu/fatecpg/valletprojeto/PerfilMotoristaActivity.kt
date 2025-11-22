@@ -1,145 +1,89 @@
 package br.edu.fatecpg.valletprojeto
 
-
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.bumptech.glide.Glide
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import br.edu.fatecpg.valletprojeto.adapter.ReservaAdapter
 import br.edu.fatecpg.valletprojeto.databinding.ActivityPerfilMotoristaBinding
-import java.text.SimpleDateFormat
-import java.util.Locale
+import br.edu.fatecpg.valletprojeto.viewmodel.PerfilMotoristaViewModel
+import com.bumptech.glide.Glide
 
 class PerfilMotoristaActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityPerfilMotoristaBinding
-    private val auth = FirebaseAuth.getInstance()
-    private val db = FirebaseFirestore.getInstance()
+    private lateinit var viewModel: PerfilMotoristaViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         binding = ActivityPerfilMotoristaBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        carregarDadosUsuario()
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        title = "Meu Perfil"
 
+        viewModel = ViewModelProvider(this).get(PerfilMotoristaViewModel::class.java)
         binding.btnEditarPerfil.setOnClickListener {
             startActivity(Intent(this, EditarPerfilMotoristaActivity::class.java))
         }
 
+        setupObservers()
+        setupListeners()
     }
 
-    fun isoStringToMillis(isoDate: String): Long {
-        val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
-        val date = sdf.parse(isoDate)
-        return date?.time ?: 0L
+    override fun onSupportNavigateUp(): Boolean {
+        finish()
+        return true
     }
 
-    private fun carregarDadosUsuario() {
-        val email = auth.currentUser?.email
-        if (email == null) {
-            Toast.makeText(this, "Usuário não autenticado", Toast.LENGTH_SHORT).show()
-            finish()
-            return
+    private fun setupObservers() {
+        viewModel.uiState.observe(this) { state ->
+
+            binding.progressOverlay.visibility =
+                if (state.isLoading) View.VISIBLE else View.GONE
+
+            binding.scrollView.visibility =
+                if (state.isLoading || state.errorMessage != null) View.GONE else View.VISIBLE
+
+            if (state.errorMessage != null) {
+                Toast.makeText(this, state.errorMessage, Toast.LENGTH_LONG).show()
+            }
+
+            // FOTO
+            state.fotoPerfilUrl?.let { url ->
+                Glide.with(this)
+                    .load(url)
+                    .placeholder(R.drawable.homemfundo2)
+                    .error(R.drawable.homemfundo2)
+                    .into(binding.imgFotoPerfil)
+            } ?: binding.imgFotoPerfil.setImageResource(R.drawable.homemfundo2)
+
+            // DADOS
+            binding.txtNome.text = state.nome
+            binding.txtEmail.text = state.email
+            binding.txtTelefone.text = state.telefone
+            binding.txtCnh.text = state.cnh
+            binding.txtTipoConta.text = state.tipoUser
+            binding.txtTotalReservas.text = state.totalReservas.toString()
+            binding.txtTempoTotalUso.text = state.tempoTotalUso
+            binding.txtLocaisMaisFrequentados.text = state.locaisMaisFrequentados
+
+            // ÚLTIMA RESERVA
+            binding.txtHistoricoReservas.text =
+                if (state.ultimasReservas.isNotEmpty())
+                    viewModel.formatarReserva(state.ultimasReservas.first())
+                else
+                    "Nenhuma reserva encontrada."
         }
+    }
 
-        db.collection("usuario")
-            .whereEqualTo("email", email)
-            .get()
-            .addOnSuccessListener { querySnapshot ->
-                if (!querySnapshot.isEmpty) {
-                    val doc = querySnapshot.documents[0]
-
-                    val nome = doc.getString("nome") ?: ""
-                    val telefone = doc.getString("telefone") ?: ""
-                    val cnh = doc.getString("cnh") ?: ""
-                    val tipoUser = doc.getString("tipo_user") ?: ""
-                    val fotoPerfilUrl = doc.getString("fotoPerfil")
-
-                    binding.txtNome.text = "Nome: $nome"
-                    binding.txtEmail.text = "Email: $email"
-                    binding.txtTelefone.text = "Telefone: $telefone"
-                    binding.txtCnh.text = "CNH: $cnh"
-                    binding.txtTipoConta.text = "Tipo de conta: ${tipoUser.capitalize()}"
-
-                    binding.txtHistoricoReservas.text = doc.getString("historicoReservas") ?: "Nenhum histórico"
-                    binding.txtTotalReservas.text = "Total de reservas feitas: ${doc.getLong("totalReservas") ?: 0}"
-                    binding.txtTempoTotalUso.text = "Tempo total de uso: ${doc.getString("tempoTotalUso") ?: "0h"}"
-                    binding.txtLocaisMaisFrequentados.text = "Locais mais frequentes: ${doc.getString("locaisMaisFrequentados") ?: "Nenhum"}"
-
-                    if (!fotoPerfilUrl.isNullOrEmpty()) {
-                        Glide.with(this)
-                            .load(fotoPerfilUrl)
-                            .circleCrop()
-                            .into(binding.imgFotoPerfil)
-                    }
-
-                } else {
-                    Toast.makeText(this, "Dados do usuário não encontrados", Toast.LENGTH_SHORT).show()
-                }
-            }
-            .addOnFailureListener {
-                Toast.makeText(this, "Erro ao carregar dados: ${it.message}", Toast.LENGTH_SHORT).show()
-            }
-        val userId = auth.currentUser?.uid ?: return
-
-        db.collection("reserva")
-            .whereEqualTo("usuarioId", userId)
-            .get()
-            .addOnSuccessListener { querySnapshot ->
-
-                val reservas = querySnapshot.documents
-
-                val totalReservas = reservas.size
-
-                val historicoReservas = reservas.joinToString("\n\n") { doc ->
-                    val estacionamento = doc.getString("estacionamentoNome") ?: "Desconhecido"
-                    val horarioEntrada = doc.getString("horarioEntrada") ?: "-"
-                    val horarioSaida = doc.getString("horarioSaida") ?: "-"
-                    "Estacionamento: $estacionamento\nEntrada: $horarioEntrada\nSaída: $horarioSaida"
-                }
-
-                var tempoTotalMillis = 0L
-                reservas.forEach { doc ->
-                    val entradaStr = doc.getString("horarioEntrada")
-                    val saidaStr = doc.getString("horarioSaida")
-                    if (entradaStr != null && saidaStr != null) {
-                        try {
-                            val entrada = isoStringToMillis(entradaStr)
-                            val saida = isoStringToMillis(saidaStr)
-                            if (saida > entrada) {
-                                tempoTotalMillis += (saida - entrada)
-                            }
-                        } catch (e: Exception) {
-                        }
-                    }
-                }
-                val tempoTotalHoras = tempoTotalMillis / (1000 * 60 * 60)
-
-                val frequenciaLocais = mutableMapOf<String, Int>()
-                reservas.forEach { doc ->
-                    val estacionamento = doc.getString("estacionamentoNome") ?: "Desconhecido"
-                    frequenciaLocais[estacionamento] = (frequenciaLocais[estacionamento] ?: 0) + 1
-                }
-                val locaisMaisFrequentados = frequenciaLocais.entries
-                    .sortedByDescending { it.value }
-                    .take(3)
-                    .joinToString(", ") { "${it.key} (${it.value})" }
-
-                binding.txtHistoricoReservas.text = historicoReservas.ifEmpty { "Nenhum histórico" }
-                binding.txtTotalReservas.text = "Total de reservas feitas: $totalReservas"
-                binding.txtTempoTotalUso.text = "Tempo total de uso: ${tempoTotalHoras}h"
-                binding.txtLocaisMaisFrequentados.text = if (locaisMaisFrequentados.isNotEmpty()) {
-                    "Locais mais frequentes: $locaisMaisFrequentados"
-                } else {
-                    "Locais mais frequentes: Nenhum"
-                }
-            }
-            .addOnFailureListener {
-                Toast.makeText(this, "Erro ao carregar reservas: ${it.message}", Toast.LENGTH_SHORT).show()
-            }
-
+    private fun setupListeners() {
+        binding.btnVerHistorico.setOnClickListener {
+            startActivity(Intent(this, HistoricoReservasActivity::class.java))
+        }
     }
 }

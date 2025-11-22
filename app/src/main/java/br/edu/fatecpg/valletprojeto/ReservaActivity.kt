@@ -128,9 +128,11 @@ class ReservaActivity : AppCompatActivity() {
         }
         binding.btnReservar.setOnClickListener {
             val horasSelecionadas = binding.sliderTempo.value.toInt()
-            estacionamentoNome?.let { it1 ->
+            if (estacionamentoNome != null) {
                 viewModel.criarReserva(vagaId!!, estacionamentoId!!,
-                    it1, horasSelecionadas)
+                    estacionamentoNome!!, horasSelecionadas)
+            } else {
+                Toast.makeText(this, "Nome do estacionamento não carregado. Tente novamente.", Toast.LENGTH_SHORT).show()
             }
         }
     }
