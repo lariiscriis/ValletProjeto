@@ -21,7 +21,7 @@
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="@color/verdeescuro"
-            tools:text="Estacionamento Central Park" />
+            tools:text="Estacionamento Nome" />
 
         <TextView
             android:id="@+id/tvPeriodo"

@@ -69,7 +69,6 @@ class SpotsViewModel(application: Application) : AndroidViewModel(application) {
                     _navigateToVagas.value = Event(estacionamento.id)
                 } else {
                     _toastMessage.value = Event("Nenhuma vaga disponível no momento.")
-                    // Atualiza o número de vagas disponíveis no objeto para refletir o estado atual
                     val updatedParking = estacionamento.copy(vagasDisponiveis = 0)
                     updateParkingInLists(updatedParking)
                 }
@@ -88,10 +87,8 @@ class SpotsViewModel(application: Application) : AndroidViewModel(application) {
             _error.postValue(null)
 
             try {
-                // 1. Buscar localização do usuário
                 val userLocation = if (useLocation) {
                     Log.d("SpotsViewModel", "Buscando localização...")
-                    // Reduzindo o timeout para 5 segundos para melhorar a percepção de performance
                     withTimeoutOrNull(5000) { fetchUserLocation() }
                 } else null
 
@@ -116,8 +113,6 @@ class SpotsViewModel(application: Application) : AndroidViewModel(application) {
                 val allFetchedParkings = parkingsDeferred.await()
                 Log.d("SpotsViewModel", "Busca concluída. ${allFetchedParkings.size} estacionamentos encontrados.")
 
-                // 2. Calcular distância para todos os estacionamentos
-                // Usando a função calcularDistancia do modelo Estacionamento
                 val processedParkings = allFetchedParkings.map { est ->
                     val distancia = est.calcularDistancia(userLocation)
                     est.copy(distanciaMetros = distancia)
@@ -230,7 +225,6 @@ class SpotsViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
 
-        // Lógica de atualização de LiveData
         val currentFavorites = _favoriteParkings.value?.toMutableList() ?: mutableListOf()
         val currentOthers = _parkings.value?.toMutableList() ?: mutableListOf()
 

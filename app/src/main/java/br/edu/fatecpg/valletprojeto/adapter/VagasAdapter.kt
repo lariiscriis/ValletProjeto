@@ -11,17 +11,14 @@ import br.edu.fatecpg.valletprojeto.ReservaActivity
 import br.edu.fatecpg.valletprojeto.databinding.ItemVagaBinding // Importe o ViewBinding gerado
 import br.edu.fatecpg.valletprojeto.model.Vaga
 
-// 1. Remova 'listaVagas' do construtor e herde de ListAdapter
 class VagasAdapter(
     private val isAdmin: Boolean,
     private val onEditClick: (Vaga) -> Unit,
     private val onDeleteClick: (Vaga) -> Unit
 ) : ListAdapter<Vaga, VagasAdapter.VagaViewHolder>(VagaDiffCallback) {
 
-    // 2. O ViewHolder agora usa ViewBinding para acesso seguro às views
     inner class VagaViewHolder(private val binding: ItemVagaBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(vaga: Vaga) {
-            // Use 'binding' para acessar os componentes do layout
             binding.tvTitulo.text = "${vaga.numero}"
             binding.tvLocalizacao.text = vaga.localizacao
             binding.tvPreco.text = "R$ %.2f/h".format(vaga.preco)
@@ -51,18 +48,13 @@ class VagasAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VagaViewHolder {
-        // Infla o layout usando o ViewBinding
         val binding = ItemVagaBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return VagaViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: VagaViewHolder, position: Int) {
-        // 3. Use o método getItem() do ListAdapter para pegar o objeto Vaga
         holder.bind(getItem(position))
     }
-
-    // 4. O DiffUtil é obrigatório para o ListAdapter. Ele calcula as diferenças
-    //    entre as listas de forma eficiente.
     companion object {
         private val VagaDiffCallback = object : DiffUtil.ItemCallback<Vaga>() {
             override fun areItemsTheSame(oldItem: Vaga, newItem: Vaga): Boolean {

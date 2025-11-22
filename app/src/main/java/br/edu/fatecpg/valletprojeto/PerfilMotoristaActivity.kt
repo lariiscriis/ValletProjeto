@@ -53,7 +53,6 @@ class PerfilMotoristaActivity : AppCompatActivity() {
                 Toast.makeText(this, state.errorMessage, Toast.LENGTH_LONG).show()
             }
 
-            // FOTO
             state.fotoPerfilUrl?.let { url ->
                 Glide.with(this)
                     .load(url)
@@ -62,7 +61,6 @@ class PerfilMotoristaActivity : AppCompatActivity() {
                     .into(binding.imgFotoPerfil)
             } ?: binding.imgFotoPerfil.setImageResource(R.drawable.homemfundo2)
 
-            // DADOS
             binding.txtNome.text = state.nome
             binding.txtEmail.text = state.email
             binding.txtTelefone.text = state.telefone
@@ -72,7 +70,6 @@ class PerfilMotoristaActivity : AppCompatActivity() {
             binding.txtTempoTotalUso.text = state.tempoTotalUso
             binding.txtLocaisMaisFrequentados.text = state.locaisMaisFrequentados
 
-            // ÚLTIMA RESERVA
             binding.txtHistoricoReservas.text =
                 if (state.ultimasReservas.isNotEmpty())
                     viewModel.formatarReserva(state.ultimasReservas.first())

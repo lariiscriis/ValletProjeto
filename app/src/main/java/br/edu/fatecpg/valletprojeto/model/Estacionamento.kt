@@ -38,10 +38,6 @@ data class Estacionamento(
 )
 {
 
-    /**
-     * Calcula a distância em metros entre a localização do usuário e o estacionamento.
-     * Retorna null se a localização do usuário ou do estacionamento for inválida.
-     */
     fun calcularDistancia(userLocation: Location?): Int? {
         if (userLocation == null || (latitude == 0.0 && longitude == 0.0)) {
             return null
@@ -51,15 +47,9 @@ data class Estacionamento(
         estacionamentoLocation.latitude = latitude
         estacionamentoLocation.longitude = longitude
 
-        // Location.distanceTo retorna a distância em metros
         return userLocation.distanceTo(estacionamentoLocation).toInt()
     }
 
-    /**
-     * Verifica se o estacionamento está aberto com base no horário atual e nos horários de abertura/fechamento.
-     * Assume que os horários de abertura e fechamento estão no formato "HH:mm".
-     * Lógica corrigida para lidar corretamente com horários que passam da meia-noite.
-     */
     fun estaAberto(): Boolean {
         return try {
             val now = Calendar.getInstance()
@@ -71,11 +61,8 @@ data class Estacionamento(
             val (closeHour, closeMinute) = horarioFechamento.split(":").map { it.toInt() }
             var closeMinutes = closeHour * 60 + closeMinute
 
-            // Trata o caso de fechar no dia seguinte (ex: 22:00 - 06:00)
             if (closeMinutes < openMinutes) {
                 closeMinutes += 24 * 60
-                // Se o horário atual for menor que o de abertura, ele está no "dia seguinte"
-                // no contexto do ciclo de abertura/fechamento que começou no dia anterior.
                 if (currentMinutes < openMinutes) {
                     currentMinutes += 24 * 60
                 }
@@ -83,7 +70,6 @@ data class Estacionamento(
 
             currentMinutes in openMinutes until closeMinutes
         } catch (e: Exception) {
-            // Em caso de erro de parsing, assume que está aberto para evitar bloqueio
             true
         }
     }

@@ -57,7 +57,6 @@ class PerfilMotoristaViewModel(application: Application) : AndroidViewModel(appl
             }
 
             try {
-                // 1. Buscar dados do usuário
                 val userSnapshot = db.collection("usuario")
                     .whereEqualTo("email", email)
                     .get().await()
@@ -79,7 +78,6 @@ class PerfilMotoristaViewModel(application: Application) : AndroidViewModel(appl
                     return@launch
                 }
 
-                // 2. Buscar as 3 reservas mais recentes (ordenadas por fimReserva ou inicioReserva)
                 val reservasSnapshot = db.collection("reserva")
                     .whereEqualTo("usuarioId", userId)
                     .orderBy("fimReserva", Query.Direction.DESCENDING) // Ordenar pela mais recente
@@ -92,14 +90,12 @@ class PerfilMotoristaViewModel(application: Application) : AndroidViewModel(appl
                     }
                 }
 
-                // 3. Buscar todas as reservas para estatísticas (pode ser otimizado, mas por enquanto buscamos todas)
                 val todasReservasSnapshot = db.collection("reserva")
                     .whereEqualTo("usuarioId", userId)
                     .get().await()
 
                 val todasReservas = todasReservasSnapshot.toObjects(Reserva::class.java)
 
-                // 4. Calcular estatísticas
                 val totalReservas = todasReservas.size.toLong()
                 val (tempoTotalUso, locaisMaisFrequentados) = calcularEstatisticas(todasReservas)
 
@@ -125,7 +121,6 @@ class PerfilMotoristaViewModel(application: Application) : AndroidViewModel(appl
         val frequenciaLocais = mutableMapOf<String, Int>()
 
         reservas.forEach { reserva ->
-            // Cálculo do tempo total de uso
             val inicio = reserva.inicioReserva?.toDate()?.time
             val fim = reserva.fimReserva?.toDate()?.time
 
@@ -133,7 +128,6 @@ class PerfilMotoristaViewModel(application: Application) : AndroidViewModel(appl
                 tempoTotalMillis += (fim - inicio)
             }
 
-            // Contagem de locais mais frequentados
             val estacionamento = reserva.estacionamentoNome.ifEmpty { "Desconhecido" }
             frequenciaLocais[estacionamento] = (frequenciaLocais[estacionamento] ?: 0) + 1
         }

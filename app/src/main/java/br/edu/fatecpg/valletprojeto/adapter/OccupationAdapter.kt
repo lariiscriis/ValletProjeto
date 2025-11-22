@@ -1,4 +1,3 @@
-// OccupationAdapter.kt
 package br.edu.fatecpg.valletprojeto.adapter
 
 import android.view.LayoutInflater
@@ -14,14 +13,11 @@ import com.bumptech.glide.Glide
 import java.text.SimpleDateFormat
 import java.util.*
 
-// 2. Mude para ListAdapter para eficiência
 class OccupationAdapter : ListAdapter<VagaOcupada, OccupationAdapter.ViewHolder>(VagaOcupadaDiffCallback) {
 
-    // 3. O ViewHolder agora recebe o Binding, não a View
     inner class ViewHolder(private val binding: ItemOccupationBinding) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(vaga: VagaOcupada) {
-            // 4. Use 'binding' para acessar as views de forma segura
             binding.tvVagaNumero.text = "Vaga: ${vaga.numeroVaga}"
 
             val agora = Date()
@@ -58,7 +54,6 @@ class OccupationAdapter : ListAdapter<VagaOcupada, OccupationAdapter.ViewHolder>
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        // 5. Infla o layout usando o View Binding
         val binding = ItemOccupationBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return ViewHolder(binding)
     }
@@ -67,11 +62,9 @@ class OccupationAdapter : ListAdapter<VagaOcupada, OccupationAdapter.ViewHolder>
         holder.bind(getItem(position))
     }
 
-    // 6. Adicione o DiffUtil para o ListAdapter
     companion object {
         private val VagaOcupadaDiffCallback = object : DiffUtil.ItemCallback<VagaOcupada>() {
             override fun areItemsTheSame(oldItem: VagaOcupada, newItem: VagaOcupada): Boolean {
-                // Supondo que a combinação de placa e vaga seja única para uma reserva ativa
                 return oldItem.carroPlaca == newItem.carroPlaca && oldItem.numeroVaga == newItem.numeroVaga
             }
             override fun areContentsTheSame(oldItem: VagaOcupada, newItem: VagaOcupada): Boolean {
