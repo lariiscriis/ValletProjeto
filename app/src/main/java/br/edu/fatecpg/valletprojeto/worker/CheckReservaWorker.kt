@@ -11,8 +11,10 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import java.util.*
 
-class CheckReservaWorker(appContext: Context, workerParams: WorkerParameters) :
-    CoroutineWorker(appContext, workerParams) {
+class CheckReservaWorker(
+    private val context: Context,
+    workerParams: WorkerParameters
+) : CoroutineWorker(context, workerParams) {
 
     private val db = FirebaseFirestore.getInstance()
 
@@ -20,71 +22,77 @@ class CheckReservaWorker(appContext: Context, workerParams: WorkerParameters) :
         val reservaId = inputData.getString("reservaId")
         val vagaId = inputData.getString("vagaId")
 
+        Log.d("CheckReservaWorker", "Verificando reserva: $reservaId, vaga: $vagaId")
+
         if (reservaId == null || vagaId == null) {
-            Log.e("CheckReservaWorker", "Dados de entrada incompletos.")
+            Log.e("CheckReservaWorker", "Dados incompletos")
             return Result.failure()
         }
 
-        try {
+        return try {
             val reservaRef = db.collection("reserva").document(reservaId)
             val vagaRef = db.collection("vaga").document(vagaId)
 
             val reservaDoc = reservaRef.get().await()
 
             if (!reservaDoc.exists()) {
-                Log.e("CheckReservaWorker", "Reserva $reservaId não encontrada.")
+                Log.e("CheckReservaWorker", "Reserva não encontrada: $reservaId")
                 return Result.failure()
             }
 
-            val fimReserva = reservaDoc.getTimestamp("fimReserva")
             val status = reservaDoc.getString("status")
+            val fimReserva = reservaDoc.getTimestamp("fimReserva")?.toDate()
 
-            if (status == "ativa" && fimReserva != null && fimReserva.toDate().before(Date())) {
+            Log.d("CheckReservaWorker", "Status: $status, Fim: $fimReserva")
 
+            // 🔥 FINALIZA RESERVA SE ESTIVER EXPIRADA
+            if (status == "ativa" && fimReserva != null && fimReserva.time <= System.currentTimeMillis()) {
+                Log.d("CheckReservaWorker", "Reserva expirada, finalizando...")
+
+                // Atualiza status da reserva e libera vaga
                 val batch = db.batch()
                 batch.update(reservaRef, "status", "finalizada")
                 batch.update(vagaRef, "disponivel", true)
                 batch.commit().await()
 
-                Log.d("CheckReservaWorker", "Reserva $reservaId finalizada e vaga $vagaId liberada.")
-                sendNotification(
-                    title = "Reserva Finalizada",
-                    message = "Sua reserva da vaga $vagaId foi encerrada."
-                )
+                Log.d("CheckReservaWorker", "Reserva finalizada e vaga liberada")
+
+                // Envia notificação
+                enviarNotificacaoExpirada(vagaId)
 
                 return Result.success()
             }
 
             if (status != "ativa") {
-                Log.d("CheckReservaWorker", "Reserva $reservaId já está $status.")
+                Log.d("CheckReservaWorker", "Reserva já está $status")
                 return Result.success()
             }
 
-            Log.d("CheckReservaWorker", "Reserva $reservaId ainda não expirou.")
+            Log.d("CheckReservaWorker", "Reserva ainda não expirou")
             return Result.success()
 
         } catch (e: Exception) {
-            Log.e("CheckReservaWorker", "Erro ao processar reserva: ${e.message}", e)
+            Log.e("CheckReservaWorker", "Erro: ${e.message}", e)
             return Result.retry()
         }
     }
 
-    private fun sendNotification(title: String, message: String) {
-        NotificationUtils.createNotificationChannel(applicationContext)
+    private fun enviarNotificacaoExpirada(vagaId: String) {
+        NotificationUtils.createNotificationChannel(context)
 
-        val notificationManager =
-            applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        val notification = NotificationCompat.Builder(
-            applicationContext,
-            NotificationConstants.RESERVA_CHANNEL_ID
-        )
-            .setContentTitle(title)
-            .setContentText(message)
-            .setSmallIcon(R.drawable.valletlogo)
+        val notification = NotificationCompat.Builder(context, NotificationConstants.RESERVA_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_parking)
+            .setContentTitle("Reserva Finalizada!")
+            .setContentText("Sua reserva na vaga $vagaId foi encerrada automaticamente.")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
+            .setStyle(NotificationCompat.BigTextStyle()
+                .bigText("Sua reserva na vaga $vagaId foi finalizada automaticamente. A vaga está disponível para novas reservas."))
             .build()
 
-        notificationManager.notify(Random().nextInt(), notification)
+        notificationManager.notify(vagaId.hashCode() + 3, notification)
+        Log.d("CheckReservaWorker", "Notificação de expiração enviada")
     }
 }

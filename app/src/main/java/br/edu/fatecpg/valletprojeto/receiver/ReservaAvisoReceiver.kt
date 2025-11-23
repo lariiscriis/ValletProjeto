@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import br.edu.fatecpg.valletprojeto.R
 import br.edu.fatecpg.valletprojeto.ReservaActivity
@@ -13,6 +14,8 @@ import br.edu.fatecpg.valletprojeto.worker.NotificationUtils
 
 class ReservaAvisoReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        Log.d("ReservaAvisoReceiver", "Receiver acionado")
+
         NotificationUtils.createNotificationChannel(context)
 
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -20,7 +23,12 @@ class ReservaAvisoReceiver : BroadcastReceiver() {
         val vagaId = intent.getStringExtra("vagaId")
         val estacionamentoId = intent.getStringExtra("estacionamentoId")
 
-        if (vagaId == null) return
+        if (vagaId == null) {
+            Log.e("ReservaAvisoReceiver", "vagaId é nulo")
+            return
+        }
+
+        Log.d("ReservaAvisoReceiver", "Preparando notificação para vaga: $vagaId")
 
         val activityIntent = Intent(context, ReservaActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -43,6 +51,7 @@ class ReservaAvisoReceiver : BroadcastReceiver() {
             .setAutoCancel(true)
             .build()
 
-        notificationManager.notify(vagaId.hashCode(), notification)
+        notificationManager.notify(vagaId.hashCode() + 1, notification)
+        Log.d("ReservaAvisoReceiver", "Notificação de aviso exibida para vaga: $vagaId")
     }
 }

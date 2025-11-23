@@ -273,12 +273,21 @@
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
-
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:fontFamily="@font/poppins_medium"
+                    android:letterSpacing="0.1"
+                    android:text="LOCAIS MAIS FREQUENTES"
+                    android:textColor="@color/verdeescuro"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
                 <TextView
                     android:id="@+id/txtLocaisMaisFrequentados"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Locais mais frequentes:\n• Shopping X\n• Centro Y"
+                    android:text=" Shopping X\n• Centro Y"
                     android:textSize="16sp"
                     android:textColor="@color/preto"
                     android:lineSpacingExtra="6dp"

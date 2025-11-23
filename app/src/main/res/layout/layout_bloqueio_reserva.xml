@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layoutBloqueio"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="32dp">
+
+    <ImageView
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:contentDescription="Atenção"
+        android:layout_marginBottom="24dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Reserva Ativa Encontrada!"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:id="@+id/textBloqueio"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Carregando informações da reserva..."
+        android:textSize="16sp"
+        android:textAlignment="center"
+        android:lineSpacingExtra="4sp"
+        android:layout_marginBottom="32dp" />
+
+    <Button
+        android:id="@+id/btnVerReserva"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ver Minha Reserva"
+        android:paddingStart="32dp"
+        android:paddingEnd="32dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+</LinearLayout>

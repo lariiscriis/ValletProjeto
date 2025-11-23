@@ -11,11 +11,14 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.work.WorkManager
 import br.edu.fatecpg.valletprojeto.databinding.ActivityIntroBinding
 import br.edu.fatecpg.valletprojeto.worker.NotificationUtils
+import br.edu.fatecpg.valletprojeto.worker.VerificarReservasExpiradasWorker
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityIntroBinding
@@ -115,7 +118,24 @@ class MainActivity : AppCompatActivity() {
                 finish()
             }
     }
+    // No seu Application class ou MainActivity
+    private fun configurarVerificacaoPeriodica() {
+        val constraints = androidx.work.Constraints.Builder()
+            .setRequiredNetworkType(androidx.work.NetworkType.CONNECTED)
+            .build()
 
+        val periodicWorkRequest = androidx.work.PeriodicWorkRequestBuilder<VerificarReservasExpiradasWorker>(
+            15, TimeUnit.MINUTES // Verifica a cada 15 minutos
+        )
+            .setConstraints(constraints)
+            .build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "verificar_reservas_expiradas",
+            androidx.work.ExistingPeriodicWorkPolicy.KEEP,
+            periodicWorkRequest
+        )
+    }
     private fun redirectToHome(tipoUser: String, email: String) {
         val intent = Intent(this, DashboardBase::class.java)
         intent.putExtra("email_usuario", email)

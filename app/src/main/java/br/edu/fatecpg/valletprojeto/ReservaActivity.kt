@@ -10,9 +10,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import br.edu.fatecpg.valletprojeto.databinding.ActivityReservaBinding
-import br.edu.fatecpg.valletprojeto.model.Reserva
-import br.edu.fatecpg.valletprojeto.model.Vaga
-import br.edu.fatecpg.valletprojeto.model.Veiculo
 import br.edu.fatecpg.valletprojeto.viewmodel.ReservaUIState
 import br.edu.fatecpg.valletprojeto.viewmodel.ReservaViewModel
 import com.bumptech.glide.Glide

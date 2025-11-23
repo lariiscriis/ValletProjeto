@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import br.edu.fatecpg.valletprojeto.CadastroVagaActivity
 import br.edu.fatecpg.valletprojeto.EditarVagaActivity
+import br.edu.fatecpg.valletprojeto.ReservaActivity // 🔥 ADICIONE ESTE IMPORT
 import br.edu.fatecpg.valletprojeto.adapter.VagasAdapter
 import br.edu.fatecpg.valletprojeto.databinding.FragmentVagaBinding
 import br.edu.fatecpg.valletprojeto.model.Vaga
@@ -109,6 +110,29 @@ class VagaFragment : Fragment() {
             },
             onDeleteClick = { vaga ->
                 showDeleteDialog(vaga)
+            },
+            // 🔥 CORREÇÃO: Adicione o parâmetro onVagaClick
+            onVagaClick = { vaga ->
+                if (isAdmin) {
+                    // Admin não deve fazer reservas, apenas gerenciar
+                    return@VagasAdapter
+                }
+
+                // Verifica se a vaga está disponível
+                if (!vaga.disponivel) {
+                    Toast.makeText(requireContext(), "Esta vaga não está disponível no momento.", Toast.LENGTH_SHORT).show()
+                    return@VagasAdapter
+                }
+
+                // Abre a tela de reserva para usuários normais
+                val intent = Intent(requireContext(), ReservaActivity::class.java).apply {
+                    putExtra("vagaId", vaga.id)
+                    putExtra("estacionamentoId", estacionamentoId)
+                    putExtra("numero", vaga.numero)
+                    putExtra("preco", vaga.preco)
+                    putExtra("tipo", vaga.tipo)
+                }
+                startActivity(intent)
             }
         )
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())

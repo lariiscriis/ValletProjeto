@@ -11,12 +11,16 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import br.edu.fatecpg.valletprojeto.model.Reserva
 import br.edu.fatecpg.valletprojeto.model.Vaga
 import br.edu.fatecpg.valletprojeto.model.Veiculo
 import br.edu.fatecpg.valletprojeto.receiver.ReservaAvisoReceiver
 import br.edu.fatecpg.valletprojeto.receiver.ReservaCriadaReceiver
 import br.edu.fatecpg.valletprojeto.receiver.ReservaExpiredReceiver
+import br.edu.fatecpg.valletprojeto.worker.ReservaNotificationWorker
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -47,17 +51,74 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
     private val _tempoRestante = MutableLiveData<String>()
     val tempoRestante: LiveData<String> = _tempoRestante
 
+    private val _temReservaAtiva = MutableLiveData<Boolean>()
+    val temReservaAtiva: LiveData<Boolean> = _temReservaAtiva
+
     private var timer: CountDownTimer? = null
     private var idReservaAtiva: String? = null
-
     private var idVagaAtiva: String? = null
+
+    fun verificarReservaAtiva() {
+        viewModelScope.launch {
+            try {
+                val reservaAtiva = buscarQualquerReservaAtiva()
+                _temReservaAtiva.value = reservaAtiva != null
+
+                if (reservaAtiva != null) {
+                    carregarDadosReservaAtiva(reservaAtiva)
+                }
+            } catch (e: Exception) {
+                Log.e("ReservaViewModel", "Erro ao verificar reserva ativa: ${e.message}")
+            }
+        }
+    }
+
+    private suspend fun buscarQualquerReservaAtiva(): Reserva? {
+        val userId = auth.currentUser?.uid ?: return null
+        val snapshot = db.collection("reserva")
+            .whereEqualTo("usuarioId", userId)
+            .whereEqualTo("status", "ativa")
+            .limit(1)
+            .get()
+            .await()
+
+        if (snapshot.isEmpty) return null
+
+        val doc = snapshot.documents.first()
+        return doc.toObject(Reserva::class.java)?.apply {
+            id = doc.id
+        }
+    }
+
+    private suspend fun carregarDadosReservaAtiva(reserva: Reserva) {
+        try {
+            val vagaDoc = db.collection("vaga").document(reserva.vagaId).get().await()
+            val vaga = vagaDoc.toObject(Vaga::class.java)?.apply { id = vagaDoc.id }
+
+            val veiculo = buscarVeiculoPadrao()
+
+            if (vaga != null && veiculo != null) {
+                _uiState.value = ReservaUIState.Active(reserva, vaga, veiculo)
+                iniciarTimer(reserva.fimReserva!!.toDate())
+                idVagaAtiva = reserva.vagaId
+            }
+        } catch (e: Exception) {
+            Log.e("ReservaViewModel", "Erro ao carregar dados da reserva ativa: ${e.message}")
+        }
+    }
 
     fun carregarDadosIniciais(vagaId: String) {
         viewModelScope.launch {
             _uiState.value = ReservaUIState.Loading
+            val reservaAtivaGlobal = buscarQualquerReservaAtiva()
+
+            if (reservaAtivaGlobal != null && reservaAtivaGlobal.vagaId != vagaId) {
+                _uiState.value = ReservaUIState.Error("Você já tem uma reserva ativa na vaga ${reservaAtivaGlobal.vagaId}. Finalize-a antes de reservar outra.")
+                return@launch
+            }
+
             try {
                 val vagaDoc = db.collection("vaga").document(vagaId).get().await()
-
                 val vaga = vagaDoc.toObject(Vaga::class.java)?.apply {
                     id = vagaDoc.id
                 }
@@ -85,37 +146,35 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun agendarNotificacoes(context: Context, reserva: Reserva) {
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val fimReservaMillis = reserva.fimReserva?.toDate()?.time ?: return
         Log.d("Notificacoes", "Agendando notificações para reserva: ${reserva.id}")
 
-        val avisoIntent = Intent(context, ReservaAvisoReceiver::class.java).apply {
-            putExtra("vagaId", reserva.vagaId)
-            putExtra("estacionamentoId", reserva.estacionamentoId)
-        }
-        val avisoPendingIntent = PendingIntent.getBroadcast(
-            context,
-            reserva.id.hashCode(),
-            avisoIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
+        // 1. Notificação de aviso (10 minutos antes) - WorkManager
         val avisoMillis = fimReservaMillis - TimeUnit.MINUTES.toMillis(10)
         if (avisoMillis > System.currentTimeMillis()) {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-                if (alarmManager.canScheduleExactAlarms()) {
-                    alarmManager.setExact(AlarmManager.RTC_WAKEUP, avisoMillis, avisoPendingIntent)
-                }
-            } else {
-                alarmManager.setExact(AlarmManager.RTC_WAKEUP, avisoMillis, avisoPendingIntent)
-            }
+            val avisoDelay = avisoMillis - System.currentTimeMillis()
+
+            val avisoData = workDataOf(
+                "tipo" to "aviso",
+                "vagaId" to reserva.vagaId,
+                "estacionamentoId" to reserva.estacionamentoId
+            )
+
+            val avisoRequest = OneTimeWorkRequestBuilder<ReservaNotificationWorker>()
+                .setInitialDelay(avisoDelay, TimeUnit.MILLISECONDS)
+                .setInputData(avisoData)
+                .build()
+
+            WorkManager.getInstance(context).enqueue(avisoRequest)
+            Log.d("Notificacoes", "Aviso agendado para: ${Date(avisoMillis)}")
         }
 
+        // 2. Notificação de expiração + FINALIZAÇÃO - AlarmManager (mais preciso para horários exatos)
         val expiraIntent = Intent(context, ReservaExpiredReceiver::class.java).apply {
             putExtra("reservaId", reserva.id)
             putExtra("vagaId", reserva.vagaId)
-
         }
+
         val expiraPendingIntent = PendingIntent.getBroadcast(
             context,
             reserva.id.hashCode() + 1,
@@ -123,6 +182,7 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
             if (alarmManager.canScheduleExactAlarms()) {
                 alarmManager.setExact(AlarmManager.RTC_WAKEUP, fimReservaMillis, expiraPendingIntent)
@@ -130,16 +190,22 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
         } else {
             alarmManager.setExact(AlarmManager.RTC_WAKEUP, fimReservaMillis, expiraPendingIntent)
         }
-        Log.d("Notificacoes", "Aviso agendado para: ${Date(avisoMillis)}")
+
         Log.d("Notificacoes", "Expiração agendada para: ${Date(fimReservaMillis)}")
-        Log.d("Notificacoes", "Notificações agendadas para reserva ${reserva.id}")
+        Log.d("Notificacoes", "Sistema de finalização automática configurado para reserva ${reserva.id}")
     }
 
     fun criarReserva(vagaId: String, estacionamentoId: String, estacionamentoNome: String, horas: Int) {
-        idVagaAtiva = vagaId
         viewModelScope.launch {
+            val reservaAtiva = buscarQualquerReservaAtiva()
+            if (reservaAtiva != null) {
+                _uiState.value = ReservaUIState.Error("Você já tem uma reserva ativa na vaga ${reservaAtiva.vagaId}. Finalize-a antes de criar outra.")
+                return@launch
+            }
+
             _uiState.value = ReservaUIState.Loading
             val userId = auth.currentUser?.uid ?: return@launch
+
             try {
                 val agora = Timestamp.now()
                 val fimReserva = Timestamp(Date(agora.toDate().time + TimeUnit.HOURS.toMillis(horas.toLong())))
@@ -156,14 +222,17 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
 
                 val docRef = db.collection("reserva").add(novaReserva).await()
                 idReservaAtiva = docRef.id
+                idVagaAtiva = vagaId
 
                 db.collection("vaga").document(vagaId).update("disponivel", false).await()
                 val reservaCriada = novaReserva.apply { id = docRef.id }
 
                 enviarNotificacaoReservaCriada(getApplication(), vagaId, estacionamentoNome)
-
                 agendarNotificacoes(getApplication(), reservaCriada)
+
+                _temReservaAtiva.value = true
                 carregarDadosIniciais(vagaId)
+
             } catch (e: Exception) {
                 _uiState.value = ReservaUIState.Error("Erro ao criar reserva: ${e.message}")
             }
@@ -221,18 +290,12 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
             _uiState.value = ReservaUIState.Loading
             val userId = auth.currentUser?.uid
 
-            Log.d("Cancelamento", "Iniciando cancelamento para vagaId: ${vaga.id}")
-
             if (userId == null) {
-                Log.e("Cancelamento", "Falha: Usuário não autenticado.")
                 _uiState.value = ReservaUIState.Error("Usuário não autenticado.")
                 return@launch
             }
-            Log.d("Cancelamento", "Usuário autenticado: $userId")
 
             try {
-                Log.d("Cancelamento", "Executando query com: usuarioId=${userId}, vagaId=${vaga.id}, status=ativa")
-
                 val reservaAtivaSnapshot = db.collection("reserva")
                     .whereEqualTo("usuarioId", userId)
                     .whereEqualTo("vagaId", vaga.id)
@@ -244,27 +307,24 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
                 val reservaDoc = reservaAtivaSnapshot.documents.firstOrNull()
 
                 if (reservaDoc == null) {
-                    Log.e("Cancelamento", "FALHA: Nenhuma reserva ativa encontrada com os critérios da query.")
                     _uiState.value = ReservaUIState.Error("Nenhuma reserva ativa encontrada para cancelar.")
                     return@launch
                 }
-
-                Log.d("Cancelamento", "SUCESSO: Reserva encontrada, ID do documento: ${reservaDoc.id}. Iniciando batch...")
 
                 val batch = db.batch()
                 batch.update(reservaDoc.reference, "status", "cancelada")
                 val vagaRef = db.collection("vaga").document(vaga.id)
                 batch.update(vagaRef, "disponivel", true)
-
-                Log.d("Cancelamento", "Executando batch.commit()...")
                 batch.commit().await()
 
                 timer?.cancel()
-                Log.d("Cancelamento", "Batch commit bem-sucedido. Reserva cancelada.")
+
+                _temReservaAtiva.value = false
+                idVagaAtiva = null
+
                 _uiState.value = ReservaUIState.Finished("Reserva cancelada com sucesso.")
 
             } catch (e: Exception) {
-                Log.e("Cancelamento", "ERRO CRÍTICO durante o cancelamento: ${e.message}", e)
                 _uiState.value = ReservaUIState.Error("Erro ao cancelar: ${e.message}")
             }
         }

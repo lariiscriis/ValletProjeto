@@ -1,22 +1,20 @@
 package br.edu.fatecpg.valletprojeto.adapter
 
-import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import br.edu.fatecpg.valletprojeto.ReservaActivity
-import br.edu.fatecpg.valletprojeto.databinding.ItemVagaBinding // Importe o ViewBinding gerado
+import br.edu.fatecpg.valletprojeto.databinding.ItemVagaBinding
 import br.edu.fatecpg.valletprojeto.model.Vaga
 
 class VagasAdapter(
     private val isAdmin: Boolean,
     private val onEditClick: (Vaga) -> Unit,
-    private val onDeleteClick: (Vaga) -> Unit
-) : ListAdapter<Vaga, VagasAdapter.VagaViewHolder>(VagaDiffCallback) {
-
+    private val onDeleteClick: (Vaga) -> Unit,
+    private val onVagaClick: (Vaga) -> Unit
+) : ListAdapter<Vaga, VagasAdapter.VagaViewHolder>(DiffCallback) {
     inner class VagaViewHolder(private val binding: ItemVagaBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(vaga: Vaga) {
             binding.tvTitulo.text = "${vaga.numero}"
@@ -28,22 +26,15 @@ class VagasAdapter(
                 binding.btnExcluir.visibility = View.VISIBLE
                 binding.btnEdit.setOnClickListener { onEditClick(vaga) }
                 binding.btnExcluir.setOnClickListener { onDeleteClick(vaga) }
-                binding.root.setOnClickListener(null) // Desativa o clique no item inteiro para o admin
+                binding.root.setOnClickListener(null)
             } else {
                 binding.btnEdit.visibility = View.GONE
                 binding.btnExcluir.visibility = View.GONE
                 binding.root.setOnClickListener {
-                    val context = itemView.context
-                    val intent = Intent(context, ReservaActivity::class.java).apply {
-                        putExtra("vagaId", vaga.id)
-                        putExtra("numero", vaga.numero)
-                        putExtra("preco", vaga.preco)
-                        putExtra("tipo", vaga.tipo)
-                        putExtra("estacionamentoId", vaga.estacionamentoId)
-                    }
-                    context.startActivity(intent)
+                    onVagaClick(vaga)
                 }
             }
+
         }
     }
 
@@ -53,16 +44,22 @@ class VagasAdapter(
     }
 
     override fun onBindViewHolder(holder: VagaViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        val vaga = getItem(position)
+        holder.bind(vaga)
+
     }
+
     companion object {
-        private val VagaDiffCallback = object : DiffUtil.ItemCallback<Vaga>() {
+        private val DiffCallback = object : DiffUtil.ItemCallback<Vaga>() {
             override fun areItemsTheSame(oldItem: Vaga, newItem: Vaga): Boolean {
                 return oldItem.id == newItem.id
             }
 
             override fun areContentsTheSame(oldItem: Vaga, newItem: Vaga): Boolean {
-                return oldItem == newItem
+                return oldItem == newItem &&
+                        oldItem.disponivel == newItem.disponivel &&
+                        oldItem.numero == newItem.numero &&
+                        oldItem.preco == newItem.preco
             }
         }
     }
