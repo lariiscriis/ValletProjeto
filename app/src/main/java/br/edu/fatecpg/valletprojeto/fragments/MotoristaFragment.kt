@@ -87,7 +87,8 @@ class MotoristaFragment : Fragment() {
                 for (doc in reservas) {
                     val status = doc.getString("status")
                     val vagaId = doc.getString("vagaId") ?: continue
-                    val estacionamentoId = doc.getString("estacionamentoId") ?: "" // pegar estacionamentoId
+                    val estacionamentoId = doc.getString("estacionamentoId") ?: ""
+                    val estacionamentoNome = doc.getString("estacionamentoNome") ?: ""
                     val inicio = doc.getTimestamp("inicioReserva")?.toDate()
                     val fim = doc.getTimestamp("fimReserva")?.toDate()
 
@@ -114,11 +115,18 @@ class MotoristaFragment : Fragment() {
                         vagaIdAtiva = vagaId
                         estacionamentoIdAtivo = estacionamentoId
                     } else {
+                        val nomeEstacionamento = if (estacionamentoNome.isNotEmpty()) {
+                            estacionamentoNome
+                        } else {
+                            buscarNomeEstacionamento(estacionamentoId)
+                        }
+
                         historico.add(
                             ReservaHistorico(
-                                vaga.numero,
-                                SimpleDateFormat("dd/MM", Locale.getDefault()).format(inicio!!),
-                                formatarHorario(inicio, fim)
+                                vaga = vaga.numero,
+                                data = SimpleDateFormat("dd/MM", Locale.getDefault()).format(inicio!!),
+                                horario = formatarHorario(inicio, fim),
+                                estacionamentoNome = nomeEstacionamento // 🔥 ADICIONA O NOME
                             )
                         )
                     }
@@ -140,7 +148,19 @@ class MotoristaFragment : Fragment() {
 
             } catch (e: Exception) {
                 e.printStackTrace()
+                Toast.makeText(requireContext(), "Erro ao carregar reservas", Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    private suspend fun buscarNomeEstacionamento(estacionamentoId: String): String {
+        return try {
+            if (estacionamentoId.isEmpty()) return "Estacionamento"
+
+            val estacionamentoDoc = db.collection("estacionamento").document(estacionamentoId).get().await()
+            estacionamentoDoc.getString("nome") ?: "Estacionamento"
+        } catch (e: Exception) {
+            "Estacionamento"
         }
     }
 
@@ -154,4 +174,3 @@ class MotoristaFragment : Fragment() {
         _binding = null
     }
 }
-

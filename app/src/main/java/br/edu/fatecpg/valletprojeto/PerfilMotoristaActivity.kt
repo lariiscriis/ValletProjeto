@@ -6,8 +6,6 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.LinearLayoutManager
-import br.edu.fatecpg.valletprojeto.adapter.ReservaAdapter
 import br.edu.fatecpg.valletprojeto.databinding.ActivityPerfilMotoristaBinding
 import br.edu.fatecpg.valletprojeto.viewmodel.PerfilMotoristaViewModel
 import com.bumptech.glide.Glide

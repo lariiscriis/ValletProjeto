@@ -26,7 +26,9 @@ class HistoricoReservasAdapter(
         val reserva = listaReservas[position]
         holder.binding.tvHistorySpot.text = reserva.vaga
         holder.binding.tvHistoryDate.text = reserva.data
+        holder.binding.txvEstacionamento.text = reserva.estacionamentoNome
         holder.binding.tvHistoryTime.text = reserva.horario
+
     }
 
     override fun getItemCount() = listaReservas.size

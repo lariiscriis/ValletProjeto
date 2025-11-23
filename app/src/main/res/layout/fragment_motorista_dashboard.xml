@@ -44,13 +44,19 @@
                     android:layout_alignParentLeft="true"
                     android:layout_toLeftOf="@+id/txv_spot_letter"
                     android:orientation="vertical">
-
+                    <TextView
+                        android:id="@+id/txv_estacionamento"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:text="nome do estacionamento"
+                        android:textSize="18sp" />
                     <TextView
                         android:id="@+id/txv_location"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="28dp"
-                        android:text=""
+                        android:layout_marginBottom="10dp"
+                        android:text="Localização"
                         android:textSize="16sp" />
 
                     <TextView
@@ -66,7 +72,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        android:text="Setor Norte"
+                        android:text="reserva ativa"
                         android:textColor="#4CAF50"
                         android:textSize="16sp" />
 
