@@ -98,10 +98,16 @@ class VeiculosAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(veiculo: Veiculo) {
-            binding.tvCarModel.text = "${veiculo.marca} ${veiculo.modelo}"
-            binding.tvCarPlate.text = veiculo.placa
-            binding.ivCarIcon.setImageResource(
-                if (veiculo.tipo == "moto") R.drawable.ic_moto else R.drawable.ic_vehicle
+            binding.txvApelidoVeiculo.text = veiculo.modelo
+            binding.txvDetalhesVeiculo.text = "${veiculo.marca} - ${veiculo.ano}"
+            binding.txvPlacaVeiculo.text = veiculo.placa
+
+            binding.ivVehicleIcon.setImageResource(
+                if (veiculo.tipo.equals("Moto", ignoreCase = true)) {
+                    R.drawable.moto_option_resized
+                } else {
+                    R.drawable.carro_option_resized
+                }
             )
 
             if (veiculo.padrao) {
@@ -136,6 +142,7 @@ class VeiculosAdapter(
             override fun areItemsTheSame(oldItem: Veiculo, newItem: Veiculo): Boolean {
                 return oldItem.id == newItem.id
             }
+
             override fun areContentsTheSame(oldItem: Veiculo, newItem: Veiculo): Boolean {
                 return oldItem == newItem
             }

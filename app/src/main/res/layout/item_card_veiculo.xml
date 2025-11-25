@@ -13,62 +13,62 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:padding="12dp">
 
-        <!-- Ícone do Carro (estético) -->
+        <!-- Ícone do Veículo -->
         <ImageView
-            android:id="@+id/iv_car_icon"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:id="@+id/iv_vehicle_icon"
+            android:layout_width="74dp"
+            android:layout_height="70dp"
+            android:contentDescription="Ícone do veículo"
+            android:scaleType="centerCrop"
             android:src="@drawable/ic_vehicle"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:contentDescription="Ícone do veículo"/>
+            tools:src="@drawable/carro_option" />
 
-        <!-- Layout para as informações do carro -->
+        <!-- Layout para as informações do veículo -->
         <LinearLayout
-            android:id="@+id/ll_car_info"
+            android:id="@+id/ll_vehicle_info"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
             android:orientation="vertical"
-            android:layout_marginStart="16dp"
-            app:layout_constraintStart_toEndOf="@id/iv_car_icon"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent">
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/iv_favorite_toggle"
+            app:layout_constraintStart_toEndOf="@id/iv_vehicle_icon"
+            app:layout_constraintTop_toTopOf="parent">
 
             <TextView
-                android:id="@+id/tv_car_model"
+                android:id="@+id/txv_apelido_veiculo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                tools:text="Volkswagen Gol"
+                android:fontFamily="@font/poppins_medium"
                 android:textColor="@color/verdeescuro"
-                android:textSize="16sp"
+                android:textSize="18sp"
                 android:textStyle="bold"
-                android:fontFamily="@font/poppins_medium"/>
+                tools:text="Meu Carro" />
 
             <TextView
-                android:id="@+id/tv_car_plate"
+                android:id="@+id/txv_detalhes_veiculo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                tools:text="BRA2E19"
+                android:fontFamily="@font/poppins"
+                android:textColor="#444444"
+                android:textSize="16sp"
+                tools:text="VW Gol - 2023" />
+
+            <TextView
+                android:id="@+id/txv_placa_veiculo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/poppins"
                 android:textColor="#666666"
-                android:textSize="14sp"
-                android:fontFamily="@font/poppins"/>
+                android:textSize="16sp"
+                tools:text="BRA2E19" />
 
         </LinearLayout>
-
-<!--        <CheckBox-->
-<!--            android:id="@+id/toggle_favorite_car"-->
-<!--            android:layout_width="48dp"-->
-<!--            android:layout_height="48dp"-->
-<!--            android:background="@drawable/star"-->
-<!--            android:contentDescription="Marcar como veículo principal"-->
-<!--            android:textOff=""-->
-<!--            android:textOn=""-->
-<!--            app:layout_constraintBottom_toBottomOf="parent"-->
-<!--            app:layout_constraintEnd_toEndOf="parent"-->
-<!--            app:layout_constraintTop_toTopOf="parent" />-->
 
         <ImageView
             android:id="@+id/iv_favorite_toggle"

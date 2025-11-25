@@ -34,77 +34,97 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <EditText
-                android:id="@+id/editPlaca"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutEditPlaca"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:autofillHints=""
-                android:background="@drawable/edittext_background"
                 android:hint="@string/placa"
-                android:imeOptions="actionNext"
-                android:inputType="textCapCharacters"
-                android:maxLines="1"
-                android:padding="10dp"
-                android:textColor="#000000"
-                android:textColorHint="#AAAAAA"
+                app:boxStrokeColor="@color/verdeescuro"
+                app:hintTextColor="@color/verdeescuro"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tv_title" />
+                app:layout_constraintTop_toBottomOf="@id/tv_title">
 
-            <EditText
-                android:id="@+id/editMarca"
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editPlaca"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionNext"
+                    android:inputType="textCapCharacters"
+                    android:maxLines="1"
+                    android:textColor="#000000" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutEditMarca"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:autofillHints="text"
-                android:background="@drawable/edittext_background"
                 android:hint="@string/marca"
-                android:imeOptions="actionNext"
-                android:inputType="textCapWords"
-                android:maxLines="1"
-                android:padding="10dp"
-                android:textColor="#000000"
-                android:textColorHint="#AAAAAA"
+                app:boxStrokeColor="@color/verdeescuro"
+                app:hintTextColor="@color/verdeescuro"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/editPlaca" />
+                app:layout_constraintTop_toBottomOf="@id/layoutEditPlaca">
 
-            <EditText
-                android:id="@+id/editModelo"
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editMarca"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionNext"
+                    android:inputType="textCapWords"
+                    android:maxLines="1"
+                    android:textColor="#000000" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutEditModelo"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:autofillHints="text"
-                android:background="@drawable/edittext_background"
                 android:hint="@string/modelo"
-                android:imeOptions="actionNext"
-                android:inputType="textCapWords"
-                android:maxLines="1"
-                android:padding="10dp"
-                android:textColor="#000000"
-                android:textColorHint="#AAAAAA"
+                app:boxStrokeColor="@color/verdeescuro"
+                app:hintTextColor="@color/verdeescuro"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/editMarca" />
+                app:layout_constraintTop_toBottomOf="@id/layoutEditMarca">
 
-            <EditText
-                android:id="@+id/editApelido"
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editModelo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionNext"
+                    android:inputType="textCapWords"
+                    android:maxLines="1"
+                    android:textColor="#000000" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutEditApelido"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:autofillHints="text"
-                android:background="@drawable/edittext_background"
                 android:hint="@string/apelido"
-                android:imeOptions="actionNext"
-                android:inputType="text"
-                android:maxLines="1"
-                android:padding="10dp"
-                android:textColor="#000000"
-                android:textColorHint="#AAAAAA"
+                app:boxStrokeColor="@color/verdeescuro"
+                app:hintTextColor="@color/verdeescuro"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/editModelo" />
+                app:layout_constraintTop_toBottomOf="@id/layoutEditModelo">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editApelido"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionNext"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:textColor="#000000" />
+            </com.google.android.material.textfield.TextInputLayout>
 
             <LinearLayout
                 android:id="@+id/line_ano_km"
@@ -114,58 +134,72 @@
                 android:orientation="horizontal"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/editApelido">
+                app:layout_constraintTop_toBottomOf="@id/layoutEditApelido">
 
-                <EditText
-                    android:id="@+id/editAno"
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/layoutEditAno"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="0dp"
-                    android:layout_height="48dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
                     android:layout_weight="1"
-                    android:autofillHints="number"
-                    android:background="@drawable/edittext_background"
                     android:hint="@string/ano"
-                    android:imeOptions="actionNext"
-                    android:inputType="phone"
-                    android:maxLength="4"
-                    android:maxLines="1"
-                    android:padding="10dp"
-                    android:textColor="#000000"
-                    android:textColorHint="#AAAAAA" />
+                    app:boxStrokeColor="@color/verdeescuro"
+                    app:hintTextColor="@color/verdeescuro">
 
-                <EditText
-                    android:id="@+id/editKM"
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editAno"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:imeOptions="actionNext"
+                        android:inputType="phone"
+                        android:maxLength="4"
+                        android:maxLines="1"
+                        android:textColor="#000000" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/layoutEditKM"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="0dp"
-                    android:layout_height="48dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:autofillHints="phone"
-                    android:background="@drawable/edittext_background"
                     android:hint="@string/KM"
-                    android:imeOptions="actionDone"
-                    android:inputType="number"
-                    android:maxLines="1"
-                    android:padding="10dp"
-                    android:textColor="#000000"
-                    android:textColorHint="#AAAAAA" />
+                    app:boxStrokeColor="@color/verdeescuro"
+                    app:hintTextColor="@color/verdeescuro">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editKM"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:imeOptions="actionDone"
+                        android:inputType="number"
+                        android:maxLines="1"
+                        android:textColor="#000000" />
+                </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
 
             <TextView
                 android:id="@+id/tv_tipo_label"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:fontFamily="@font/poppins_medium"
                 android:text="@string/tipo_veiculo"
+                android:textAlignment="center"
                 android:textColor="@color/verdeescuro"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/line_ano_km" />
 
             <RadioGroup
                 android:id="@+id/rg_vehicle_type"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
+                android:gravity="center"
                 android:orientation="horizontal"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_tipo_label">
 
@@ -173,17 +207,31 @@
                     android:id="@+id/rb_carro"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:background="@drawable/radio_car_selector"
+                    android:button="@android:color/transparent"
                     android:checked="true"
+                    android:drawableTop="@drawable/carro_option_resized"
+                    android:drawablePadding="4dp"
                     android:fontFamily="@font/poppins"
-                    android:text="@string/carro" />
+                    android:gravity="center"
+                    android:padding="16dp"
+                    android:text="@string/carro"
+                    android:textColor="@color/verdeescuro" />
 
                 <RadioButton
                     android:id="@+id/rb_moto"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
+                    android:background="@drawable/radio_moto_selector"
+                    android:button="@android:color/transparent"
+                    android:drawableTop="@drawable/moto_option_resized"
+                    android:drawablePadding="4dp"
                     android:fontFamily="@font/poppins"
-                    android:text="@string/moto" />
+                    android:gravity="center"
+                    android:padding="16dp"
+                    android:text="@string/moto"
+                    android:textColor="@color/verdeescuro" />
             </RadioGroup>
 
             <Button
@@ -192,8 +240,10 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:backgroundTint="@color/verdeescuro"
+                android:elevation="4dp"
                 android:fontFamily="@font/poppins_medium"
-                android:minHeight="52dp"
+                android:minHeight="48dp"
+                android:padding="12dp"
                 android:text="@string/confirmar"
                 android:textColor="@color/branco"
                 android:textSize="16sp"
@@ -203,17 +253,18 @@
 
             <Button
                 android:id="@+id/btnCancelar"
+                style="?attr/materialButtonOutlinedStyle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:backgroundTint="@android:color/holo_red_dark"
                 android:fontFamily="@font/poppins_medium"
-                android:minHeight="52dp"
+                android:minHeight="48dp"
+                android:padding="12dp"
                 android:text="@string/cancelar"
-                android:textColor="@color/branco"
+                android:textColor="@color/verdeescuro"
                 android:textSize="16sp"
+                app:strokeColor="@color/verdeescuro"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/btnConfirmar" />
 

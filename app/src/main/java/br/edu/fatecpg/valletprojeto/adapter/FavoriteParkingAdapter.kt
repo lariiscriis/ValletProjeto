@@ -23,8 +23,8 @@ class FavoriteParkingAdapter(
 
     inner class ViewHolder(val binding: ItemFavoriteParkingBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(estacionamento: Estacionamento) {
-            binding.tvParkingName.text = estacionamento.nome
-            binding.tvParkingAddress.text = estacionamento.endereco
+            binding.txvNomeEstacionamento.text = estacionamento.nome
+            binding.txvEnderecoEstacionamento.text = estacionamento.endereco
 
             val isOpen = estacionamento.estaAberto()
             binding.tvParkingStatus.text = if (isOpen) "ABERTO" else "FECHADO"
@@ -33,10 +33,10 @@ class FavoriteParkingAdapter(
             )
 
 
-            binding.tvParkingPrice.text = "R$%.2f/h".format(estacionamento.valorHora)
+            binding.txvPreco.text = "R$%.2f/h".format(estacionamento.valorHora)
 
             binding.tvParkingDistance.text = formatarDistancia(estacionamento.distanciaMetros)
-            binding.btnViewSpots.setOnClickListener { onItemClicked(estacionamento) }
+            binding.btnVerVagas.setOnClickListener { onItemClicked(estacionamento) }
 
 
             Glide.with(binding.root.context)
