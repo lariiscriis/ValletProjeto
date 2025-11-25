@@ -23,15 +23,15 @@ class SimpleParkingAdapter(
 
     inner class ViewHolder(private val binding: ItemParkingBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(estacionamento: Estacionamento) {
-            binding.tvParkingName.text = estacionamento.nome
+            binding.txvNomeEstacionamento.text = estacionamento.nome
             val isOpen = estacionamento.estaAberto()
             binding.tvParkingStatus.text = if (isOpen) "ABERTO" else "FECHADO"
             binding.tvParkingStatus.setBackgroundColor(
                 if (isOpen) Color.parseColor("#00A676") else Color.RED
             )
 
-            binding.tvParkingPrice.text = "R$%.2f/h".format(estacionamento.valorHora)
-            binding.tvParkingAddress.text = estacionamento.endereco
+            binding.txvPreco.text = "R$%.2f/h".format(estacionamento.valorHora)
+            binding.txvEnderecoEstacionamento.text = estacionamento.endereco
             binding.tvParkingDistance.text = formatarDistancia(estacionamento.distanciaMetros)
 
             Glide.with(binding.root.context)
@@ -41,7 +41,7 @@ class SimpleParkingAdapter(
                 .into(binding.ivParkingImage)
 
             binding.root.setOnClickListener { onItemClicked(estacionamento) }
-            binding.btnViewSpots.setOnClickListener { onItemClicked(estacionamento) }
+            binding.btnVerVagas.setOnClickListener { onItemClicked(estacionamento) }
 
             binding.ivFavorite.setOnClickListener { onFavoriteClicked(estacionamento) }
 
@@ -62,7 +62,7 @@ class SimpleParkingAdapter(
                 .whereEqualTo("estacionamentoId", estacionamento.id)
                 .whereEqualTo("disponivel", true)
                 .addSnapshotListener { snapshot, _ ->
-                    binding.tvTavInfo.text = "Vagas disponíveis: ${snapshot?.size() ?: 0}"
+                    binding.txvVagasDisponiveis.text = "Vagas disponíveis: ${snapshot?.size() ?: 0}"
                 }
             listeners[estacionamento.id] = listener
         }

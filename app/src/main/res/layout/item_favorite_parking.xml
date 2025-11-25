@@ -60,7 +60,7 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/tv_parking_name"
+            android:id="@+id/txv_nome_estacionamento"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/tv_parking_status"
@@ -71,10 +71,10 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/tv_parking_address"
+            android:id="@+id/txv_endereco_estacionamento"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/tv_parking_name"
+            android:layout_below="@id/txv_nome_estacionamento"
             android:layout_marginTop="4dp"
             android:layout_toStartOf="@id/iv_parking_image"
             android:layout_toLeftOf="@id/iv_parking_image"
@@ -87,10 +87,10 @@
 
 
         <TextView
-            android:id="@+id/tv_parking_price"
+            android:id="@+id/txv_preco"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/tv_parking_address"
+            android:layout_below="@id/txv_endereco_estacionamento"
             android:layout_marginTop="6dp"
             android:text="R$0,00/h"
             android:textColor="#046C4E"
@@ -101,14 +101,14 @@
             android:id="@+id/tv_parking_distance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/tv_parking_price"
+            android:layout_below="@id/txv_preco"
             android:layout_marginTop="4dp"
             android:text="0m"
             android:textColor="#666666"
             android:textSize="12sp" />
 
         <Button
-            android:id="@+id/btn_view_spots"
+            android:id="@+id/btn_ver_vagas"
             android:layout_width="117dp"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
