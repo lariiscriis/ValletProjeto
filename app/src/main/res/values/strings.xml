@@ -17,4 +17,5 @@
     <string name="carro">Carro</string>
     <string name="moto">Moto</string>
     <string name="slider">Slider de tempo</string>
+    <string name="editar_veiculo">Editar Veículo</string>
 </resources>
