@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#FAFAFA"
     android:fillViewport="true"
     android:padding="8dp">
 
@@ -11,99 +13,152 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- CardView da reserva atual -->
+        <!-- Título da Reserva Atual -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="16dp"
             android:fontFamily="@font/poppins_medium"
-            android:text="Sua Reserva Atual"
-            android:textColor="#046C4E"
+            android:text="@string/dashboard_reserva_atual"
+            android:textColor="@color/verdeescuro"
             android:textSize="18sp"
             android:textStyle="bold" />
 
-        <androidx.cardview.widget.CardView
+        <!-- CardView da Reserva Atual (Estilo item_parking) -->
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_reserva_atual"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginHorizontal="4dp"
             android:layout_marginBottom="24dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="8dp"
-            app:cardBackgroundColor="@android:color/white">
+            app:cardBackgroundColor="@color/branco"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp">
 
-            <RelativeLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/edittext_background"
-                android:padding="20dp">
+                android:layout_height="wrap_content">
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
+                <!-- Área de Conteúdo -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/content_area"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_toLeftOf="@+id/txv_spot_letter"
-                    android:orientation="vertical">
-                    <TextView
-                        android:id="@+id/txv_estacionamento"
-                        android:layout_width="wrap_content"
+                    android:padding="16dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <LinearLayout
+                        android:id="@+id/ll_reserva_info"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp"
-                        android:text="nome do estacionamento"
-                        android:textSize="18sp" />
-                    <TextView
-                        android:id="@+id/txv_location"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="10dp"
-                        android:text="Localização"
-                        android:textSize="16sp" />
+                        android:layout_marginEnd="16dp"
+                        android:orientation="vertical"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/txv_spot_letter"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <TextView
+                            android:id="@+id/txv_estacionamento"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins_semibold"
+                            android:text="@string/dashboard_estacionamento_nome"
+                            android:textColor="@color/preto"
+                            android:textSize="18sp" />
+
+                        <TextView
+                            android:id="@+id/txv_time_range"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:fontFamily="@font/poppins"
+                            android:text="@string/dashboard_horario_reserva"
+                            android:textColor="#666666"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/txv_location"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins"
+                            android:text="@string/dashboard_localizacao"
+                            android:textColor="#666666"
+                            android:textSize="14sp" />
+
+                    </LinearLayout>
 
                     <TextView
-                        android:id="@+id/txv_time_range"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp"
-                        android:text="14:00 - 16:00"
-                        android:textSize="16sp" />
+                        android:id="@+id/txv_spot_letter"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:background="@drawable/circle_spot_bg"
+                        android:gravity="center"
+                        android:text="A1"
+                        android:textColor="@color/verdeescuro"
+                        android:textSize="42sp"
+                        android:textStyle="bold"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <!-- Divisor -->
+                <View
+                    android:id="@+id/divider"
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_marginHorizontal="16dp"
+                    android:background="#1F000000"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/content_area" />
+
+                <!-- Área de Rodapé -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/footer_area"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="8dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/divider">
 
                     <TextView
                         android:id="@+id/txv_time_remaining"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp"
-                        android:text="reserva ativa"
-                        android:textColor="#4CAF50"
-                        android:textSize="16sp" />
+                        android:fontFamily="@font/poppins_medium"
+                        android:text="@string/dashboard_reserva_ativa"
+                        android:textColor="@color/verdeclaro"
+                        android:textSize="16sp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
 
                     <Button
                         android:id="@+id/btn_view_reservation"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:backgroundTint="#046C4E"
-                        android:fontFamily="@font/poppins_medium"
                         android:minHeight="48dp"
-                        android:paddingLeft="24dp"
-                        android:paddingRight="24dp"
-                        android:text="VER RESERVA"
-                        android:textColor="@android:color/white" />
-                </LinearLayout>
+                        android:backgroundTint="@color/verdeescuro"
+                        android:fontFamily="@font/poppins_medium"
+                        android:text="@string/dashboard_ver_reserva"
+                        android:textColor="@color/branco"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
 
-                <TextView
-                    android:id="@+id/txv_spot_letter"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:background="@drawable/circle_spot_bg"
-                    android:gravity="center"
-                    android:padding="2dp"
-                    android:text="A1"
-                    android:textColor="#046C4E"
-                    android:textSize="42sp"
-                    android:textStyle="bold" />
-            </RelativeLayout>
-        </androidx.cardview.widget.CardView>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- Texto para mostrar caso não tenha reserva -->
         <TextView
@@ -112,41 +167,42 @@
             android:layout_height="wrap_content"
             android:background="?attr/selectableItemBackground"
             android:padding="16dp"
-            android:text="Você não possui reservas ativas. Clique aqui para ver as vagas disponíveis."
-            android:textColor="#046C4E"
+            android:text="@string/dashboard_sem_reserva"
+            android:textColor="@color/verdeescuro"
             android:textSize="16sp"
             android:textStyle="bold"
             android:visibility="gone" />
 
-        <!-- Restante do layout (estatísticas, histórico etc) -->
+        <!-- Título de Estatísticas -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
             android:layout_marginBottom="12dp"
             android:fontFamily="@font/poppins_medium"
-            android:text="Suas Estatísticas"
-            android:textColor="#046C4E"
+            android:text="@string/dashboard_estatisticas"
+            android:textColor="@color/verdeescuro"
             android:textSize="18sp"
             android:textStyle="bold" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="24dp">
+            android:layout_marginBottom="24dp"
+            android:orientation="horizontal">
 
-            <androidx.cardview.widget.CardView
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginHorizontal="4dp"
                 android:layout_weight="1"
-                android:layout_marginEnd="12dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="8dp"
-                app:cardBackgroundColor="@android:color/white">
+                app:cardBackgroundColor="@color/branco"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/edittext_background"
                     android:gravity="center"
                     android:orientation="vertical"
                     android:padding="16dp">
@@ -155,7 +211,9 @@
                         android:id="@+id/txv_total_reservations"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:fontFamily="@font/poppins_medium"
                         android:text="24"
+                        android:textColor="@color/verdeescuro"
                         android:textSize="24sp"
                         android:textStyle="bold" />
 
@@ -163,24 +221,25 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="Reservas"
-                        android:textColor="#666666"
+                        android:fontFamily="@font/poppins"
+                        android:text="@string/dashboard_reservas"
+                        android:textColor="@color/preto"
                         android:textSize="14sp" />
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
+            </com.google.android.material.card.MaterialCardView>
 
-            <androidx.cardview.widget.CardView
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginHorizontal="4dp"
                 android:layout_weight="1"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="8dp"
-                app:cardBackgroundColor="@android:color/white">
+                app:cardBackgroundColor="@color/branco"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/edittext_background"
                     android:gravity="center"
                     android:orientation="vertical"
                     android:padding="16dp">
@@ -189,7 +248,9 @@
                         android:id="@+id/txv_total_hours"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:fontFamily="@font/poppins_medium"
                         android:text="56h"
+                        android:textColor="@color/verdeescuro"
                         android:textSize="24sp"
                         android:textStyle="bold" />
 
@@ -197,20 +258,23 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="Tempo total"
-                        android:textColor="#666666"
+                        android:fontFamily="@font/poppins"
+                        android:text="@string/dashboard_tempo_total"
+                        android:textColor="@color/preto"
                         android:textSize="14sp" />
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
+            </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
 
+        <!-- Título do Histórico Recente -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
             android:layout_marginBottom="12dp"
             android:fontFamily="@font/poppins_medium"
-            android:text="Histórico Recente"
-            android:textColor="#046C4E"
+            android:text="@string/dashboard_historico_recente"
+            android:textColor="@color/verdeescuro"
             android:textSize="18sp"
             android:textStyle="bold" />
 
@@ -218,6 +282,6 @@
             android:id="@+id/rv_reservation_history"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="16dp" />
     </LinearLayout>
 </ScrollView>
