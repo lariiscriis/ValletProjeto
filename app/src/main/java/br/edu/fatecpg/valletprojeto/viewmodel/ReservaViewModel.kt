@@ -20,6 +20,7 @@ import br.edu.fatecpg.valletprojeto.model.Veiculo
 import br.edu.fatecpg.valletprojeto.receiver.ReservaAvisoReceiver
 import br.edu.fatecpg.valletprojeto.receiver.ReservaCriadaReceiver
 import br.edu.fatecpg.valletprojeto.receiver.ReservaExpiredReceiver
+import br.edu.fatecpg.valletprojeto.worker.CheckReservaWorker
 import br.edu.fatecpg.valletprojeto.worker.ReservaNotificationWorker
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -72,7 +73,47 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
             }
         }
     }
+    fun verificarEFinalizarReservasExpiradas() {
+        viewModelScope.launch {
+            try {
+                val userId = auth.currentUser?.uid ?: return@launch
+                val agora = Timestamp.now()
 
+                val reservasExpiradas = db.collection("reserva")
+                    .whereEqualTo("usuarioId", userId)
+                    .whereEqualTo("status", "ativa")
+                    .whereLessThan("fimReserva", agora)
+                    .get()
+                    .await()
+
+                for (document in reservasExpiradas.documents) {
+                    val reserva = document.toObject(Reserva::class.java)
+                    if (reserva != null) {
+                        Log.d("ReservaViewModel", "🔍 Encontrada reserva expirada: ${reserva.id}")
+                        // Disparar worker para finalizar
+                        finalizarReservaExpirada(reserva.id, reserva.vagaId)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("ReservaViewModel", "Erro ao verificar reservas expiradas", e)
+            }
+        }
+    }
+
+    private fun finalizarReservaExpirada(reservaId: String, vagaId: String) {
+        val inputData = workDataOf(
+            "reservaId" to reservaId,
+            "vagaId" to vagaId,
+            "tipo" to "cleanup_expirada"
+        )
+
+        val workRequest = OneTimeWorkRequestBuilder<CheckReservaWorker>()
+            .setInputData(inputData)
+            .setInitialDelay(0, TimeUnit.SECONDS)
+            .build()
+
+        WorkManager.getInstance(getApplication()).enqueue(workRequest)
+    }
     private suspend fun buscarQualquerReservaAtiva(): Reserva? {
         val userId = auth.currentUser?.uid ?: return null
         val snapshot = db.collection("reserva")
@@ -156,6 +197,7 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
 
             val avisoData = workDataOf(
                 "tipo" to "aviso",
+                "reservaId" to reserva.id, // 🔥 ADICIONAR reservaId
                 "vagaId" to reserva.vagaId,
                 "estacionamentoId" to reserva.estacionamentoId
             )
@@ -169,7 +211,7 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
             Log.d("Notificacoes", "Aviso agendado para: ${Date(avisoMillis)}")
         }
 
-        // 2. Notificação de expiração + FINALIZAÇÃO - AlarmManager (mais preciso para horários exatos)
+        // 2. Notificação de expiração + FINALIZAÇÃO - AlarmManager
         val expiraIntent = Intent(context, ReservaExpiredReceiver::class.java).apply {
             putExtra("reservaId", reserva.id)
             putExtra("vagaId", reserva.vagaId)
@@ -177,24 +219,56 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
 
         val expiraPendingIntent = PendingIntent.getBroadcast(
             context,
-            reserva.id.hashCode() + 1,
+            reserva.id.hashCode(), // 🔥 USAR hashCode único
             expiraIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-            if (alarmManager.canScheduleExactAlarms()) {
-                alarmManager.setExact(AlarmManager.RTC_WAKEUP, fimReservaMillis, expiraPendingIntent)
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                if (alarmManager.canScheduleExactAlarms()) {
+                    alarmManager.setExactAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        fimReservaMillis,
+                        expiraPendingIntent
+                    )
+                }
+            } else {
+                alarmManager.setExact(
+                    AlarmManager.RTC_WAKEUP,
+                    fimReservaMillis,
+                    expiraPendingIntent
+                )
             }
-        } else {
-            alarmManager.setExact(AlarmManager.RTC_WAKEUP, fimReservaMillis, expiraPendingIntent)
+            Log.d("Notificacoes", "✅ Finalização automática agendada para: ${Date(fimReservaMillis)}")
+        } catch (e: SecurityException) {
+            Log.e("Notificacoes", "❌ Permissão negada para agendar alarme exato", e)
+            // Fallback: usar WorkManager como backup
+            agendarFinalizacaoWorkManager(context, reserva, fimReservaMillis)
         }
-
-        Log.d("Notificacoes", "Expiração agendada para: ${Date(fimReservaMillis)}")
-        Log.d("Notificacoes", "Sistema de finalização automática configurado para reserva ${reserva.id}")
     }
 
+    // 🔥 FUNÇÃO DE FALLBACK COM WORKMANAGER
+    private fun agendarFinalizacaoWorkManager(context: Context, reserva: Reserva, fimReservaMillis: Long) {
+        val delay = fimReservaMillis - System.currentTimeMillis()
+
+        if (delay > 0) {
+            val finalizacaoData = workDataOf(
+                "reservaId" to reserva.id,
+                "vagaId" to reserva.vagaId,
+                "tipo" to "finalizacao_automatica"
+            )
+
+            val finalizacaoRequest = OneTimeWorkRequestBuilder<CheckReservaWorker>()
+                .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+                .setInputData(finalizacaoData)
+                .build()
+
+            WorkManager.getInstance(context).enqueue(finalizacaoRequest)
+            Log.d("Notificacoes", "⚠️  Fallback: Finalização agendada via WorkManager")
+        }
+    }
     fun criarReserva(vagaId: String, estacionamentoId: String, estacionamentoNome: String, horas: Int) {
         viewModelScope.launch {
             val reservaAtiva = buscarQualquerReservaAtiva()

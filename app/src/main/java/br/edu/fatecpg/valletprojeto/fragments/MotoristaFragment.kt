@@ -4,6 +4,7 @@ import br.edu.fatecpg.valletprojeto.model.ReservaHistorico
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,6 +20,7 @@ import br.edu.fatecpg.valletprojeto.model.Vaga
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
@@ -35,6 +37,7 @@ class MotoristaFragment : Fragment() {
 
     private var vagaIdAtiva: String? = null
     private var estacionamentoIdAtivo: String? = null
+    private var buscaReservasJob: Job? = null // 🔥 CONTROLE DA CORROTINA
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -48,6 +51,9 @@ class MotoristaFragment : Fragment() {
         binding.rvReservationHistory.layoutManager = GridLayoutManager(requireContext(), 2)
 
         binding.btnViewReservation.setOnClickListener {
+            // 🔥 VERIFICA SE O FRAGMENT AINDA ESTÁ ATACHADO
+            if (!isAdded || context == null) return@setOnClickListener
+
             if (vagaIdAtiva != null && estacionamentoIdAtivo != null) {
                 val intent = Intent(requireContext(), ReservaActivity::class.java)
                 intent.putExtra("vagaId", vagaIdAtiva)
@@ -61,30 +67,65 @@ class MotoristaFragment : Fragment() {
         binding.txvNoReservation.setOnClickListener {
             abrirPaginaDeVagas()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // 🔥 BUSCA AS RESERVAS QUANDO O FRAGMENT VOLTA AO FOCO
         buscarReservasComCoroutines()
     }
 
+    override fun onPause() {
+        super.onPause()
+        // 🔥 CANCELA A CORROTINA QUANDO O FRAGMENT PERDE FOCO
+        buscaReservasJob?.cancel()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // 🔥 CANCELA A CORROTINA E LIMPA O BINDING
+        buscaReservasJob?.cancel()
+        _binding = null
+    }
+
     private fun abrirPaginaDeVagas() {
+        // 🔥 VERIFICA SE O FRAGMENT AINDA ESTÁ ATACHADO
+        if (!isAdded || context == null) return
+
         val intent = Intent(requireContext(), VagaActivity::class.java)
         startActivity(intent)
-        Toast.makeText(requireContext(), "Abrir página de vagas", Toast.LENGTH_SHORT).show()
+        if (isAdded) {
+            Toast.makeText(requireContext(), "Abrir página de vagas", Toast.LENGTH_SHORT).show()
+        }
     }
 
     @SuppressLint("SetTextI18n")
     private fun buscarReservasComCoroutines() {
         val uidLogado = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
-        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+        // 🔥 CANCELA QUALQUER BUSCA ANTERIOR
+        buscaReservasJob?.cancel()
+
+        // 🔥 INICIA NOVA BUSCA CONTROLADA
+        buscaReservasJob = viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
             try {
+                // 🔥 VERIFICA SE O FRAGMENT AINDA ESTÁ ATIVO
+                if (!isAdded || context == null) return@launch
+
                 val reservas = db.collection("reserva").whereEqualTo("usuarioId", uidLogado).get().await()
+
+                // 🔥 VERIFICA NOVAMENTE
+                if (!isAdded || context == null) return@launch
 
                 var totalHoras = 0L
                 val historico = mutableListOf<ReservaHistorico>()
                 val totalReservas = reservas.size()
-
                 var temReservaAtiva = false
 
                 for (doc in reservas) {
+                    // 🔥 VERIFICAÇÃO SIMPLES - SE NÃO ESTIVER MAIS ATIVO, PARA
+                    if (!isAdded || context == null) return@launch
+
                     val status = doc.getString("status")
                     val vagaId = doc.getString("vagaId") ?: continue
                     val estacionamentoId = doc.getString("estacionamentoId") ?: ""
@@ -96,7 +137,16 @@ class MotoristaFragment : Fragment() {
                         totalHoras += (fim.time - inicio.time)
                     }
 
-                    val vagaDoc = db.collection("vaga").document(vagaId).get().await()
+                    // 🔥 BUSCA DADOS DA VAGA COM VERIFICAÇÃO
+                    val vagaDoc = try {
+                        db.collection("vaga").document(vagaId).get().await()
+                    } catch (e: Exception) {
+                        continue // PULA SE HOUVER ERRO AO BUSCAR VAGA
+                    }
+
+                    // 🔥 VERIFICA SE AINDA ESTÁ ATIVO
+                    if (!isAdded || context == null) return@launch
+
                     val vaga = Vaga(
                         numero = vagaDoc.getString("numero") ?: "-",
                         localizacao = vagaDoc.getString("localizacao") ?: "-"
@@ -111,53 +161,77 @@ class MotoristaFragment : Fragment() {
                         binding.txvLocation.text = "Local: ${vaga.localizacao}"
                         binding.txvTimeRange.text = formatarHorario(inicio, fim)
                         binding.txvTimeRemaining.text = "Reserva ativa"
+                        binding.txvEstacionamento.text = estacionamentoNome
 
                         vagaIdAtiva = vagaId
                         estacionamentoIdAtivo = estacionamentoId
                     } else {
-                        val nomeEstacionamento = if (estacionamentoNome.isNotEmpty()) {
+                        // 🔥 BUSCA NOME DO ESTACIONAMENTO SE NECESSÁRIO
+                        val nomeEstacionamentoFinal = if (estacionamentoNome.isNotEmpty()) {
                             estacionamentoNome
                         } else {
                             buscarNomeEstacionamento(estacionamentoId)
                         }
 
-                        historico.add(
-                            ReservaHistorico(
-                                vaga = vaga.numero,
-                                data = SimpleDateFormat("dd/MM", Locale.getDefault()).format(inicio!!),
-                                horario = formatarHorario(inicio, fim),
-                                estacionamentoNome = nomeEstacionamento // 🔥 ADICIONA O NOME
+                        if (inicio != null) {
+                            historico.add(
+                                ReservaHistorico(
+                                    vaga = vaga.numero,
+                                    data = SimpleDateFormat("dd/MM", Locale.getDefault()).format(inicio),
+                                    horario = formatarHorario(inicio, fim),
+                                    estacionamentoNome = nomeEstacionamentoFinal
+                                )
                             )
-                        )
+                        }
                     }
                 }
 
-                if (!temReservaAtiva) {
-                    binding.cardReservaAtual.visibility = View.GONE
-                    binding.txvNoReservation.visibility = View.VISIBLE
-                    vagaIdAtiva = null
-                    estacionamentoIdAtivo = null
+                // 🔥 ATUALIZA UI APENAS SE AINDA ESTIVER ATIVO
+                if (isAdded && context != null) {
+                    atualizarUI(totalHoras, historico, temReservaAtiva, totalReservas)
                 }
 
-                binding.txvTotalReservations.text = totalReservas.toString()
-                val horasTotais = TimeUnit.MILLISECONDS.toHours(totalHoras)
-                binding.txvTotalHours.text = "${horasTotais}h"
-
-                adapter = HistoricoReservasAdapter(historico)
-                binding.rvReservationHistory.adapter = adapter
-
             } catch (e: Exception) {
-                e.printStackTrace()
-                Toast.makeText(requireContext(), "Erro ao carregar reservas", Toast.LENGTH_SHORT).show()
+                if (isAdded && context != null) {
+                    Log.e("MotoristaFragment", "Erro ao carregar reservas", e)
+                    Toast.makeText(requireContext(), "Erro ao carregar reservas", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
 
+    private fun atualizarUI(totalHoras: Long, historico: List<ReservaHistorico>, temReservaAtiva: Boolean, totalReservas: Int) {
+        binding.txvTotalReservations.text = totalReservas.toString()
+        val horasTotais = TimeUnit.MILLISECONDS.toHours(totalHoras)
+        binding.txvTotalHours.text = "${horasTotais}h"
+
+        adapter = HistoricoReservasAdapter(historico)
+        binding.rvReservationHistory.adapter = adapter
+
+        if (temReservaAtiva) {
+            binding.cardReservaAtual.visibility = View.VISIBLE
+            binding.txvNoReservation.visibility = View.GONE
+        } else {
+            binding.cardReservaAtual.visibility = View.GONE
+            binding.txvNoReservation.visibility = View.VISIBLE
+            vagaIdAtiva = null
+            estacionamentoIdAtivo = null
+        }
+    }
+
+    // 🔥 NOVO MÉTODO: Busca o nome do estacionamento se não estiver na reserva
     private suspend fun buscarNomeEstacionamento(estacionamentoId: String): String {
+        // 🔥 VERIFICA SE AINDA ESTÁ ATIVO
+        if (!isAdded || context == null) return "Estacionamento"
+
         return try {
             if (estacionamentoId.isEmpty()) return "Estacionamento"
 
             val estacionamentoDoc = db.collection("estacionamento").document(estacionamentoId).get().await()
+
+            // 🔥 VERIFICA NOVAMENTE ANTES DE RETORNAR
+            if (!isAdded || context == null) return "Estacionamento"
+
             estacionamentoDoc.getString("nome") ?: "Estacionamento"
         } catch (e: Exception) {
             "Estacionamento"
@@ -167,10 +241,5 @@ class MotoristaFragment : Fragment() {
     private fun formatarHorario(inicio: Date?, fim: Date?): String {
         val formato = SimpleDateFormat("HH:mm", Locale.getDefault())
         return if (inicio != null && fim != null) "${formato.format(inicio)} - ${formato.format(fim)}" else ""
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 }

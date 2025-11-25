@@ -39,6 +39,13 @@ class DashboardBase : AppCompatActivity() {
 
         setupProfileClickListeners()
     }
+
+    // Adicione esta opção no menu ou em uma tela de configurações
+    private fun mostrarOpcaoDebugToken() {
+        val intent = Intent(this, GerarTokenActivity::class.java)
+        startActivity(intent)
+    }
+
     private fun setupProfileClickListeners() {
         val tvUserName = findViewById<TextView>(R.id.tv_user_name)
         val ivProfileImage = findViewById<ImageView>(R.id.iv_profile_image)

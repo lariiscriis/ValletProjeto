@@ -244,7 +244,7 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
                 if (isAdminFromDB) {
                     checkEstacionamentoCadastrado(uid, email)
                 } else {
-                    redirectToHome(tipoUser, email)
+                    redirectToHome(uid, email)
                 }
             }
             .addOnFailureListener { e ->
@@ -318,32 +318,77 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
             }
     }
 
+
     private fun redirectToHome(uid: String, email: String) {
-        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
-            if (!task.isSuccessful) {
-                Log.w("LOGIN", "Falha ao obter token FCM", task.exception)
-                return@addOnCompleteListener
-            }
+        Log.d("LOGIN", "🚀 Iniciando redirecionamento para home")
 
-            val token = task.result
-            val db = FirebaseFirestore.getInstance()
-            val tokenData = hashMapOf("fcm_token" to token)
-
-            db.collection("usuario").document(uid)
-                .set(tokenData, com.google.firebase.firestore.SetOptions.merge())
-                .addOnSuccessListener {
-                    Log.d("LOGIN", "Token FCM salvo com sucesso após o login.")
-                }
-                .addOnFailureListener { e ->
-                    Log.e("LOGIN", "Erro ao salvar Token FCM após o login.", e)
-                }
-        }
-
-        Log.d("Login", "🚀 Redirecionando para home")
+        // 1. Primeiro redireciona para a home
         val intent = Intent(this, DashboardBase::class.java)
         intent.putExtra("email_usuario", email)
         startActivity(intent)
+
+        // 2. Depois gera e salva o token FCM em background
+        gerarESalvarTokenFCM(uid)
+
         finish()
+    }
+
+    private fun gerarESalvarTokenFCM(uid: String) {
+        Log.d("FCM", "🔄 Iniciando geração do token FCM para UID: $uid")
+
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val token = task.result
+                Log.d("FCM", "✅ Token FCM gerado: ${token.take(10)}...")
+                salvarTokenNoFirestore(uid, token)
+            } else {
+                Log.e("FCM", "❌ Falha ao gerar token FCM", task.exception)
+                // Tenta novamente após 3 segundos
+                Handler(Looper.getMainLooper()).postDelayed({
+                    gerarESalvarTokenFCM(uid)
+                }, 3000)
+            }
+        }
+    }
+
+    private fun salvarTokenNoFirestore(uid: String, token: String) {
+        val db = FirebaseFirestore.getInstance()
+        val tokenData = hashMapOf(
+            "fcm_token" to token,
+            "ultima_atualizacao_token" to com.google.firebase.Timestamp.now()
+        )
+
+        // CORREÇÃO: Usar o UID correto do usuário
+        db.collection("usuario").document(uid) // ← Aqui estava o problema!
+            .set(tokenData, com.google.firebase.firestore.SetOptions.merge())
+            .addOnSuccessListener {
+                Log.d("FCM", "✅ Token FCM salvo com sucesso para UID: $uid")
+                // Verifica se o token foi realmente salvo
+                verificarTokenSalvo(uid)
+            }
+            .addOnFailureListener { e ->
+                Log.e("FCM", "❌ Erro ao salvar Token FCM", e)
+                // Tenta novamente após 2 segundos
+                Handler(Looper.getMainLooper()).postDelayed({
+                    salvarTokenNoFirestore(uid, token)
+                }, 2000)
+            }
+    }
+
+    private fun verificarTokenSalvo(uid: String) {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("usuario").document(uid).get()
+            .addOnSuccessListener { document ->
+                val tokenSalvo = document.getString("fcm_token")
+                if (tokenSalvo != null) {
+                    Log.d("FCM", "✅ Token confirmado no Firestore: ${tokenSalvo.take(10)}...")
+                } else {
+                    Log.e("FCM", "❌ Token NÃO foi salvo no Firestore!")
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("FCM", "❌ Erro ao verificar token salvo", e)
+            }
     }
 
     private fun handleLoginError(e: Exception?) {

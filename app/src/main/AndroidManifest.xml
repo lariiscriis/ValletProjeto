@@ -7,10 +7,10 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="true"
@@ -22,6 +22,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ValletProjeto"
         tools:targetApi="31">
+        <activity
+            android:name=".GerarTokenActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ValletProjeto" />
 
         <service
             android:name=".service.FirebaseMessagingService"
@@ -35,13 +39,23 @@
             android:name="com.google.firebase.components:io.grpc.okhttp"
             android:value="false" />
 
-        <receiver android:name=".receiver.ReservaAvisoReceiver"
-            android:enabled="true"
-            android:exported="false" />
-        <receiver android:name=".receiver.ReservaExpiredReceiver"
-            android:enabled="true"
-            android:exported="false" />
+        <receiver
+            android:name=".service.ConfirmacaoReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="ACTION_CONFIRM_RESERVATION" />
+                <action android:name="ACTION_CANCEL_RESERVATION" />
+            </intent-filter>
+        </receiver>
 
+        <receiver
+            android:name=".receiver.ReservaAvisoReceiver"
+            android:enabled="true"
+            android:exported="false" />
+        <receiver
+            android:name=".receiver.ReservaExpiredReceiver"
+            android:enabled="true"
+            android:exported="false" />
         <receiver
             android:name=".receiver.ReservaCriadaReceiver"
             android:enabled="true"
