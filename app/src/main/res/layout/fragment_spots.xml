@@ -6,10 +6,49 @@
     android:layout_height="match_parent"
     android:background="#F5F5F5">
 
-    <ScrollView
+    <!-- Loading State -->
+    <LinearLayout
+        android:id="@+id/loading_state"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="#F5F5F5"
+        android:visibility="gone">
+
+        <ProgressBar
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:indeterminateTint="@color/verdeescuro" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Carregando estacionamentos..."
+            android:textColor="@color/verdeescuro"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppins" />
+
+        <TextView
+            android:id="@+id/txv_loading_step"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Buscando dados..."
+            android:textColor="#666666"
+            android:textSize="14sp"
+            android:fontFamily="@font/poppins" />
+
+    </LinearLayout>
+
+    <!-- Content State -->
+    <ScrollView
+        android:id="@+id/content_state"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:visibility="gone">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -36,8 +75,33 @@
 
             </androidx.cardview.widget.CardView>
 
+            <!-- Loading para favoritos -->
+            <LinearLayout
+                android:id="@+id/loading_favorites"
+                android:layout_width="match_parent"
+                android:layout_height="218dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:visibility="gone">
+
+                <ProgressBar
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:indeterminateTint="@color/verdeescuro" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:textColor="@color/verdeescuro"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/poppins" />
+
+            </LinearLayout>
+
             <!-- Favoritos Section -->
             <TextView
+                android:id="@+id/txv_favorites_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
@@ -45,7 +109,8 @@
                 android:text="Meus Favoritos"
                 android:textColor="@color/verdeescuro"
                 android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:visibility="gone" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_favorites"
@@ -53,10 +118,36 @@
                 android:layout_height="218dp"
                 android:layout_marginBottom="16dp"
                 android:overScrollMode="never"
+                android:visibility="gone"
                 tools:listitem="@layout/item_favorite_parking" />
+
+            <!-- Loading para outros estacionamentos -->
+            <LinearLayout
+                android:id="@+id/loading_other_parkings"
+                android:layout_width="match_parent"
+                android:layout_height="120dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:visibility="gone">
+
+                <ProgressBar
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:indeterminateTint="@color/verdeescuro" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:textColor="@color/verdeescuro"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/poppins" />
+
+            </LinearLayout>
 
             <!-- Outros Estacionamentos Section -->
             <TextView
+                android:id="@+id/txv_other_parkings_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
@@ -64,7 +155,8 @@
                 android:text="Outros Estacionamentos"
                 android:textColor="@color/verdeescuro"
                 android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:visibility="gone" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_other_parkings"
@@ -72,16 +164,12 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:overScrollMode="never"
+                android:visibility="gone"
                 tools:listitem="@layout/item_parking" />
 
         </LinearLayout>
     </ScrollView>
 
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:visibility="gone" />
+
 
 </FrameLayout>

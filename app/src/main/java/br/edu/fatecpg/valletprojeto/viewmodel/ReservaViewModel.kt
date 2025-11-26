@@ -31,7 +31,6 @@ import kotlinx.coroutines.tasks.await
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-
 sealed class ReservaUIState {
     object Initial : ReservaUIState()
     data class Idle(val vaga: Vaga, val veiculo: Veiculo) : ReservaUIState()
@@ -59,6 +58,11 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
     private var idReservaAtiva: String? = null
     private var idVagaAtiva: String? = null
 
+    // 🔥 NOVO: Controlar IDs de notificações agendadas
+    private var currentReservaId: String? = null
+    private var currentAvisoPendingIntent: PendingIntent? = null
+    private var currentExpiredPendingIntent: PendingIntent? = null
+
     fun verificarReservaAtiva() {
         viewModelScope.launch {
             try {
@@ -73,6 +77,7 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
             }
         }
     }
+
     fun verificarEFinalizarReservasExpiradas() {
         viewModelScope.launch {
             try {
@@ -90,7 +95,6 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
                     val reserva = document.toObject(Reserva::class.java)
                     if (reserva != null) {
                         Log.d("ReservaViewModel", "🔍 Encontrada reserva expirada: ${reserva.id}")
-                        // Disparar worker para finalizar
                         finalizarReservaExpirada(reserva.id, reserva.vagaId)
                     }
                 }
@@ -114,6 +118,7 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
 
         WorkManager.getInstance(getApplication()).enqueue(workRequest)
     }
+
     private suspend fun buscarQualquerReservaAtiva(): Reserva? {
         val userId = auth.currentUser?.uid ?: return null
         val snapshot = db.collection("reserva")
@@ -142,6 +147,7 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
                 _uiState.value = ReservaUIState.Active(reserva, vaga, veiculo)
                 iniciarTimer(reserva.fimReserva!!.toDate())
                 idVagaAtiva = reserva.vagaId
+                currentReservaId = reserva.id
             }
         } catch (e: Exception) {
             Log.e("ReservaViewModel", "Erro ao carregar dados da reserva ativa: ${e.message}")
@@ -174,6 +180,7 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
                     if (reservaAtiva != null) {
                         _uiState.value = ReservaUIState.Active(reservaAtiva, vaga, veiculo)
                         iniciarTimer(reservaAtiva.fimReserva!!.toDate())
+                        currentReservaId = reservaAtiva.id
                     } else {
                         _uiState.value = ReservaUIState.Idle(vaga, veiculo)
                     }
@@ -186,10 +193,17 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    // 🔥 ATUALIZADO: Cancelar notificações antigas antes de agendar novas
     fun agendarNotificacoes(context: Context, reserva: Reserva) {
+        // 🔥 CANCELAR NOTIFICAÇÕES ANTERIORES PRIMEIRO
+        cancelarNotificacoesAgendadas(context)
+
         val fimReservaMillis = reserva.fimReserva?.toDate()?.time ?: return
         Log.d("Notificacoes", "Agendando notificações para reserva: ${reserva.id}")
 
+        currentReservaId = reserva.id
+
+        // 🔥 AGENDAR AVISO DE 10 MINUTOS
         val avisoMillis = fimReservaMillis - TimeUnit.MINUTES.toMillis(10)
         if (avisoMillis > System.currentTimeMillis()) {
             val avisoDelay = avisoMillis - System.currentTimeMillis()
@@ -204,23 +218,29 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
             val avisoRequest = OneTimeWorkRequestBuilder<ReservaNotificationWorker>()
                 .setInitialDelay(avisoDelay, TimeUnit.MILLISECONDS)
                 .setInputData(avisoData)
+                .addTag("reserva_${reserva.id}") // 🔥 ADICIONAR TAG TAMBÉM AQUI
                 .build()
 
             WorkManager.getInstance(context).enqueue(avisoRequest)
-            Log.d("Notificacoes", "Aviso agendado para: ${Date(avisoMillis)}")
+            Log.d("Notificacoes", "Aviso agendado para: ${Date(avisoMillis)} (${avisoDelay/1000}s)")
         }
 
+        // 🔥 AGENDAR FINALIZAÇÃO AUTOMÁTICA
         val expiraIntent = Intent(context, ReservaExpiredReceiver::class.java).apply {
             putExtra("reservaId", reserva.id)
             putExtra("vagaId", reserva.vagaId)
         }
 
-        val expiraPendingIntent = PendingIntent.getBroadcast(
+        // 🔥 CORREÇÃO: Criar PendingIntent e armazenar em variável local primeiro
+        val expiredPendingIntent = PendingIntent.getBroadcast(
             context,
             reserva.id.hashCode(),
             expiraIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
+
+        // 🔥 AGORA SIM ATRIBUIR À PROPRIEDADE
+        currentExpiredPendingIntent = expiredPendingIntent
 
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         try {
@@ -229,14 +249,14 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
                     alarmManager.setExactAndAllowWhileIdle(
                         AlarmManager.RTC_WAKEUP,
                         fimReservaMillis,
-                        expiraPendingIntent
+                        expiredPendingIntent // 🔥 USAR VARIÁVEL LOCAL
                     )
                 }
             } else {
                 alarmManager.setExact(
                     AlarmManager.RTC_WAKEUP,
                     fimReservaMillis,
-                    expiraPendingIntent
+                    expiredPendingIntent // 🔥 USAR VARIÁVEL LOCAL
                 )
             }
             Log.d("Notificacoes", "✅ Finalização automática agendada para: ${Date(fimReservaMillis)}")
@@ -246,7 +266,39 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    // 🔥 FUNÇÃO DE FALLBACK COM WORKMANAGER
+    // 🔥 NOVO: Cancelar todas as notificações agendadas
+    private fun cancelarNotificacoesAgendadas(context: Context) {
+        Log.d("Notificacoes", "🔄 Cancelando notificações agendadas anteriores")
+
+        // 🔥 CORREÇÃO: Usar variáveis locais para evitar problemas de concorrência
+        val avisoPendingIntent = currentAvisoPendingIntent
+        val expiredPendingIntent = currentExpiredPendingIntent
+        val reservaId = currentReservaId
+
+        // Cancelar PendingIntents do AlarmManager
+        avisoPendingIntent?.let { pendingIntent ->
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            alarmManager.cancel(pendingIntent)
+            Log.d("Notificacoes", "✅ PendingIntent de aviso cancelado")
+        }
+
+        expiredPendingIntent?.let { pendingIntent ->
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            alarmManager.cancel(pendingIntent)
+            Log.d("Notificacoes", "✅ PendingIntent de expiração cancelado")
+        }
+
+        // Cancelar Workers do WorkManager
+        if (reservaId != null) {
+            WorkManager.getInstance(context).cancelAllWorkByTag("reserva_$reservaId")
+            Log.d("Notificacoes", "✅ Workers cancelados para reserva: $reservaId")
+        }
+
+        // Limpar referências
+        currentAvisoPendingIntent = null
+        currentExpiredPendingIntent = null
+    }
+
     private fun agendarFinalizacaoWorkManager(context: Context, reserva: Reserva, fimReservaMillis: Long) {
         val delay = fimReservaMillis - System.currentTimeMillis()
 
@@ -260,12 +312,14 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
             val finalizacaoRequest = OneTimeWorkRequestBuilder<CheckReservaWorker>()
                 .setInitialDelay(delay, TimeUnit.MILLISECONDS)
                 .setInputData(finalizacaoData)
+                .addTag("reserva_${reserva.id}") // 🔥 ADICIONAR TAG PARA FACILITAR CANCELAMENTO
                 .build()
 
             WorkManager.getInstance(context).enqueue(finalizacaoRequest)
             Log.d("Notificacoes", "⚠️  Fallback: Finalização agendada via WorkManager")
         }
     }
+
     fun criarReserva(vagaId: String, estacionamentoId: String, estacionamentoNome: String, horas: Int) {
         viewModelScope.launch {
             val reservaAtiva = buscarQualquerReservaAtiva()
@@ -318,6 +372,8 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
         context.sendBroadcast(intent)
         Log.d("Notificacoes", "Notificação de reserva criada enviada para vaga: $vagaId")
     }
+
+    // 🔥 ATUALIZADO: Renovar reserva com cancelamento de notificações antigas
     fun renovarReserva(reserva: Reserva) {
         viewModelScope.launch {
             val idReserva = reserva.id
@@ -327,6 +383,9 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
 
             _uiState.value = ReservaUIState.Loading
             try {
+                // 🔥 CANCELAR NOTIFICAÇÕES ANTIGAS ANTES DE RENOVAR
+                cancelarNotificacoesAgendadas(getApplication())
+
                 val proximaReserva = db.collection("reserva")
                     .whereEqualTo("vagaId", idVaga)
                     .whereGreaterThan("inicioReserva", reserva.fimReserva!!)
@@ -345,6 +404,10 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
 
                 Log.d("Renovacao", "Atualizando reserva $idReserva com novo fim: $novoFim")
                 db.collection("reserva").document(idReserva).update("fimReserva", novoFim).await()
+
+                // 🔥 REAGENDAR NOTIFICAÇÕES COM NOVO HORÁRIO
+                val reservaAtualizada = reserva.copy(fimReserva = novoFim)
+                agendarNotificacoes(getApplication(), reservaAtualizada)
 
                 Log.d("Renovacao", "Renovação bem-sucedida. Recarregando dados...")
                 carregarDadosIniciais(idVaga)
@@ -367,6 +430,9 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
             }
 
             try {
+                // 🔥 CANCELAR NOTIFICAÇÕES ANTES DE CANCELAR A RESERVA
+                cancelarNotificacoesAgendadas(getApplication())
+
                 val reservaAtivaSnapshot = db.collection("reserva")
                     .whereEqualTo("usuarioId", userId)
                     .whereEqualTo("vagaId", vaga.id)
@@ -392,6 +458,7 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
 
                 _temReservaAtiva.value = false
                 idVagaAtiva = null
+                currentReservaId = null
 
                 _uiState.value = ReservaUIState.Finished("Reserva cancelada com sucesso.")
 

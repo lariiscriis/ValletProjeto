@@ -4,6 +4,8 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -31,11 +33,16 @@ class SpotsFragment : Fragment() {
     private lateinit var simpleAdapter: SimpleParkingAdapter
     private lateinit var favoriteAdapter: FavoriteParkingAdapter
 
+    private val handler = Handler(Looper.getMainLooper())
+    private var currentLoadingStep = ""
+
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) {
+                updateLoadingStep("Permissão concedida - Buscando localização...")
                 viewModel.loadData()
             } else {
+                updateLoadingStep("Permissão negada - Carregando sem localização...")
                 Toast.makeText(requireContext(), "Permissão de localização negada.", Toast.LENGTH_SHORT).show()
                 viewModel.loadData(useLocation = false)
             }
@@ -49,11 +56,57 @@ class SpotsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        showLoadingState()
+        updateLoadingStep("Preparando ambiente...")
+
         setupRecyclerViews()
         setupSearchView()
         observeViewModel()
 
         verificarPermissaoLocalizacao()
+    }
+
+    private fun showLoadingState() {
+        binding.loadingState.visibility = View.VISIBLE
+        binding.contentState.visibility = View.GONE
+
+        binding.loadingFavorites.visibility = View.VISIBLE
+        binding.loadingOtherParkings.visibility = View.VISIBLE
+
+        binding.rvFavorites.visibility = View.GONE
+        binding.txvFavoritesTitle.visibility = View.GONE
+        binding.rvOtherParkings.visibility = View.GONE
+        binding.txvOtherParkingsTitle.visibility = View.GONE
+    }
+
+    private fun hideLoadingState() {
+        binding.loadingState.visibility = View.GONE
+        binding.contentState.visibility = View.VISIBLE
+    }
+
+    private fun showContentGradually() {
+        handler.postDelayed({
+            if (isAdded) {
+                binding.loadingFavorites.visibility = View.GONE
+                binding.txvFavoritesTitle.visibility = View.VISIBLE
+                binding.rvFavorites.visibility = View.VISIBLE
+            }
+        }, 300)
+
+        handler.postDelayed({
+            if (isAdded) {
+                binding.loadingOtherParkings.visibility = View.GONE
+                binding.txvOtherParkingsTitle.visibility = View.VISIBLE
+                binding.rvOtherParkings.visibility = View.VISIBLE
+            }
+        }, 600)
+    }
+
+    private fun updateLoadingStep(step: String) {
+        currentLoadingStep = step
+        if (isAdded) {
+            binding.txvLoadingStep.text = step
+        }
     }
 
     private fun setupRecyclerViews() {
@@ -67,6 +120,7 @@ class SpotsFragment : Fragment() {
         )
         binding.rvOtherParkings.layoutManager = LinearLayoutManager(requireContext())
         binding.rvOtherParkings.adapter = simpleAdapter
+
         favoriteAdapter = FavoriteParkingAdapter(
             onFavoriteClicked = { estacionamento ->
                 viewModel.toggleFavoriteStatus(estacionamento)
@@ -91,20 +145,46 @@ class SpotsFragment : Fragment() {
 
     private fun observeViewModel() {
         viewModel.isLoading.observe(viewLifecycleOwner, Observer { isLoading ->
-            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+            if (isLoading) {
+            } else {
+                handler.postDelayed({
+                    if (isAdded) {
+                        hideLoadingState()
+                        showContentGradually()
+                    }
+                }, 500)
+            }
         })
 
         viewModel.parkings.observe(viewLifecycleOwner, Observer { parkings ->
             simpleAdapter.submitList(parkings)
+            updateLoadingStep("${parkings.size} estacionamentos carregados")
+
+            if (parkings.isEmpty() && !viewModel.isLoading.value!!) {
+                binding.loadingOtherParkings.visibility = View.GONE
+                binding.txvOtherParkingsTitle.visibility = View.VISIBLE
+                binding.rvOtherParkings.visibility = View.VISIBLE
+            }
         })
 
         viewModel.favoriteParkings.observe(viewLifecycleOwner, Observer { favorites ->
             favoriteAdapter.submitList(favorites)
+            updateLoadingStep("${favorites.size} favoritos carregados")
+
+            if (favorites.isEmpty() && !viewModel.isLoading.value!!) {
+                binding.loadingFavorites.visibility = View.GONE
+                binding.txvFavoritesTitle.visibility = View.GONE
+                binding.rvFavorites.visibility = View.GONE
+            }
         })
 
         viewModel.error.observe(viewLifecycleOwner, Observer { errorMessage ->
             errorMessage?.let {
-                Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
+                if (isAdded) {
+                    hideLoadingState()
+                    showContentGradually()
+                    Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
+                }
             }
         })
 
@@ -123,16 +203,19 @@ class SpotsFragment : Fragment() {
         })
     }
 
-
     private fun verificarPermissaoLocalizacao() {
+        updateLoadingStep("Verificando permissões...")
+
         when {
             ContextCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED -> {
+                updateLoadingStep("Permissão concedida - Buscando localização...")
                 viewModel.loadData()
             }
             else -> {
+                updateLoadingStep("Solicitando permissão de localização...")
                 requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
             }
         }
@@ -140,6 +223,7 @@ class SpotsFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        handler.removeCallbacksAndMessages(null)
         _binding = null
     }
 }

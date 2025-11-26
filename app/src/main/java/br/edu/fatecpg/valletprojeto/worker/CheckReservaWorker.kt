@@ -35,12 +35,12 @@ class CheckReservaWorker(
                 return Result.failure()
             }
 
-            // 🔥 VERIFICAR SE A RESERVA AINDA EXISTE E ESTÁ ATIVA
+            // 🔥 VERIFICAÇÃO MAIS ROBUSTA DA RESERVA
             val reservaDoc = db.collection("reserva").document(reservaId).get().await()
 
             if (!reservaDoc.exists()) {
                 Log.e("CheckReservaWorker", "❌ Reserva não encontrada: $reservaId")
-                return Result.failure()
+                return Result.success() // Não é falha, a reserva pode ter sido cancelada
             }
 
             val status = reservaDoc.getString("status")
@@ -49,7 +49,7 @@ class CheckReservaWorker(
             Log.d("CheckReservaWorker", "Status: $status, Fim: $fimReserva")
 
             when {
-                // 🔥 CASO 1: RESERVA JÁ ESTÁ FINALIZADA
+                // 🔥 CASO 1: RESERVA JÁ ESTÁ FINALIZADA/CANCELADA
                 status != "ativa" -> {
                     Log.d("CheckReservaWorker", "✅ Reserva já está $status - Nada a fazer")
                     return Result.success()
@@ -61,14 +61,18 @@ class CheckReservaWorker(
                     return finalizarReserva(reservaId, vagaId)
                 }
 
-                // 🔥 CASO 3: RESERVA AINDA NÃO EXPIROU - REAGENDAR VERIFICAÇÃO
+                // 🔥 CASO 3: RESERVA AINDA NÃO EXPIROU - VERIFICAR SE PRECISA REAGENDAR
                 else -> {
                     val tempoRestante = fimReserva!!.time - System.currentTimeMillis()
                     Log.d("CheckReservaWorker", "⏳ Reserva ainda ativa - ${tempoRestante/1000}s restantes")
 
-                    // Reagendar verificação para o momento exato da expiração
-                    if (tempoRestante > 0) {
+                    // Se faltar mais de 1 minuto, reagendar verificação
+                    if (tempoRestante > TimeUnit.MINUTES.toMillis(1)) {
                         reagendarVerificacao(reservaId, vagaId, tempoRestante)
+                    } else {
+                        // Se faltar menos de 1 minuto, aguardar e finalizar
+                        kotlinx.coroutines.delay(tempoRestante)
+                        return finalizarReserva(reservaId, vagaId)
                     }
                     return Result.success()
                 }
@@ -76,6 +80,7 @@ class CheckReservaWorker(
 
         } catch (e: Exception) {
             Log.e("CheckReservaWorker", "❌ Erro crítico: ${e.message}", e)
+            // Tentar novamente em 30 segundos
             return Result.retry()
         }
     }
@@ -85,24 +90,30 @@ class CheckReservaWorker(
             val reservaRef = db.collection("reserva").document(reservaId)
             val vagaRef = db.collection("vaga").document(vagaId)
 
-            // 🔥 USAR TRANSACTION PARA GARANTIR CONSISTÊNCIA
+            // 🔥 TRANSACTION COM VERIFICAÇÃO DUPLA
             db.runTransaction { transaction ->
-                // Verificar novamente o status dentro da transaction
                 val reservaSnapshot = transaction.get(reservaRef)
-                if (reservaSnapshot.getString("status") == "ativa") {
+                val currentStatus = reservaSnapshot.getString("status")
+
+                if (currentStatus == "ativa") {
                     transaction.update(reservaRef, "status", "finalizada")
                     transaction.update(vagaRef, "disponivel", true)
                     Log.d("CheckReservaWorker", "✅ Transaction: Reserva finalizada e vaga liberada")
                 } else {
-                    Log.d("CheckReservaWorker", "ℹ️  Transaction: Reserva já estava ${reservaSnapshot.getString("status")}")
+                    Log.d("CheckReservaWorker", "ℹ️  Transaction: Reserva já estava $currentStatus")
                 }
             }.await()
 
-            // 🔥 ENVIAR NOTIFICAÇÃO DE CONFIRMAÇÃO
-            enviarNotificacaoExpirada(vagaId)
-            Log.d("CheckReservaWorker", "🎉 Reserva $reservaId finalizada com sucesso!")
-
-            Result.success()
+            // 🔥 VERIFICAR SE REALMENTE FOI ATUALIZADO
+            val reservaVerificada = db.collection("reserva").document(reservaId).get().await()
+            if (reservaVerificada.getString("status") == "finalizada") {
+                enviarNotificacaoExpirada(vagaId)
+                Log.d("CheckReservaWorker", "🎉 Reserva $reservaId finalizada com sucesso!")
+                Result.success()
+            } else {
+                Log.e("CheckReservaWorker", "❌ Falha ao finalizar reserva - Status ainda ativo")
+                Result.retry()
+            }
 
         } catch (e: Exception) {
             Log.e("CheckReservaWorker", "❌ Erro ao finalizar reserva: ${e.message}", e)
@@ -120,6 +131,7 @@ class CheckReservaWorker(
         val verificationRequest = OneTimeWorkRequestBuilder<CheckReservaWorker>()
             .setInitialDelay(delayMillis, TimeUnit.MILLISECONDS)
             .setInputData(verificationData)
+            .addTag("reserva_${reservaId}") // 🔥 ADICIONAR TAG
             .build()
 
         WorkManager.getInstance(context).enqueue(verificationRequest)

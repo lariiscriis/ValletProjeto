@@ -15,12 +15,28 @@ class ReservaNotificationWorker(
     params: WorkerParameters
 ) : CoroutineWorker(context, params) {
 
+    private val db = FirebaseFirestore.getInstance()
+
     override suspend fun doWork(): Result {
         val tipoNotificacao = inputData.getString("tipo")
         val vagaId = inputData.getString("vagaId")
+        val reservaId = inputData.getString("reservaId")
         val estacionamentoId = inputData.getString("estacionamentoId")
 
-        Log.d("ReservaNotificationWorker", "Executando worker: tipo=$tipoNotificacao, vagaId=$vagaId")
+        Log.d("ReservaNotificationWorker", "Executando worker: tipo=$tipoNotificacao, reservaId=$reservaId, vagaId=$vagaId")
+
+        // 🔥 VERIFICAR SE A RESERVA AINDA EXISTE E ESTÁ ATIVA
+        if (reservaId != null) {
+            try {
+                val reservaDoc = db.collection("reserva").document(reservaId).get().await()
+                if (!reservaDoc.exists() || reservaDoc.getString("status") != "ativa") {
+                    Log.d("ReservaNotificationWorker", "Reserva não existe ou não está mais ativa - Cancelando notificação")
+                    return Result.success()
+                }
+            } catch (e: Exception) {
+                Log.e("ReservaNotificationWorker", "Erro ao verificar reserva", e)
+            }
+        }
 
         return when (tipoNotificacao) {
             "aviso" -> enviarNotificacaoAviso(vagaId, estacionamentoId)
@@ -53,7 +69,6 @@ class ReservaNotificationWorker(
         if (vagaId == null) return Result.failure()
 
         // Verifica no Firebase se a reserva realmente expirou
-        val db = FirebaseFirestore.getInstance()
         val reservas = db.collection("reserva")
             .whereEqualTo("vagaId", vagaId)
             .whereEqualTo("status", "ativa")
@@ -65,7 +80,6 @@ class ReservaNotificationWorker(
             val fimReserva = reserva.getTimestamp("fimReserva")?.toDate()
 
             if (fimReserva != null && fimReserva.time <= System.currentTimeMillis()) {
-                // Reserva realmente expirou, envia notificação
                 NotificationUtils.createNotificationChannel(applicationContext)
                 val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
