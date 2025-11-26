@@ -190,14 +190,13 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
         val fimReservaMillis = reserva.fimReserva?.toDate()?.time ?: return
         Log.d("Notificacoes", "Agendando notificações para reserva: ${reserva.id}")
 
-        // 1. Notificação de aviso (10 minutos antes) - WorkManager
         val avisoMillis = fimReservaMillis - TimeUnit.MINUTES.toMillis(10)
         if (avisoMillis > System.currentTimeMillis()) {
             val avisoDelay = avisoMillis - System.currentTimeMillis()
 
             val avisoData = workDataOf(
                 "tipo" to "aviso",
-                "reservaId" to reserva.id, // 🔥 ADICIONAR reservaId
+                "reservaId" to reserva.id,
                 "vagaId" to reserva.vagaId,
                 "estacionamentoId" to reserva.estacionamentoId
             )
@@ -211,7 +210,6 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
             Log.d("Notificacoes", "Aviso agendado para: ${Date(avisoMillis)}")
         }
 
-        // 2. Notificação de expiração + FINALIZAÇÃO - AlarmManager
         val expiraIntent = Intent(context, ReservaExpiredReceiver::class.java).apply {
             putExtra("reservaId", reserva.id)
             putExtra("vagaId", reserva.vagaId)
@@ -219,7 +217,7 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
 
         val expiraPendingIntent = PendingIntent.getBroadcast(
             context,
-            reserva.id.hashCode(), // 🔥 USAR hashCode único
+            reserva.id.hashCode(),
             expiraIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -244,7 +242,6 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
             Log.d("Notificacoes", "✅ Finalização automática agendada para: ${Date(fimReservaMillis)}")
         } catch (e: SecurityException) {
             Log.e("Notificacoes", "❌ Permissão negada para agendar alarme exato", e)
-            // Fallback: usar WorkManager como backup
             agendarFinalizacaoWorkManager(context, reserva, fimReservaMillis)
         }
     }

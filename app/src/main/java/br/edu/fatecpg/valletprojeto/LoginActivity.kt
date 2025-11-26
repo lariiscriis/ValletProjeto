@@ -33,6 +33,9 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
     private var providerInstallAttempted = false
     private val mainHandler = Handler(Looper.getMainLooper())
 
+    private var isLoading = false
+    private var currentLoadingStep = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -105,35 +108,110 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
     }
 
     private fun setupListeners() {
-        binding.switchTipoLogin.setOnClickListener { toggleLoginType() }
+        binding.switchTipoLogin.setOnClickListener {
+            if (!isLoading) {
+                toggleLoginType()
+            }
+        }
 
         binding.botaoCadastro.setOnClickListener {
-            navigateToCadastro("usuario")
+            if (!isLoading) {
+                navigateToCadastro("usuario")
+            }
         }
 
         binding.botaoCadastroAdmin.setOnClickListener {
-            navigateToCadastro("admin")
+            if (!isLoading) {
+                navigateToCadastro("admin")
+            }
         }
 
         binding.button3.setOnClickListener {
+            if (isLoading) return@setOnClickListener
+
             val email = binding.editTextText.text.toString().trim()
             val senha = binding.editTextSenha.text.toString().trim()
 
             if (validateCredentials(email, senha)) {
-                binding.progressOverlay.visibility = View.VISIBLE
-                loginUser(email, senha, false)
+                startLoginProcess(email, senha, false)
             }
         }
 
         binding.entrarAdmin.setOnClickListener {
+            if (isLoading) return@setOnClickListener
+
             val email = binding.edtEmailAdmin.text.toString().trim()
             val senha = binding.edtSenhaAdmin.text.toString().trim()
 
             if (validateCredentials(email, senha)) {
-                binding.progressOverlay.visibility = View.VISIBLE
-                loginUser(email, senha, true)
+                startLoginProcess(email, senha, true)
             }
         }
+    }
+
+    private fun startLoginProcess(email: String, senha: String, isAdminAttempt: Boolean) {
+        isLoading = true
+        updateLoadingStep("Verificando credenciais...")
+        showButtonLoading(isAdminAttempt)
+        disableUI()
+
+        loginUser(email, senha, isAdminAttempt)
+    }
+
+    private fun showButtonLoading(isAdmin: Boolean) {
+        if (isAdmin) {
+            binding.entrarAdmin.visibility = View.GONE
+            binding.loadingButtonAdmin.visibility = View.VISIBLE
+        } else {
+            binding.button3.visibility = View.GONE
+            binding.loadingButtonLogin.visibility = View.VISIBLE
+        }
+    }
+
+    private fun hideButtonLoading(isAdmin: Boolean) {
+        if (isAdmin) {
+            binding.entrarAdmin.visibility = View.VISIBLE
+            binding.loadingButtonAdmin.visibility = View.GONE
+        } else {
+            binding.button3.visibility = View.VISIBLE
+            binding.loadingButtonLogin.visibility = View.GONE
+        }
+    }
+
+    private fun updateLoadingStep(step: String) {
+        currentLoadingStep = step
+        binding.txvLoadingStep.text = step
+        Log.d("LoginLoading", step)
+    }
+
+    private fun disableUI() {
+        binding.switchTipoLogin.isEnabled = false
+        binding.botaoCadastro.isEnabled = false
+        binding.botaoCadastroAdmin.isEnabled = false
+        binding.editTextText.isEnabled = false
+        binding.editTextSenha.isEnabled = false
+        binding.edtEmailAdmin.isEnabled = false
+        binding.edtSenhaAdmin.isEnabled = false
+        binding.edtCodigoAcesso.isEnabled = false
+    }
+
+    private fun enableUI() {
+        binding.switchTipoLogin.isEnabled = true
+        binding.botaoCadastro.isEnabled = true
+        binding.botaoCadastroAdmin.isEnabled = true
+        binding.editTextText.isEnabled = true
+        binding.editTextSenha.isEnabled = true
+        binding.edtEmailAdmin.isEnabled = true
+        binding.edtSenhaAdmin.isEnabled = true
+        binding.edtCodigoAcesso.isEnabled = true
+    }
+
+    private fun resetLoadingState(isAdminAttempt: Boolean) {
+        isLoading = false
+        hideButtonLoading(isAdminAttempt)
+        enableUI()
+        binding.loadingState.visibility = View.GONE
+        binding.contentState.visibility = View.VISIBLE
     }
 
     private fun toggleLoginType() {
@@ -168,39 +246,41 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
 
     private fun loginUser(email: String, senha: String, isAdminAttempt: Boolean) {
         Log.d("Login", "Tentando login: $email")
+        updateLoadingStep("Conectando ao servidor...")
 
         auth.signInWithEmailAndPassword(email, senha)
             .addOnSuccessListener {
                 Log.d("Login", "✅ Firebase Auth OK: ${it.user?.uid}")
+                updateLoadingStep("Autenticação realizada com sucesso!")
                 val user = auth.currentUser
                 if (user != null) {
                     checkUserType(user.uid, user.email ?: "", isAdminAttempt)
                 } else {
-                    binding.progressOverlay.visibility = View.GONE
+                    resetLoadingState(isAdminAttempt)
                     Toast.makeText(this, "Erro ao obter usuário", Toast.LENGTH_SHORT).show()
                 }
             }
             .addOnFailureListener { e ->
                 Log.e("Login", "❌ Erro no Firebase Auth: ${e.message}")
-                binding.progressOverlay.visibility = View.GONE
+                resetLoadingState(isAdminAttempt)
                 handleLoginError(e)
             }
     }
 
     private fun checkUserType(uid: String, email: String, isAdminAttempt: Boolean) {
         Log.d("Firestore", "Buscando usuário por UID: $uid")
+        updateLoadingStep("Buscando dados do usuário...")
 
         var isTimedOut = false
         val timeoutRunnable = Runnable {
             isTimedOut = true
-            binding.progressOverlay.visibility = View.GONE
+            resetLoadingState(isAdminAttempt)
 
             AlertDialog.Builder(this)
                 .setTitle("⏱️ Tempo Esgotado")
                 .setMessage("A conexão está muito lenta. Deseja tentar novamente?")
                 .setPositiveButton("Tentar Novamente") { _, _ ->
-                    binding.progressOverlay.visibility = View.VISIBLE
-                    checkUserType(uid, email, isAdminAttempt)
+                    startLoginProcess(email, "", isAdminAttempt)
                 }
                 .setNegativeButton("Cancelar") { _, _ ->
                     auth.signOut()
@@ -220,10 +300,11 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
                     return@addOnSuccessListener
                 }
 
-                binding.progressOverlay.visibility = View.GONE
+                updateLoadingStep("Processando informações...")
 
                 if (!documentSnapshot.exists()) {
                     Log.e("Firestore", "❌ Nenhum usuário encontrado com UID: $uid")
+                    resetLoadingState(isAdminAttempt)
                     handleUserNotFound()
                     return@addOnSuccessListener
                 }
@@ -237,13 +318,16 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
 
                 if (isAdminAttempt && !isAdminFromDB) {
                     auth.signOut()
+                    resetLoadingState(isAdminAttempt)
                     Toast.makeText(this, "❌ Acesso restrito a administradores", Toast.LENGTH_LONG).show()
                     return@addOnSuccessListener
                 }
 
                 if (isAdminFromDB) {
+                    updateLoadingStep("Verificando estacionamento...")
                     checkEstacionamentoCadastrado(uid, email)
                 } else {
+                    updateLoadingStep("Preparando ambiente...")
                     redirectToHome(uid, email)
                 }
             }
@@ -255,7 +339,7 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
                     return@addOnFailureListener
                 }
 
-                binding.progressOverlay.visibility = View.GONE
+                resetLoadingState(isAdminAttempt)
                 Log.e("Firestore", "❌ Erro na consulta: ${e.message}")
 
                 val errorMsg = when {
@@ -272,8 +356,7 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
                     .setTitle("Erro de Conexão")
                     .setMessage("$errorMsg\n\nDeseja tentar novamente?")
                     .setPositiveButton("Tentar Novamente") { _, _ ->
-                        binding.progressOverlay.visibility = View.VISIBLE
-                        checkUserType(uid, email, isAdminAttempt)
+                        startLoginProcess(email, "", isAdminAttempt)
                     }
                     .setNegativeButton("Cancelar") { _, _ ->
                         auth.signOut()
@@ -297,11 +380,13 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
     }
 
     private fun checkEstacionamentoCadastrado(uid: String, email: String) {
+        updateLoadingStep("Carregando dados do estacionamento...")
+
         db.collection("estacionamento")
             .whereEqualTo("adminUid", uid)
             .get()
             .addOnSuccessListener { result ->
-                binding.progressOverlay.visibility = View.GONE
+                resetLoadingState(true)
 
                 if (result.isEmpty) {
                     val intent = Intent(this, CadastroEstacionamento::class.java)
@@ -313,24 +398,27 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
                 }
             }
             .addOnFailureListener { e ->
-                binding.progressOverlay.visibility = View.GONE
+                resetLoadingState(true)
                 Toast.makeText(this, "Erro ao verificar estacionamento: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
 
-
     private fun redirectToHome(uid: String, email: String) {
         Log.d("LOGIN", "🚀 Iniciando redirecionamento para home")
+        updateLoadingStep("Quase lá...")
 
-        // 1. Primeiro redireciona para a home
-        val intent = Intent(this, DashboardBase::class.java)
-        intent.putExtra("email_usuario", email)
-        startActivity(intent)
+        binding.contentState.visibility = View.GONE
+        binding.loadingState.visibility = View.VISIBLE
+        updateLoadingStep("Preparando sua área de trabalho...")
 
-        // 2. Depois gera e salva o token FCM em background
+        Handler(Looper.getMainLooper()).postDelayed({
+            val intent = Intent(this, DashboardBase::class.java)
+            intent.putExtra("email_usuario", email)
+            startActivity(intent)
+            finish()
+        }, 1000)
+
         gerarESalvarTokenFCM(uid)
-
-        finish()
     }
 
     private fun gerarESalvarTokenFCM(uid: String) {
@@ -343,7 +431,6 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
                 salvarTokenNoFirestore(uid, token)
             } else {
                 Log.e("FCM", "❌ Falha ao gerar token FCM", task.exception)
-                // Tenta novamente após 3 segundos
                 Handler(Looper.getMainLooper()).postDelayed({
                     gerarESalvarTokenFCM(uid)
                 }, 3000)
@@ -358,17 +445,14 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
             "ultima_atualizacao_token" to com.google.firebase.Timestamp.now()
         )
 
-        // CORREÇÃO: Usar o UID correto do usuário
-        db.collection("usuario").document(uid) // ← Aqui estava o problema!
+        db.collection("usuario").document(uid)
             .set(tokenData, com.google.firebase.firestore.SetOptions.merge())
             .addOnSuccessListener {
                 Log.d("FCM", "✅ Token FCM salvo com sucesso para UID: $uid")
-                // Verifica se o token foi realmente salvo
                 verificarTokenSalvo(uid)
             }
             .addOnFailureListener { e ->
                 Log.e("FCM", "❌ Erro ao salvar Token FCM", e)
-                // Tenta novamente após 2 segundos
                 Handler(Looper.getMainLooper()).postDelayed({
                     salvarTokenNoFirestore(uid, token)
                 }, 2000)
@@ -410,11 +494,14 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
 
         if (current != null) {
             Log.d("Login", "🔄 Usuário já logado, verificando sessão...")
-            binding.progressOverlay.visibility = View.VISIBLE
+
+            binding.contentState.visibility = View.GONE
+            binding.loadingState.visibility = View.VISIBLE
+            updateLoadingStep("Restaurando sua sessão...")
 
             mainHandler.postDelayed({
-                if (binding.progressOverlay.visibility == View.VISIBLE) {
-                    binding.progressOverlay.visibility = View.GONE
+                if (binding.loadingState.visibility == View.VISIBLE) {
+                    resetLoadingState(false)
 
                     AlertDialog.Builder(this)
                         .setTitle("Sessão Expirada")
@@ -429,7 +516,8 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
 
             checkUserType(current.uid, current.email ?: "", false)
         } else {
-            binding.progressOverlay.visibility = View.GONE
+            binding.loadingState.visibility = View.GONE
+            binding.contentState.visibility = View.VISIBLE
         }
     }
 

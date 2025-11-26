@@ -37,7 +37,7 @@ class MotoristaFragment : Fragment() {
 
     private var vagaIdAtiva: String? = null
     private var estacionamentoIdAtivo: String? = null
-    private var buscaReservasJob: Job? = null // 🔥 CONTROLE DA CORROTINA
+    private var buscaReservasJob: Job? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -48,10 +48,12 @@ class MotoristaFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        mostrarLoadingGeral()
+
         binding.rvReservationHistory.layoutManager = GridLayoutManager(requireContext(), 2)
 
         binding.btnViewReservation.setOnClickListener {
-            // 🔥 VERIFICA SE O FRAGMENT AINDA ESTÁ ATACHADO
             if (!isAdded || context == null) return@setOnClickListener
 
             if (vagaIdAtiva != null && estacionamentoIdAtivo != null) {
@@ -71,25 +73,55 @@ class MotoristaFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        // 🔥 BUSCA AS RESERVAS QUANDO O FRAGMENT VOLTA AO FOCO
         buscarReservasComCoroutines()
     }
 
     override fun onPause() {
         super.onPause()
-        // 🔥 CANCELA A CORROTINA QUANDO O FRAGMENT PERDE FOCO
         buscaReservasJob?.cancel()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        // 🔥 CANCELA A CORROTINA E LIMPA O BINDING
         buscaReservasJob?.cancel()
         _binding = null
     }
 
+    private fun mostrarLoadingGeral() {
+        binding.loadingState.visibility = View.VISIBLE
+        binding.contentState.visibility = View.GONE
+
+        binding.loadingCardReserva.visibility = View.VISIBLE
+        binding.contentArea.visibility = View.GONE
+        binding.footerArea.visibility = View.GONE
+        binding.divider.visibility = View.GONE
+
+        binding.loadingEstatisticas.visibility = View.VISIBLE
+        binding.contentEstatisticas.visibility = View.GONE
+
+        binding.loadingHistorico.visibility = View.VISIBLE
+        binding.rvReservationHistory.visibility = View.GONE
+    }
+
+    private fun esconderLoadingGeral() {
+        binding.loadingState.visibility = View.GONE
+        binding.contentState.visibility = View.VISIBLE
+    }
+
+    private fun mostrarConteudoGradualmente() {
+        binding.loadingCardReserva.visibility = View.GONE
+        binding.contentArea.visibility = View.VISIBLE
+        binding.footerArea.visibility = View.VISIBLE
+        binding.divider.visibility = View.VISIBLE
+
+        binding.loadingEstatisticas.visibility = View.GONE
+        binding.contentEstatisticas.visibility = View.VISIBLE
+
+        binding.loadingHistorico.visibility = View.GONE
+        binding.rvReservationHistory.visibility = View.VISIBLE
+    }
+
     private fun abrirPaginaDeVagas() {
-        // 🔥 VERIFICA SE O FRAGMENT AINDA ESTÁ ATACHADO
         if (!isAdded || context == null) return
 
         val intent = Intent(requireContext(), VagaActivity::class.java)
@@ -103,18 +135,14 @@ class MotoristaFragment : Fragment() {
     private fun buscarReservasComCoroutines() {
         val uidLogado = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
-        // 🔥 CANCELA QUALQUER BUSCA ANTERIOR
         buscaReservasJob?.cancel()
 
-        // 🔥 INICIA NOVA BUSCA CONTROLADA
         buscaReservasJob = viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
             try {
-                // 🔥 VERIFICA SE O FRAGMENT AINDA ESTÁ ATIVO
                 if (!isAdded || context == null) return@launch
 
                 val reservas = db.collection("reserva").whereEqualTo("usuarioId", uidLogado).get().await()
 
-                // 🔥 VERIFICA NOVAMENTE
                 if (!isAdded || context == null) return@launch
 
                 var totalHoras = 0L
@@ -123,7 +151,6 @@ class MotoristaFragment : Fragment() {
                 var temReservaAtiva = false
 
                 for (doc in reservas) {
-                    // 🔥 VERIFICAÇÃO SIMPLES - SE NÃO ESTIVER MAIS ATIVO, PARA
                     if (!isAdded || context == null) return@launch
 
                     val status = doc.getString("status")
@@ -137,14 +164,12 @@ class MotoristaFragment : Fragment() {
                         totalHoras += (fim.time - inicio.time)
                     }
 
-                    // 🔥 BUSCA DADOS DA VAGA COM VERIFICAÇÃO
                     val vagaDoc = try {
                         db.collection("vaga").document(vagaId).get().await()
                     } catch (e: Exception) {
-                        continue // PULA SE HOUVER ERRO AO BUSCAR VAGA
+                        continue
                     }
 
-                    // 🔥 VERIFICA SE AINDA ESTÁ ATIVO
                     if (!isAdded || context == null) return@launch
 
                     val vaga = Vaga(
@@ -166,7 +191,6 @@ class MotoristaFragment : Fragment() {
                         vagaIdAtiva = vagaId
                         estacionamentoIdAtivo = estacionamentoId
                     } else {
-                        // 🔥 BUSCA NOME DO ESTACIONAMENTO SE NECESSÁRIO
                         val nomeEstacionamentoFinal = if (estacionamentoNome.isNotEmpty()) {
                             estacionamentoNome
                         } else {
@@ -186,14 +210,19 @@ class MotoristaFragment : Fragment() {
                     }
                 }
 
-                // 🔥 ATUALIZA UI APENAS SE AINDA ESTIVER ATIVO
                 if (isAdded && context != null) {
+                    esconderLoadingGeral()
+                    mostrarConteudoGradualmente()
                     atualizarUI(totalHoras, historico, temReservaAtiva, totalReservas)
                 }
 
             } catch (e: Exception) {
                 if (isAdded && context != null) {
                     Log.e("MotoristaFragment", "Erro ao carregar reservas", e)
+
+                    esconderLoadingGeral()
+                    mostrarConteudoGradualmente()
+
                     Toast.makeText(requireContext(), "Erro ao carregar reservas", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -219,9 +248,7 @@ class MotoristaFragment : Fragment() {
         }
     }
 
-    // 🔥 NOVO MÉTODO: Busca o nome do estacionamento se não estiver na reserva
     private suspend fun buscarNomeEstacionamento(estacionamentoId: String): String {
-        // 🔥 VERIFICA SE AINDA ESTÁ ATIVO
         if (!isAdded || context == null) return "Estacionamento"
 
         return try {
@@ -229,7 +256,6 @@ class MotoristaFragment : Fragment() {
 
             val estacionamentoDoc = db.collection("estacionamento").document(estacionamentoId).get().await()
 
-            // 🔥 VERIFICA NOVAMENTE ANTES DE RETORNAR
             if (!isAdded || context == null) return "Estacionamento"
 
             estacionamentoDoc.getString("nome") ?: "Estacionamento"
