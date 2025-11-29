@@ -11,6 +11,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="#FFFFFF"
         android:orientation="vertical"
         android:padding="16dp">
 
@@ -18,9 +19,9 @@
             android:id="@+id/tvEstacionamentoNome"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/verdeescuro"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="@color/verdeescuro"
             tools:text="Estacionamento Nome" />
 
         <TextView
@@ -28,8 +29,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:textSize="14sp"
             android:textColor="@color/preto"
+            android:textSize="14sp"
             tools:text="Início: 01/01/2024 10:00 - Fim: 01/01/2024 12:00" />
 
         <TextView

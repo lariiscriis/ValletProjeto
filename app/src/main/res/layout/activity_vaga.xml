@@ -4,19 +4,14 @@
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Filtrar vagas"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
-        android:textStyle="bold"/>
+    android:orientation="vertical"
+    android:layout_marginTop="30dp">
 
     <com.google.android.material.chip.ChipGroup
         android:id="@+id/chip_group_tipo_vaga"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
         app:singleSelection="true">
@@ -26,29 +21,28 @@
             style="@style/Widget.MaterialComponents.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Todos"
-            android:checked="true"/>
+            android:text="Todos" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_carro"
             style="@style/Widget.MaterialComponents.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Carro"/>
+            android:text="Carro" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_moto"
             style="@style/Widget.MaterialComponents.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Moto"/>
+            android:text="Moto" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_preferencial"
             style="@style/Widget.MaterialComponents.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Preferencial"/>
+            android:text="Preferencial" />
 
     </com.google.android.material.chip.ChipGroup>
 

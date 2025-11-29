@@ -3,123 +3,174 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="200dp"
-    android:layout_marginBottom="8dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="4dp"
-    >
+    android:layout_height="wrap_content"
+    android:layout_marginVertical="8dp"
+    android:layout_marginLeft="5dp"
+    android:layout_marginRight="5dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp">
 
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/edittext_background"
-        android:padding="15dp">
+        android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/tv_parking_status"
-            android:layout_width="wrap_content"
+        <!-- Content Area -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/content_area"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:background="@drawable/button_background"
-            android:paddingHorizontal="8dp"
-            android:paddingVertical="4dp"
-            android:text="ABERTO"
-            android:textColor="@color/branco"
-            android:textSize="12sp"
-            android:textStyle="bold" />
+            android:padding="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-        <ImageView
-            android:id="@+id/iv_parking_image"
-            android:layout_width="129dp"
-            android:layout_height="94dp"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:layout_marginRight="8dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/estacionamento_foto" />
+            <TextView
+                android:id="@+id/txv_nome_estacionamento"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:fontFamily="@font/poppins_semibold"
+                android:text="Parking Name"
+                android:textColor="#333333"
+                android:textSize="18sp"
+                app:layout_constraintEnd_toStartOf="@+id/ivFavorite"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageView
-            android:id="@+id/ivFavorite"
-            android:layout_width="22dp"
-            android:layout_height="22dp"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="21dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/btn_star_off" />
+            <ImageView
+                android:id="@+id/ivFavorite"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/ripple_transparent"
+                android:src="@drawable/btn_star_off"
+                app:layout_constraintBottom_toBottomOf="@+id/txv_nome_estacionamento"
+                app:layout_constraintEnd_toStartOf="@+id/cv_parking_image_container"
+                app:layout_constraintTop_toTopOf="@+id/txv_nome_estacionamento" />
 
-        <TextView
-            android:id="@+id/tv_tav_info"
-            android:layout_width="130dp"
-            android:layout_height="30dp"
-            android:layout_below="@+id/iv_parking_image"
-            android:layout_alignParentEnd="true"
-            android:layout_marginTop="12dp"
-            android:layout_marginEnd="10dp"
-            android:text="vagas disponiveis"
-            android:textColor="#046C4E"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+            <TextView
+                android:id="@+id/txv_endereco_estacionamento"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:ellipsize="end"
+                android:fontFamily="@font/poppins"
+                android:maxLines="1"
+                android:text="Address"
+                android:textColor="#666666"
+                android:textSize="14sp"
+                app:layout_constrainedWidth="true"
+                app:layout_constraintEnd_toStartOf="@+id/cv_parking_image_container"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/txv_nome_estacionamento" />
 
-        <TextView
-            android:id="@+id/txv_nome_estacionamento"
-            android:layout_width="wrap_content"
+            <TextView
+                android:id="@+id/tv_parking_distance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:fontFamily="@font/poppins"
+                android:text="0m"
+                android:textColor="#666666"
+                android:textSize="14sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/txv_endereco_estacionamento" />
+
+            <TextView
+                android:id="@+id/tvTavInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:fontFamily="@font/poppins"
+                android:text="Vagas: 10"
+                android:textColor="#666666"
+                android:textSize="14sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tv_parking_distance" />
+
+            <TextView
+                android:id="@+id/tv_parking_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/button_background"
+                android:fontFamily="@font/poppins"
+                android:padding="4dp"
+                android:text="Aberto"
+                android:textColor="@color/branco"
+                android:textSize="12sp"
+                app:layout_constraintBaseline_toBaselineOf="@+id/tvTavInfo"
+                app:layout_constraintStart_toEndOf="@+id/tvTavInfo" />
+
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cv_parking_image_container"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:id="@+id/iv_parking_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/estacionamento_foto" />
+
+            </androidx.cardview.widget.CardView>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Divider -->
+        <View
+            android:id="@+id/divider"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_marginHorizontal="16dp"
+            android:background="#1F000000"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/content_area" />
+
+        <!-- Footer Area -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/footer_area"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_below="@id/tv_parking_status"
-            android:layout_marginTop="8dp"
-            android:text="Parking Name"
-            android:textColor="#333333"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:padding="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider">
 
-        <TextView
-            android:id="@+id/txv_endereco_estacionamento"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/txv_nome_estacionamento"
-            android:layout_marginTop="4dp"
-            android:layout_toStartOf="@id/iv_parking_image"
-            android:layout_toLeftOf="@id/iv_parking_image"
-            android:ellipsize="none"
-            android:maxLines="3"
-            android:singleLine="false"
-            android:text="Address"
-            android:textColor="#666666"
-            android:textSize="12sp" />
+            <TextView
+                android:id="@+id/txv_preco"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/poppins_medium"
+                android:text="R$0,00/h"
+                android:textColor="@color/verdeescuro"
+                android:textSize="16sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
+            <Button
+                android:id="@+id/btn_ver_vagas"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/verdeescuro"
+                android:fontFamily="@font/poppins_medium"
+                android:minHeight="40dp"
+                android:text="Ver Vagas"
+                android:textColor="@android:color/white"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="TouchTargetSizeCheck" />
 
-        <TextView
-            android:id="@+id/txv_preco"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/txv_endereco_estacionamento"
-            android:layout_marginTop="6dp"
-            android:text="R$0,00/h"
-            android:textColor="#046C4E"
-            android:textSize="14sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/tv_parking_distance"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/txv_preco"
-            android:layout_marginTop="4dp"
-            android:text="0m"
-            android:textColor="#666666"
-            android:textSize="12sp" />
-
-        <Button
-            android:id="@+id/btn_ver_vagas"
-            android:layout_width="117dp"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_marginBottom="2dp"
-            android:backgroundTint="#046C4E"
-            android:fontFamily="@font/poppins_medium"
-            android:minHeight="40dp"
-            android:paddingHorizontal="16dp"
-            android:text="Ver Vagas"
-            android:textColor="@android:color/white"
-            android:textSize="12sp"
-            tools:ignore="TouchTargetSizeCheck" />
-    </RelativeLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>
