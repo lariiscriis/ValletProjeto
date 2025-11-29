@@ -138,7 +138,37 @@ class CheckReservaWorker(
         Log.d("CheckReservaWorker", "🔄 Verificação reagendada para ${delayMillis/1000}s")
     }
 
-    private fun enviarNotificacaoExpirada(vagaId: String) {
+    private suspend fun enviarNotificacaoExpirada(vagaId: String) {
+        try {
+            // 🔥 BUSCAR O NÚMERO DA VAGA NO FIRESTORE
+            val vagaDoc = db.collection("vaga").document(vagaId).get().await()
+            val numeroVaga = vagaDoc.getString("numero") ?: vagaId // Fallback para ID se não tiver número
+
+            NotificationUtils.createNotificationChannel(context)
+            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+            val notification = NotificationCompat.Builder(context, NotificationConstants.RESERVA_CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_parking)
+                .setContentTitle("Reserva Finalizada!")
+                .setContentText("Sua reserva na vaga $numeroVaga foi encerrada.")
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true)
+                .setStyle(NotificationCompat.BigTextStyle()
+                    .bigText("Sua reserva na vaga $numeroVaga foi finalizada automaticamente. Obrigado por usar nosso serviço!"))
+                .build()
+
+            notificationManager.notify("RESERVA_EXPIRADA_${vagaId}".hashCode(), notification)
+            Log.d("CheckReservaWorker", "📲 Notificação de expiração enviada para vaga $numeroVaga")
+
+        } catch (e: Exception) {
+            Log.e("CheckReservaWorker", "❌ Erro ao enviar notificação: ${e.message}")
+            // 🔥 FALLBACK: Enviar notificação com ID se der erro
+            enviarNotificacaoFallback(vagaId)
+        }
+    }
+
+    // 🔥 MÉTODO FALLBACK CASO A BUSCA FALHE
+    private fun enviarNotificacaoFallback(vagaId: String) {
         try {
             NotificationUtils.createNotificationChannel(context)
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -146,18 +176,16 @@ class CheckReservaWorker(
             val notification = NotificationCompat.Builder(context, NotificationConstants.RESERVA_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_parking)
                 .setContentTitle("Reserva Finalizada!")
-                .setContentText("Sua reserva na vaga $vagaId foi encerrada.")
+                .setContentText("Sua reserva foi encerrada.")
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true)
                 .setStyle(NotificationCompat.BigTextStyle()
-                    .bigText("Sua reserva na vaga $vagaId foi finalizada automaticamente. Obrigado por usar nosso serviço!"))
+                    .bigText("Sua reserva foi finalizada automaticamente. Obrigado por usar nosso serviço!"))
                 .build()
 
             notificationManager.notify("RESERVA_EXPIRADA_${vagaId}".hashCode(), notification)
-            Log.d("CheckReservaWorker", "📲 Notificação de expiração enviada")
-
         } catch (e: Exception) {
-            Log.e("CheckReservaWorker", "❌ Erro ao enviar notificação: ${e.message}")
+            Log.e("CheckReservaWorker", "❌ Erro crítico no fallback: ${e.message}")
         }
     }
 }
