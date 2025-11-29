@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "br.edu.fatecpg.valletprojeto"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "br.edu.fatecpg.valletprojeto"

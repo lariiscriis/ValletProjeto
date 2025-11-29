@@ -80,26 +80,34 @@ class VeiculoFragment : DialogFragment() {
             else -> "carro"
         }
 
-        val novoVeiculo = Veiculo(
-            placa = placa,
-            marca = marca,
-            modelo = modelo,
-            apelido = apelido,
-            ano = ano,
-            km = km,
-            tipo = tipoSelecionado,
-            padrao = false
-        )
+        viewModel.listarVeiculosDoUsuario(
+            onSuccess = { veiculos ->
+                val novoVeiculo = Veiculo(
+                    placa = placa,
+                    marca = marca,
+                    modelo = modelo,
+                    apelido = apelido,
+                    ano = ano,
+                    km = km,
+                    tipo = tipoSelecionado,
+                    padrao = veiculos.isEmpty() // Define como padrão se for o primeiro veículo
+                )
 
-        viewModel.cadastrarVeiculo(
-            novoVeiculo,
-            onSuccess = {
-                Toast.makeText(requireContext(), "Veículo salvo!", Toast.LENGTH_SHORT).show()
-                (activity as? VeiculoActivity)?.onVeiculoCadastrado()
-                dismiss()
+                viewModel.cadastrarVeiculo(
+                    novoVeiculo,
+                    onSuccess = {
+                        Toast.makeText(requireContext(), "Veículo salvo!", Toast.LENGTH_SHORT).show()
+                        // Atualiza a lista de veículos na atividade principal
+                        (activity as? VeiculoActivity)?.onVeiculoCadastrado()
+                        dismiss()
+                    },
+                    onFailure = { erro ->
+                        Toast.makeText(requireContext(), "Erro ao salvar: $erro", Toast.LENGTH_LONG).show()
+                    }
+                )
             },
             onFailure = { erro ->
-                Toast.makeText(requireContext(), "Erro ao salvar: $erro", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "Erro ao verificar veículos existentes: $erro", Toast.LENGTH_LONG).show()
             }
         )
     }
