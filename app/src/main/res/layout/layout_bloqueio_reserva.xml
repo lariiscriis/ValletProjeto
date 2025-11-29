@@ -5,12 +5,14 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
+    android:background="@color/branco"
     android:padding="32dp">
 
     <ImageView
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:contentDescription="Atenção"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:src="@drawable/reserva_carro"
+        android:contentDescription="Animação de um carro sendo reservado"
         android:layout_marginBottom="24dp" />
 
     <TextView
@@ -19,6 +21,7 @@
         android:text="Reserva Ativa Encontrada!"
         android:textSize="24sp"
         android:textStyle="bold"
+        android:textColor="@color/preto"
         android:layout_marginBottom="16dp" />
 
     <TextView
@@ -27,15 +30,18 @@
         android:layout_height="wrap_content"
         android:text="Carregando informações da reserva..."
         android:textSize="16sp"
+        android:textColor="@color/preto"
         android:textAlignment="center"
         android:lineSpacingExtra="4sp"
         android:layout_marginBottom="32dp" />
 
     <Button
         android:id="@+id/btnVerReserva"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Ver Minha Reserva"
+        android:backgroundTint="@color/verdeclaro"
+        android:textColor="@color/branco"
         android:paddingStart="32dp"
         android:paddingEnd="32dp"
         android:paddingTop="16dp"
