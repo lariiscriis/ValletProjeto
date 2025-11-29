@@ -5,7 +5,7 @@
 
 <p>
 Seja bem-vindo ao projeto <b>Vallet</b>, um aplicativo Android e plataforma web, seguindo a arquitetura <br>MVVM (Model-View-ViewModel) e com integração total ao Firebase.
-Ele busca otimizar o processo <br> de <b>reserva, monitoramento e administração de vagas de estacionamento</b>, beneficiando tanto <br> motoristas quanto os administradores de estacionamentos.
+Ele busca otimizar o processo de <b>reserva, monitoramento e administração de vagas de estacionamento, beneficiando tanto motoristas quanto os administradores de estacionamentos.
 </p>
 
 <p>Este repositório inclui o app completo para motoristas reservarem vagas. Caso queira acessar a versão <br>para gestor de estacionamento com dashboards e controle de vagas, acesse esse repositório: https://github.com/Pereira-Sah/ValletWeb</p>
