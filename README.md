@@ -4,8 +4,8 @@
 <a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=24&pause=1000&color=4CAF50&width=600&height=55&lines=Sistema+de+Gest%C3%A3o+de+Estacionamentos" alt="Typing SVG" /></a>
 
 <p>
-Seja bem-vindo ao projeto <b>Vallet</b>, um aplicativo Android e plataforma web, seguindo a arquitetura <br>MVVM (Model-View-ViewModel) e com integração total ao Firebase.
-Ele busca otimizar o processo de <b>reserva, monitoramento e administração de vagas de estacionamento, beneficiando tanto motoristas quanto os administradores de estacionamentos.
+Seja bem-vindo ao projeto <b>Vallet</b>, um aplicativo Android e plataforma web, seguindo a arquitetura MVVM (Model-View-ViewModel) e com integração total ao Firebase.
+Ele busca otimizar o processo de <b>reserva, monitoramento e administração de vagas de estacionamento,</b> beneficiando tanto motoristas quanto os administradores de estacionamentos.
 </p>
 
 <p>Este repositório inclui o app completo para motoristas reservarem vagas. Caso queira acessar a versão <br>para gestor de estacionamento com dashboards e controle de vagas, acesse esse repositório: https://github.com/Pereira-Sah/ValletWeb</p>
