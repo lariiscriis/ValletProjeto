@@ -10,7 +10,7 @@
         <item name="colorOnSecondary">@color/branco</item>
 
         <!-- Barra do celular em verde escuro -->
-        <item name="android:statusBarColor">@color/verdeescuro</item>
+        <item name="android:statusBarColor">@color/verdeclaro</item>
 
         <!-- Cor de fundo usando branco da paleta -->
         <item name="android:windowBackground">@color/branco</item>

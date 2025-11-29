@@ -65,7 +65,7 @@ class FavoriteParkingAdapter(
                 .whereEqualTo("estacionamentoId", estacionamento.id)
                 .whereEqualTo("disponivel", true)
                 .addSnapshotListener { snapshot, e ->
-                    binding.txvVagasDisponiveis.text = "Vagas disponíveis: ${snapshot?.size() ?: "N/A"}"
+                    binding.tvTavInfo.text = "Vagas disponíveis: ${snapshot?.size() ?: "N/A"}"
                 }
             listeners[estacionamento.id] = listener
         }
