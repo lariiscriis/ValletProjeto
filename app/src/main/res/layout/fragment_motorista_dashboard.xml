@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:background="#FAFAFA"
     android:fillViewport="true"
+    android:layout_marginTop="10dp"
     android:padding="8dp">
 
     <LinearLayout

@@ -160,9 +160,18 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
             val reservaAtivaGlobal = buscarQualquerReservaAtiva()
 
             if (reservaAtivaGlobal != null && reservaAtivaGlobal.vagaId != vagaId) {
-                _uiState.value = ReservaUIState.Error("Você já tem uma reserva ativa na vaga ${reservaAtivaGlobal.vagaId}. Finalize-a antes de reservar outra.")
+                // 🔥 BUSCAR O NÚMERO DA VAGA ATIVA PARA MOSTRAR NO ERRO
+                try {
+                    val vagaAtivaDoc = db.collection("vaga").document(reservaAtivaGlobal.vagaId).get().await()
+                    val numeroVagaAtiva = vagaAtivaDoc.getString("numero") ?: reservaAtivaGlobal.vagaId
+
+                    _uiState.value = ReservaUIState.Error("Você já tem uma reserva ativa na vaga $numeroVagaAtiva. Finalize-a antes de reservar outra.")
+                } catch (e: Exception) {
+                    _uiState.value = ReservaUIState.Error("Você já tem uma reserva ativa em outra vaga. Finalize-a antes de reservar outra.")
+                }
                 return@launch
             }
+
 
             try {
                 val vagaDoc = db.collection("vaga").document(vagaId).get().await()
@@ -363,16 +372,32 @@ class ReservaViewModel(application: Application) : AndroidViewModel(application)
             }
         }
     }
-
     private fun enviarNotificacaoReservaCriada(context: Context, vagaId: String, estacionamentoNome: String) {
-        val intent = Intent(context, ReservaCriadaReceiver::class.java).apply {
-            putExtra("vagaId", vagaId)
-            putExtra("estacionamentoNome", estacionamentoNome)
-        }
-        context.sendBroadcast(intent)
-        Log.d("Notificacoes", "Notificação de reserva criada enviada para vaga: $vagaId")
-    }
+        viewModelScope.launch {
+            try {
+                // 🔥 BUSCAR O NÚMERO DA VAGA
+                val vagaDoc = db.collection("vaga").document(vagaId).get().await()
+                val numeroVaga = vagaDoc.getString("numero") ?: vagaId
 
+                val intent = Intent(context, ReservaCriadaReceiver::class.java).apply {
+                    putExtra("vagaId", vagaId)
+                    putExtra("numeroVaga", numeroVaga) // 🔥 ENVIAR O NÚMERO
+                    putExtra("estacionamentoNome", estacionamentoNome)
+                }
+                context.sendBroadcast(intent)
+                Log.d("Notificacoes", "Notificação de reserva criada enviada para vaga: $numeroVaga")
+            } catch (e: Exception) {
+                Log.e("Notificacoes", "Erro ao buscar número da vaga: ${e.message}")
+                // Fallback com ID
+                val intent = Intent(context, ReservaCriadaReceiver::class.java).apply {
+                    putExtra("vagaId", vagaId)
+                    putExtra("numeroVaga", vagaId)
+                    putExtra("estacionamentoNome", estacionamentoNome)
+                }
+                context.sendBroadcast(intent)
+            }
+        }
+    }
     // 🔥 ATUALIZADO: Renovar reserva com cancelamento de notificações antigas
     fun renovarReserva(reserva: Reserva) {
         viewModelScope.launch {

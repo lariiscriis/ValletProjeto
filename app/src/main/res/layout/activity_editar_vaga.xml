@@ -3,12 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_marginTop="24dp"
     android:padding="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="16dp">
 
         <!-- Número -->
         <com.google.android.material.textfield.TextInputLayout
@@ -22,7 +24,7 @@
                 android:id="@+id/edtNumero"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="text"/>
+                android:inputType="text" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Localização -->
@@ -37,7 +39,7 @@
                 android:id="@+id/edtLocalizacao"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textCapWords"/>
+                android:inputType="textCapWords" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Preço -->
@@ -52,7 +54,7 @@
                 android:id="@+id/edtPreco"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="numberDecimal"/>
+                android:inputType="numberDecimal" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Piso -->
@@ -67,36 +69,36 @@
                 android:id="@+id/edtPiso"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="text"/>
+                android:inputType="text" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Tipo de veículo -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Tipo de veículo"
-            android:layout_marginBottom="4dp"/>
+            android:layout_marginBottom="4dp"
+            android:text="Tipo de veículo" />
 
         <RadioGroup
             android:id="@+id/radioTipoVeiculo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="16dp"
+            android:orientation="horizontal">
 
             <RadioButton
                 android:id="@+id/radioCarro"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Carro"/>
+                android:text="Carro" />
 
             <RadioButton
                 android:id="@+id/radioMoto"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Moto"/>
+                android:text="Moto" />
         </RadioGroup>
 
         <!-- Preferencial -->
@@ -104,16 +106,16 @@
             android:id="@+id/switchPreferencial"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Vaga preferencial"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="16dp"
+            android:text="Vaga preferencial" />
 
         <!-- Disponibilidade -->
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/switchDisponivel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Vaga disponível"
-            android:layout_marginBottom="24dp"/>
+            android:layout_marginBottom="24dp"
+            android:text="Vaga disponível" />
 
         <!-- Botão Salvar -->
         <com.google.android.material.button.MaterialButton

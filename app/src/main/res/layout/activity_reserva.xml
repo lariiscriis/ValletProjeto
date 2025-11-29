@@ -4,7 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    android:layout_marginTop="24dp"
+    android:layout_marginBottom="24dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -17,10 +19,12 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+
+            app:cardBackgroundColor="@color/branco"
             app:cardCornerRadius="16dp"
-            app:strokeWidth="1dp"
-            app:strokeColor="#E0E0E0"
-            android:layout_marginBottom="24dp">
+            app:strokeColor="@color/cinza"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -32,9 +36,9 @@
                     android:id="@+id/tv_vaga_numero"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textStyle="bold"
-                    android:textSize="20sp"
                     android:textColor="@color/verdeescuro"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
                     tools:text="Vaga A-01" />
 
                 <TextView
@@ -47,9 +51,9 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="?android:attr/listDivider"
                     android:layout_marginTop="12dp"
-                    android:layout_marginBottom="12dp"/>
+                    android:layout_marginBottom="12dp"
+                    android:background="?android:attr/listDivider" />
 
                 <TextView
                     android:id="@+id/tv_veiculo_info"
@@ -118,7 +122,14 @@
                     android:stepSize="1.0"
                     android:value="1.0"
                     android:valueFrom="1.0"
-                    android:valueTo="4.0" />
+                    android:valueTo="4.0"
+                    app:haloColor="@color/verdeclaro"
+                    app:thumbColor="@color/verdeescuro"
+                    app:thumbStrokeColor="@color/preto"
+                    app:tickColor="@color/cinza"
+                    app:tickColorActive="@color/verdeescuro"
+                    app:trackColorActive="@color/verdeclaro"
+                    app:trackColorInactive="@color/cinza" />
             </LinearLayout>
 
             <!-- Grupo do Timer (visível DURANTE a reserva) -->
@@ -154,18 +165,18 @@
         </FrameLayout>
 
         <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1"/>
+            android:layout_width="100dp"
+            android:layout_height="100dp"/>
 
         <!-- Botões de Ação (permanecem os mesmos) -->
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_verificar_rota"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
             android:text="Verificar Rota"
-            app:backgroundTint="@color/verdeclaro"
-            android:layout_marginTop="24dp"/>
+            app:backgroundTint="@color/verdeclaro" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_reservar"
@@ -173,7 +184,7 @@
             android:layout_height="wrap_content"
             android:text="Confirmar Reserva"
             app:backgroundTint="@color/verdeescuro"
-            android:layout_marginTop="24dp"/>
+            android:layout_marginTop="20dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_renovar"

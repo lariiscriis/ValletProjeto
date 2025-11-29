@@ -17,8 +17,8 @@ class ReservaCriadaReceiver : BroadcastReceiver() {
         NotificationUtils.createNotificationChannel(context)
 
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
         val vagaId = intent.getStringExtra("vagaId")
+        val numeroVaga = intent.getStringExtra("numeroVaga") ?: vagaId
         val estacionamentoNome = intent.getStringExtra("estacionamentoNome")
 
         if (vagaId == null || estacionamentoNome == null) {
@@ -43,12 +43,12 @@ class ReservaCriadaReceiver : BroadcastReceiver() {
         val notification = NotificationCompat.Builder(context, NotificationConstants.RESERVA_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_parking)
             .setContentTitle("Reserva Confirmada! ✅")
-            .setContentText("Vaga $vagaId no $estacionamentoNome reservada com sucesso!")
+            .setContentText("Vaga $numeroVaga no $estacionamentoNome reservada com sucesso!")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .setStyle(NotificationCompat.BigTextStyle()
-                .bigText("Sua reserva na vaga $vagaId do estacionamento $estacionamentoNome foi iniciada com sucesso. Você receberá avisos antes do término."))
+                .bigText("Sua reserva na vaga $numeroVaga do estacionamento $estacionamentoNome foi iniciada com sucesso. Você receberá avisos antes do término."))
             .build()
 
         notificationManager.notify(notificationId, notification)

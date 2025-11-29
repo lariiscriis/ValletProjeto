@@ -22,6 +22,7 @@ class ReservaAvisoReceiver : BroadcastReceiver() {
 
         val vagaId = intent.getStringExtra("vagaId")
         val estacionamentoId = intent.getStringExtra("estacionamentoId")
+        val numeroVaga = intent.getStringExtra("numeroVaga") ?: vagaId
 
         if (vagaId == null) {
             Log.e("ReservaAvisoReceiver", "vagaId é nulo")
@@ -45,13 +46,13 @@ class ReservaAvisoReceiver : BroadcastReceiver() {
         val notification = NotificationCompat.Builder(context, NotificationConstants.RESERVA_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_parking)
             .setContentTitle("Sua reserva está acabando!")
-            .setContentText("Faltam 10 minutos para o fim da sua reserva na vaga $vagaId.")
+            .setContentText("Faltam 10 minutos para o fim da sua reserva na vaga $numeroVaga.")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .build()
 
         notificationManager.notify(vagaId.hashCode() + 1, notification)
-        Log.d("ReservaAvisoReceiver", "Notificação de aviso exibida para vaga: $vagaId")
+        Log.d("ReservaAvisoReceiver", "Notificação de aviso exibida para vaga: $numeroVaga")
     }
 }
