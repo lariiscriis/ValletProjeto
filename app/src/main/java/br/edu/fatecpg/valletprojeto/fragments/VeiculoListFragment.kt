@@ -1,6 +1,7 @@
 package br.edu.fatecpg.valletprojeto.fragments
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -9,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DiffUtil
@@ -103,8 +105,10 @@ class VeiculoListFragment : Fragment() {
                     putExtra("placa", veiculo.placa)
                     putExtra("marca", veiculo.marca)
                     putExtra("modelo", veiculo.modelo)
+                    putExtra("apelido", veiculo.apelido)
                     putExtra("ano", veiculo.ano)
                     putExtra("km", veiculo.km)
+                    putExtra("tipo", veiculo.tipo)
                 }
                 editarVeiculoLauncher.launch(intent)
             }
@@ -131,9 +135,22 @@ class VeiculosAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(veiculo: Veiculo) {
-            binding.txvApelidoVeiculo.text = veiculo.apelido
-            binding.txvDetalhesVeiculo.text = "${veiculo.marca} ${veiculo.modelo} - ${veiculo.ano}"
-            binding.txvPlacaVeiculo.text = veiculo.placa
+            if (veiculo.apelido.isNullOrEmpty()) {
+                binding.txvApelidoVeiculo.visibility = View.GONE
+                binding.txvDetalhesVeiculo.text = "${veiculo.marca} ${veiculo.modelo} - ${veiculo.ano}"
+                binding.txvDetalhesVeiculo.setTextColor(ContextCompat.getColor(itemView.context, R.color.verdeescuro))
+                binding.txvDetalhesVeiculo.textSize = 18f
+                binding.txvPlacaVeiculo.text = veiculo.placa
+                binding.txvPlacaVeiculo.textSize = 18f
+            } else {
+                binding.txvApelidoVeiculo.visibility = View.VISIBLE
+                binding.txvApelidoVeiculo.text = veiculo.apelido
+                binding.txvDetalhesVeiculo.text = "${veiculo.marca} ${veiculo.modelo} - ${veiculo.ano}"
+                binding.txvDetalhesVeiculo.setTextColor(Color.parseColor("#444444"))
+                binding.txvDetalhesVeiculo.textSize = 16f
+                binding.txvPlacaVeiculo.text = veiculo.placa
+                binding.txvPlacaVeiculo.textSize = 16f
+            }
 
             binding.ivVehicleIcon.setImageResource(
                 if (veiculo.tipo.equals("Moto", ignoreCase = true)) {
