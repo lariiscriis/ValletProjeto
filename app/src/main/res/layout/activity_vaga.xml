@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:layout_marginTop="30dp">
+    android:layout_marginTop="32dp">
 
     <com.google.android.material.chip.ChipGroup
         android:id="@+id/chip_group_tipo_vaga"
@@ -59,7 +59,10 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="662dp" />
+        android:layout_width="wrap_content"
+        android:layout_height="662dp"
+        android:layout_gravity="center"
+        android:layout_margin="12dp"
+        android:foregroundGravity="center" />
 
 </LinearLayout>

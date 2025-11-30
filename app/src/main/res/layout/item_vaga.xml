@@ -1,9 +1,13 @@
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="200dp"
-    android:layout_margin="8dp"
+    android:layout_width="160dp"
+    android:layout_height="160dp"
+    android:layout_centerInParent="false"
+    android:layout_centerHorizontal="false"
+    android:layout_centerVertical="false"
+    android:layout_gravity="center_horizontal"
+    android:layout_margin="10dp"
     app:cardBackgroundColor="@android:color/white"
     app:cardCornerRadius="12dp"
     app:cardElevation="6dp"
@@ -21,7 +25,7 @@
             android:id="@+id/tvTitulo"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="10dp"
             android:background="@drawable/circle_spot_bg"
             android:gravity="center"
             android:textColor="#046C4E"
@@ -48,7 +52,8 @@
             android:maxWidth="140dp"
             android:singleLine="true"
             android:textColor="#666666"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/tv_preco"
@@ -68,7 +73,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:gravity="center"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            tools:visibility="gone">
 
             <Button
                 android:id="@+id/btn_edit"

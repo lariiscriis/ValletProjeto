@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import br.edu.fatecpg.valletprojeto.adapter.VagasAdapter
@@ -173,7 +174,7 @@ class VagaActivity : AppCompatActivity() {
                 startActivity(intent)
             }
         )
-        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+        binding.recyclerView.layoutManager = GridLayoutManager(this,2)
         binding.recyclerView.adapter = vagasAdapter
     }
 
