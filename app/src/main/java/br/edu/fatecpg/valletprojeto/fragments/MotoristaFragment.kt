@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import br.edu.fatecpg.valletprojeto.ReservaActivity
 import br.edu.fatecpg.valletprojeto.VagaActivity
@@ -51,7 +52,7 @@ class MotoristaFragment : Fragment() {
 
         mostrarLoadingGeral()
 
-        binding.rvReservationHistory.layoutManager = LinearLayoutManager(requireContext())
+        binding.rvReservationHistory.layoutManager = GridLayoutManager(requireContext(),2)
 
         binding.btnViewReservation.setOnClickListener {
             if (!isAdded || context == null) return@setOnClickListener
