@@ -101,6 +101,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/form_background"
+        app:itemActiveIndicatorStyle="@style/CustomBottomNavigationViewIndicator"
         app:itemIconTint="@drawable/nav_item_color_state"
         app:itemRippleColor="@color/cinza"
         app:itemTextColor="@drawable/nav_item_color_state"

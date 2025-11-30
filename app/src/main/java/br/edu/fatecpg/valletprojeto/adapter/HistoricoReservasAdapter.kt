@@ -3,18 +3,18 @@ package br.edu.fatecpg.valletprojeto.adapter
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import br.edu.fatecpg.valletprojeto.databinding.ItemReservaHistoricoRecenteBinding
+import br.edu.fatecpg.valletprojeto.databinding.ItemReservaBinding
 import br.edu.fatecpg.valletprojeto.model.ReservaHistorico
 
 class HistoricoReservasAdapter(
     private val listaReservas: List<ReservaHistorico>
 ) : RecyclerView.Adapter<HistoricoReservasAdapter.ViewHolder>() {
 
-    inner class ViewHolder(val binding: ItemReservaHistoricoRecenteBinding) :
+    inner class ViewHolder(val binding: ItemReservaBinding) :
         RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding = ItemReservaHistoricoRecenteBinding.inflate(
+        val binding = ItemReservaBinding.inflate(
             LayoutInflater.from(parent.context),
             parent,
             false
@@ -24,11 +24,11 @@ class HistoricoReservasAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val reserva = listaReservas[position]
-        holder.binding.tvHistorySpot.text = reserva.vaga
-        holder.binding.tvHistoryDate.text = reserva.data
-        holder.binding.txvEstacionamento.text = reserva.estacionamentoNome
-        holder.binding.tvHistoryTime.text = reserva.horario
-
+        holder.binding.tvVaga.text = reserva.vaga
+        holder.binding.tvEstacionamentoNome.text = reserva.estacionamentoNome
+        val periodo = "Duração: ${reserva.data} - ${reserva.horario}"
+        holder.binding.tvPeriodo.text = periodo
+        holder.binding.tvStatus.text = "Status: Finalizada"
     }
 
     override fun getItemCount() = listaReservas.size

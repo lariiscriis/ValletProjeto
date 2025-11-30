@@ -5,42 +5,60 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
+    app:cardBackgroundColor="@color/branco"
     app:cardCornerRadius="8dp"
     app:cardElevation="4dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#FFFFFF"
-        android:orientation="vertical"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
         android:padding="16dp">
 
         <TextView
-            android:id="@+id/tvEstacionamentoNome"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:id="@+id/tvVaga"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/circle_spot_bg"
+            android:gravity="center"
             android:textColor="@color/verdeescuro"
-            android:textSize="18sp"
+            android:textSize="24sp"
             android:textStyle="bold"
-            tools:text="Estacionamento Nome" />
+            tools:text="A1" />
 
-        <TextView
-            android:id="@+id/tvPeriodo"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textColor="@color/preto"
-            android:textSize="14sp"
-            tools:text="Início: 01/01/2024 10:00 - Fim: 01/01/2024 12:00" />
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tvStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textSize="14sp"
-            android:textStyle="italic"
-            tools:text="Status: Finalizada" />
+            <TextView
+                android:id="@+id/tvEstacionamentoNome"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/verdeescuro"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                tools:text="Estacionamento Nome" />
 
+            <TextView
+                android:id="@+id/tvPeriodo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textColor="@color/preto"
+                android:textSize="14sp"
+                tools:text="Duração: 01/01/2025 - 00:00 até 02:00" />
+
+            <TextView
+                android:id="@+id/tvStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textSize="14sp"
+                android:textStyle="italic"
+                tools:text="Status: Finalizada" />
+        </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

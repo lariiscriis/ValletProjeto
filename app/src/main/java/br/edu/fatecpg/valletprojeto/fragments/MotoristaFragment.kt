@@ -11,12 +11,14 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import br.edu.fatecpg.valletprojeto.DashboardBase
+import br.edu.fatecpg.valletprojeto.R
 import br.edu.fatecpg.valletprojeto.ReservaActivity
-import br.edu.fatecpg.valletprojeto.VagaActivity
 import br.edu.fatecpg.valletprojeto.adapter.HistoricoReservasAdapter
 import br.edu.fatecpg.valletprojeto.databinding.FragmentMotoristaDashboardBinding
 import br.edu.fatecpg.valletprojeto.model.Vaga
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
@@ -75,12 +77,12 @@ class MotoristaFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        binding.rvReservationHistory.layoutManager = GridLayoutManager(requireContext(), 2)
-        binding.rvReservationHistory.setHasFixedSize(true)
+        binding.rvHistoricoRecente.layoutManager = LinearLayoutManager(requireContext())
+        binding.rvHistoricoRecente.setHasFixedSize(true)
     }
 
     private fun setupClickListeners() {
-        binding.btnViewReservation.setOnClickListener {
+        binding.btnVerReserva.setOnClickListener {
             if (!isAdded || context == null) return@setOnClickListener
 
             if (vagaIdAtiva != null && estacionamentoIdAtivo != null) {
@@ -93,8 +95,8 @@ class MotoristaFragment : Fragment() {
             }
         }
 
-        binding.txvNoReservation.setOnClickListener {
-            abrirPaginaDeVagas()
+        binding.cardNoReservation.setOnClickListener {
+            abrirPaginaDeEstacionamentos()
         }
     }
 
@@ -273,22 +275,22 @@ class MotoristaFragment : Fragment() {
 
     @SuppressLint("SetTextI18n")
     private suspend fun atualizarUI(resultado: ProcessamentoResultado) {
-        binding.txvTotalReservations.text = resultado.totalReservas.toString()
+        binding.txvTotalReservas.text = resultado.totalReservas.toString()
         val horasTotais = TimeUnit.MILLISECONDS.toHours(resultado.totalHoras)
-        binding.txvTotalHours.text = "${horasTotais}h"
+        binding.txvTempoTotal.text = "${horasTotais}h"
 
         adapter = HistoricoReservasAdapter(resultado.historico)
-        binding.rvReservationHistory.adapter = adapter
+        binding.rvHistoricoRecente.adapter = adapter
 
         if (resultado.temReservaAtiva && resultado.reservaAtiva != null) {
             binding.cardReservaAtual.visibility = View.VISIBLE
-            binding.txvNoReservation.visibility = View.GONE
+            binding.cardNoReservation.visibility = View.GONE
 
             val reserva = resultado.reservaAtiva
-            binding.txvSpotLetter.text = reserva.vaga.numero
-            binding.txvLocation.text = "Local: ${reserva.vaga.localizacao}"
-            binding.txvTimeRange.text = formatarHorario(reserva.inicio, reserva.fim)
-            binding.txvTimeRemaining.text = "Reserva ativa"
+            binding.txvNumeroVaga.text = reserva.vaga.numero
+            binding.txvLocalizacao.text = "Local: ${reserva.vaga.localizacao}"
+            binding.txvDuracao.text = formatarHorario(reserva.inicio, reserva.fim)
+            binding.txvTempoRestante.text = "Reserva ativa"
             binding.txvEstacionamento.text = reserva.estacionamentoNome
 
             vagaIdAtiva = encontrarVagaIdPorNumero(reserva.vaga.numero, resultado.reservaAtiva.estacionamentoId)
@@ -297,7 +299,7 @@ class MotoristaFragment : Fragment() {
             Log.d("MotoristaFragment", "Reserva ativa - VagaId: $vagaIdAtiva, EstacionamentoId: $estacionamentoIdAtivo")
         } else {
             binding.cardReservaAtual.visibility = View.GONE
-            binding.txvNoReservation.visibility = View.VISIBLE
+            binding.cardNoReservation.visibility = View.VISIBLE
             vagaIdAtiva = null
             estacionamentoIdAtivo = null
         }
@@ -324,11 +326,14 @@ class MotoristaFragment : Fragment() {
         }
     }
 
-    private fun abrirPaginaDeVagas() {
-        if (!isAdded || context == null) return
+    private fun abrirPaginaDeEstacionamentos() {
+        if (!isAdded || activity == null) return
 
-        val intent = Intent(requireContext(), VagaActivity::class.java)
-        startActivity(intent)
+        val dashboardActivity = activity as? DashboardBase
+        dashboardActivity?.let {
+            val bottomNav = it.findViewById<BottomNavigationView>(R.id.bottom_navigation)
+            bottomNav.selectedItemId = R.id.nav_spots
+        }
     }
 
     private fun formatarHorario(inicio: Date?, fim: Date?): String {
