@@ -126,7 +126,7 @@
                     app:haloColor="@color/verdeclaro"
                     app:thumbColor="@color/verdeescuro"
                     app:thumbStrokeColor="@color/preto"
-                    app:tickColor="@color/cinza"
+                    app:tickColor="@color/verdeescuro"
                     app:tickColorActive="@color/verdeescuro"
                     app:trackColorActive="@color/verdeclaro"
                     app:trackColorInactive="@color/cinza" />
@@ -176,6 +176,9 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:text="Verificar Rota"
+            app:icon="@drawable/ic_parking"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
             app:backgroundTint="@color/verdeclaro" />
 
         <com.google.android.material.button.MaterialButton

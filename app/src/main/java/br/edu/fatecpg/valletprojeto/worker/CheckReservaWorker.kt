@@ -131,9 +131,8 @@ class CheckReservaWorker(
 
     private suspend fun enviarNotificacaoExpirada(vagaId: String) {
         try {
-            // 🔥 BUSCAR O NÚMERO DA VAGA NO FIRESTORE
             val vagaDoc = db.collection("vaga").document(vagaId).get().await()
-            val numeroVaga = vagaDoc.getString("numero") ?: vagaId // Fallback para ID se não tiver número
+            val numeroVaga = vagaDoc.getString("numero") ?: vagaId
 
             NotificationUtils.createNotificationChannel(context)
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

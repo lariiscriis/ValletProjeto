@@ -37,19 +37,18 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
                     android:gravity="center_horizontal"
-                    android:layout_marginBottom="24dp">
+                    android:orientation="vertical">
 
                     <!-- Profile Picture with Shadow -->
                     <com.google.android.material.card.MaterialCardView
                         android:layout_width="120dp"
                         android:layout_height="120dp"
+                        android:layout_marginBottom="16dp"
                         app:cardCornerRadius="60dp"
                         app:cardElevation="8dp"
                         app:strokeColor="#E0E0E0"
-                        app:strokeWidth="1dp"
-                        android:layout_marginBottom="16dp">
+                        app:strokeWidth="1dp">
 
                         <ImageView
                             android:id="@+id/imgFotoPerfil"
@@ -77,35 +76,35 @@
                         android:id="@+id/txtNome"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
                         android:text="João Silva"
-                        android:textSize="20sp"
                         android:textColor="@android:color/black"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="8dp"/>
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
 
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/txtEmail"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="joao@gmail.com"
-                        android:textSize="16sp"
-                        android:textColor="#757575"
+                        android:layout_marginBottom="8dp"
                         android:drawableStart="@drawable/email"
                         android:drawablePadding="8dp"
-                        android:layout_marginBottom="8dp"
-                        android:drawableTint="@color/verdeclaro"/>
+                        android:drawableTint="@color/verdeclaro"
+                        android:text="joao@gmail.com"
+                        android:textColor="#757575"
+                        android:textSize="16sp" />
 
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/txtCnh"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="CNH: 1234567890"
-                        android:textSize="16sp"
-                        android:textColor="#757575"
+                        android:layout_marginBottom="8dp"
                         android:drawableStart="@drawable/cnh"
                         android:drawablePadding="8dp"
-                        android:layout_marginBottom="8dp"
-                        android:drawableTint="@color/verdeclaro"/>
+                        android:drawableTint="@color/verdeclaro"
+                        android:text="CNH: 1234567890"
+                        android:textColor="#757575"
+                        android:textSize="16sp" />
 
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/txtTelefone"
@@ -127,7 +126,7 @@
                         android:textColor="@android:color/white"
                         app:chipBackgroundColor="@color/verdeescuro"
                         app:chipCornerRadius="16dp"
-                        app:chipStrokeWidth="0dp"/>
+                        app:chipStrokeWidth="0dp" />
                 </LinearLayout>
 
                 <!-- Divider -->
@@ -162,6 +161,7 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:background="@color/branco"
                         android:orientation="vertical"
                         android:padding="16dp">
 
@@ -177,7 +177,7 @@
                         <Button
                             android:id="@+id/btnVerHistorico"
                             style="@style/Widget.MaterialComponents.Button.TextButton"
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_gravity="end"
                             android:layout_marginTop="8dp"
@@ -217,8 +217,8 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
                             android:gravity="center"
+                            android:orientation="vertical"
                             android:padding="16dp">
 
                             <TextView
@@ -234,8 +234,8 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Reservas"
-                                android:textSize="14sp"
-                                android:textColor="#757575"/>
+                                android:textColor="#757575"
+                                android:textSize="14sp" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
@@ -251,8 +251,8 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
                             android:gravity="center"
+                            android:orientation="vertical"
                             android:padding="16dp">
 
                             <TextView
@@ -268,8 +268,8 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Horas totais"
-                                android:textSize="14sp"
-                                android:textColor="#757575"/>
+                                android:textColor="#757575"
+                                android:textSize="14sp" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
@@ -290,8 +290,8 @@
                     android:text=" Shopping X\n• Centro Y"
                     android:textSize="16sp"
                     android:textColor="@color/preto"
-                    android:lineSpacingExtra="6dp"
-                    android:layout_marginBottom="24dp"/>
+                    android:layout_marginBottom="10dp"
+                    android:lineSpacingExtra="6dp"/>
 
                 <!-- Edit Profile Button -->
                 <com.google.android.material.button.MaterialButton
