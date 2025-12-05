@@ -9,6 +9,8 @@ Ele busca otimizar o processo de <b>reserva, monitoramento e administração de 
 </p>
 
 <p>Este repositório inclui o app completo para motoristas reservarem vagas. Caso queira acessar a versão <br>para gestor de estacionamento com dashboards e controle de vagas, acesse esse repositório: https://github.com/Pereira-Sah/ValletWeb</p>
+
+<p> Também possui o sistema de leitura de placas com uso de webcam, acesse esse repositório: https://github.com/Almile/ValletIOT</p>
 <br><br>
 <p align="center">
   <img src="https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" />
