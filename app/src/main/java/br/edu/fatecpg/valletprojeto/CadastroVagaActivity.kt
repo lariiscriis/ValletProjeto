@@ -37,7 +37,6 @@ class CadastroVagaActivity : AppCompatActivity() {
         }
     }
 
-
     private fun cadastrarNovaVaga() {
         val estacionamentoId = intent.getStringExtra("estacionamentoId") ?: ""
         val piso = binding.edtPiso.text.toString().trim()
@@ -60,7 +59,6 @@ class CadastroVagaActivity : AppCompatActivity() {
         val vagasGeradas = mutableListOf<Map<String, Any>>()
         val letras = ('A'..'Z').toList()
 
-        // 🔹 Passo 1: buscar vagas já existentes no piso
         db.collection("vaga")
             .whereEqualTo("estacionamentoId", estacionamentoId)
             .whereEqualTo("localizacao", "Piso $piso")
@@ -92,7 +90,7 @@ class CadastroVagaActivity : AppCompatActivity() {
                                 "numero" to numeroVaga,
                                 "localizacao" to "Piso $piso",
                                 "preco" to precoHora,
-                                "tipo" to tipo,         // carro ou moto
+                                "tipo" to tipo,
                                 "preferencial" to preferencial,
                                 "disponivel" to true
                             )
@@ -104,7 +102,6 @@ class CadastroVagaActivity : AppCompatActivity() {
                 gerarVagas(qtdMoto, "moto", false)
                 gerarVagas(qtdCarro, "carro", false)
 
-                // 🔹 Passo 3: salvar no Firestore em batch
                 val batch = db.batch()
                 vagasGeradas.forEach { vaga ->
                     val docRef = db.collection("vaga").document()

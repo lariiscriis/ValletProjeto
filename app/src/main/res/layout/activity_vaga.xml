@@ -1,9 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:layout_marginTop="32dp">
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chip_group_tipo_vaga"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        app:singleSelection="true">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_todos"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Todos" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_carro"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Carro" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_moto"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Moto" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_preferencial"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Preferencial" />
+
+    </com.google.android.material.chip.ChipGroup>
 
     <Button
         android:id="@+id/fabAdd"
@@ -18,7 +59,10 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="662dp" />
+        android:layout_width="wrap_content"
+        android:layout_height="662dp"
+        android:layout_gravity="center"
+        android:layout_margin="12dp"
+        android:foregroundGravity="center" />
 
 </LinearLayout>

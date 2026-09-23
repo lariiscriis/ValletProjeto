@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import br.edu.fatecpg.valletprojeto.CadastroVagaActivity
 import br.edu.fatecpg.valletprojeto.EditarVagaActivity
+import br.edu.fatecpg.valletprojeto.ReservaActivity // 🔥 ADICIONE ESTE IMPORT
 import br.edu.fatecpg.valletprojeto.adapter.VagasAdapter
 import br.edu.fatecpg.valletprojeto.databinding.FragmentVagaBinding
 import br.edu.fatecpg.valletprojeto.model.Vaga
@@ -24,6 +25,7 @@ class VagaFragment : Fragment() {
     private lateinit var viewModel: VagaViewModel
     private var _binding: FragmentVagaBinding? = null
     private val binding get() = _binding!!
+    private lateinit var vagasAdapter: VagasAdapter
     private var isAdmin: Boolean = false
     private var estacionamentoId: String? = null
 
@@ -31,70 +33,121 @@ class VagaFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentVagaBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         viewModel = ViewModelProvider(this)[VagaViewModel::class.java]
+        verificarUsuarioAdmin()
+    }
 
+    private fun verificarUsuarioAdmin() {
         val userId = FirebaseAuth.getInstance().currentUser?.uid
-        val db = FirebaseFirestore.getInstance()
-
-        if (userId != null) {
-            db.collection("usuario").document(userId).get()
-                .addOnSuccessListener { document ->
-                    val tipo = document.getString("tipo_user")
-                    isAdmin = tipo == "admin"
-
-                    if (isAdmin) {
-                        val emailAdmin = FirebaseAuth.getInstance().currentUser?.email
-                        if (emailAdmin != null) {
-                            db.collection("estacionamento")
-                                .whereEqualTo("adminEmail", emailAdmin)
-                                .get()
-                                .addOnSuccessListener { querySnapshot ->
-                                    if (!querySnapshot.isEmpty) {
-                                        estacionamentoId = querySnapshot.documents[0].id
-                                        setupUI()
-                                    } else {
-                                        Toast.makeText(requireContext(), "Estacionamento não encontrado para este admin", Toast.LENGTH_SHORT).show()
-                                        setupUI()
-                                    }
-                                }
-                                .addOnFailureListener {
-                                    Toast.makeText(requireContext(), "Erro ao buscar estacionamento do admin", Toast.LENGTH_SHORT).show()
-                                    setupUI()
-                                }
-                        } else {
-                            Toast.makeText(requireContext(), "E-mail do admin não encontrado", Toast.LENGTH_SHORT).show()
-                            setupUI()
-                        }
-                    } else {
-                        // Lógica para não-admins, se necessário
-                        setupUI()
-                    }
-                }
-                .addOnFailureListener {
-                    Toast.makeText(requireContext(), "Erro ao verificar tipo de usuário", Toast.LENGTH_SHORT).show()
-                    setupUI()
-                }
-        } else {
-            Toast.makeText(requireContext(), "Usuário não logado", Toast.LENGTH_SHORT).show()
-            setupUI()
+        if (userId == null) {
+            binding.fabAdd.visibility = View.GONE
+            return
         }
+
+        val db = FirebaseFirestore.getInstance()
+        db.collection("usuario").document(userId).get()
+            .addOnSuccessListener { document ->
+                if (activity == null || !isAdded) return@addOnSuccessListener
+                isAdmin = document.getString("tipo_user") == "admin"
+                if (isAdmin) {
+                    buscarEstacionamentoDoAdmin()
+                } else {
+                    binding.fabAdd.visibility = View.GONE
+                }
+            }
+            .addOnFailureListener {
+                if (activity == null || !isAdded) return@addOnFailureListener
+                Toast.makeText(requireContext(), "Erro ao verificar tipo de usuário.", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun buscarEstacionamentoDoAdmin() {
+        val emailAdmin = FirebaseAuth.getInstance().currentUser?.email ?: return
+        FirebaseFirestore.getInstance().collection("estacionamento")
+            .whereEqualTo("adminEmail", emailAdmin)
+            .limit(1)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (activity == null || !isAdded) return@addOnSuccessListener
+
+                if (!querySnapshot.isEmpty) {
+                    estacionamentoId = querySnapshot.documents[0].id
+                    setupUI()
+                } else {
+                    Toast.makeText(requireContext(), "Nenhum estacionamento encontrado para este admin.", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .addOnFailureListener {
+                if (activity == null || !isAdded) return@addOnFailureListener
+                Toast.makeText(requireContext(), "Erro ao buscar estacionamento do admin.", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun setupUI() {
-        setupListeners()
         setupRecyclerView()
         setupObservers()
+        setupListeners()
 
         estacionamentoId?.let {
-            viewModel.fetchVagasPorEstacionamento(it)
+            viewModel.fetchVagasComFiltro(it, "Todos")
+        }
+    }
+
+    private fun setupRecyclerView() {
+        vagasAdapter = VagasAdapter(
+            isAdmin = this.isAdmin,
+            onEditClick = { vaga ->
+                startActivity(Intent(requireContext(), EditarVagaActivity::class.java).apply {
+                    putExtra("vagaId", vaga.id)
+                })
+            },
+            onDeleteClick = { vaga ->
+                showDeleteDialog(vaga)
+            },
+            // 🔥 CORREÇÃO: Adicione o parâmetro onVagaClick
+            onVagaClick = { vaga ->
+                if (isAdmin) {
+                    // Admin não deve fazer reservas, apenas gerenciar
+                    return@VagasAdapter
+                }
+
+                // Verifica se a vaga está disponível
+                if (!vaga.disponivel) {
+                    Toast.makeText(requireContext(), "Esta vaga não está disponível no momento.", Toast.LENGTH_SHORT).show()
+                    return@VagasAdapter
+                }
+
+                // Abre a tela de reserva para usuários normais
+                val intent = Intent(requireContext(), ReservaActivity::class.java).apply {
+                    putExtra("vagaId", vaga.id)
+                    putExtra("estacionamentoId", estacionamentoId)
+                    putExtra("numero", vaga.numero)
+                    putExtra("preco", vaga.preco)
+                    putExtra("tipo", vaga.tipo)
+                }
+                startActivity(intent)
+            }
+        )
+        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerView.adapter = vagasAdapter
+    }
+
+    private fun setupObservers() {
+        viewModel.vagas.observe(viewLifecycleOwner) { vagas ->
+            vagasAdapter.submitList(vagas)
+        }
+
+        viewModel.errorMessage.observe(viewLifecycleOwner) { message ->
+            message?.let {
+                Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -107,38 +160,11 @@ class VagaFragment : Fragment() {
                     intent.putExtra("estacionamentoId", it)
                     startActivity(intent)
                 } ?: run {
-                    Toast.makeText(requireContext(), "Estacionamento não encontrado", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "ID do estacionamento não disponível.", Toast.LENGTH_SHORT).show()
                 }
             }
         } else {
             binding.fabAdd.visibility = View.GONE
-        }
-    }
-
-    private fun setupRecyclerView() {
-        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-    }
-
-    private fun setupObservers() {
-        viewModel.vagas.observe(viewLifecycleOwner) { vagas ->
-            binding.recyclerView.adapter = VagasAdapter(
-                vagas,
-                isAdmin = isAdmin,
-                onEditClick = { vaga ->
-                    startActivity(Intent(requireContext(), EditarVagaActivity::class.java).apply {
-                        putExtra("vagaId", vaga.id)
-                    })
-                },
-                onDeleteClick = { vaga ->
-                    showDeleteDialog(vaga)
-                }
-            )
-        }
-
-        viewModel.errorMessage.observe(viewLifecycleOwner) { message ->
-            message?.let {
-                Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
-            }
         }
     }
 

@@ -14,10 +14,11 @@ import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import androidx.lifecycle.lifecycleScope
-import br.edu.fatecpg.valletprojeto.dao.VeiculoDao.auth
+import br.edu.fatecpg.valletprojeto.fragments.OccupationFragment
 import br.edu.fatecpg.valletprojeto.fragments.SpotsFragment
 import br.edu.fatecpg.valletprojeto.fragments.VagaFragment
 import br.edu.fatecpg.valletprojeto.fragments.VeiculoListFragment
+import br.edu.fatecpg.valletprojeto.worker.NotificationUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -25,17 +26,26 @@ import kotlinx.coroutines.tasks.await
 class DashboardBase : AppCompatActivity() {
     private lateinit var binding: ActivityDashboardBaseBinding
     private var isAdmin = true
+    private val auth = FirebaseAuth.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityDashboardBaseBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        NotificationUtils.createNotificationChannel(this)
         verificarTipoUsuario()
         carregarDadosUsuario()
 
         setupProfileClickListeners()
     }
+
+    // Adicione esta opção no menu ou em uma tela de configurações
+    private fun mostrarOpcaoDebugToken() {
+        val intent = Intent(this, GerarTokenActivity::class.java)
+        startActivity(intent)
+    }
+
     private fun setupProfileClickListeners() {
         val tvUserName = findViewById<TextView>(R.id.tv_user_name)
         val ivProfileImage = findViewById<ImageView>(R.id.iv_profile_image)
@@ -52,7 +62,6 @@ class DashboardBase : AppCompatActivity() {
         ivProfileImage.setOnClickListener { clickListener() }
         setupButtonListeners()
     }
-
 
     private fun verificarTipoUsuario() {
         val email = FirebaseAuth.getInstance().currentUser?.email
@@ -126,19 +135,30 @@ class DashboardBase : AppCompatActivity() {
     }
 
     private fun setupNavigation() {
-        binding.bottomNavigation.menu.findItem(R.id.nav_management).isVisible = isAdmin
+        val menu = binding.bottomNavigation.menu
+
+        menu.findItem(R.id.nav_vehicles).isVisible = !isAdmin
+        menu.findItem(R.id.nav_management).isVisible = isAdmin
+
+        val navSpots = menu.findItem(R.id.nav_spots)
+        if (isAdmin) {
+            navSpots.title = "Vagas Ocupadas"
+            navSpots.setIcon(R.drawable.ic_parking)
+        } else {
+            navSpots.title = "Estacionamentos"
+            navSpots.setIcon(R.drawable.ic_parking)
+        }
 
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_spots -> {
-                    replaceFragment(SpotsFragment())
+                    if (isAdmin) replaceFragment(OccupationFragment())
+                    else replaceFragment(SpotsFragment())
                     true
                 }
                 R.id.nav_dashboard -> {
-                    when (isAdmin) {
-                        true -> replaceFragment(AdminFragment())
-                        false -> replaceFragment(MotoristaFragment())
-                    }
+                    if (isAdmin) replaceFragment(AdminFragment())
+                    else replaceFragment(MotoristaFragment())
                     true
                 }
                 R.id.nav_vehicles -> {
@@ -146,12 +166,9 @@ class DashboardBase : AppCompatActivity() {
                     true
                 }
                 R.id.nav_management -> {
-                    if (isAdmin) {
-                        replaceFragment(VagaFragment())
-                    }
+                    if (isAdmin) replaceFragment(VagaFragment())
                     true
                 }
-
                 else -> false
             }
         }

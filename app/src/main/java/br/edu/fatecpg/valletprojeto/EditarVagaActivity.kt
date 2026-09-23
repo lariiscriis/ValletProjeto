@@ -88,7 +88,6 @@ class EditarVagaActivity : AppCompatActivity() {
                 )
 
                 if (vagaId == null) {
-                    // Criar nova vaga
                     db.collection("vaga")
                         .add(vaga)
                         .addOnSuccessListener {
@@ -100,7 +99,6 @@ class EditarVagaActivity : AppCompatActivity() {
                             Toast.makeText(this, "Erro ao criar vaga: ${it.message}", Toast.LENGTH_SHORT).show()
                         }
                 } else {
-                    // Atualizar vaga existente
                     db.collection("vaga").document(vagaId!!)
                         .update(vaga as Map<String, Any>)
                         .addOnSuccessListener {

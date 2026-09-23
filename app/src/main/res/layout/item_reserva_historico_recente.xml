@@ -16,6 +16,14 @@
         android:gravity="center">
 
         <TextView
+            android:id="@+id/txv_estacionamento"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:text="estacionamento" />
+
+
+        <TextView
             android:id="@+id/tv_history_spot"
             android:layout_width="60dp"
             android:layout_height="60dp"
@@ -26,6 +34,7 @@
             android:gravity="center"
             android:background="@drawable/circle_spot_bg"
             android:layout_marginBottom="12dp"/>
+
 
         <TextView
             android:id="@+id/tv_history_date"

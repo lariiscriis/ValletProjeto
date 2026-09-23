@@ -4,21 +4,26 @@ import br.edu.fatecpg.valletprojeto.model.ReservaHistorico
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import br.edu.fatecpg.valletprojeto.DashboardBase
+import br.edu.fatecpg.valletprojeto.R
 import br.edu.fatecpg.valletprojeto.ReservaActivity
-import br.edu.fatecpg.valletprojeto.VagaActivity
 import br.edu.fatecpg.valletprojeto.adapter.HistoricoReservasAdapter
 import br.edu.fatecpg.valletprojeto.databinding.FragmentMotoristaDashboardBinding
 import br.edu.fatecpg.valletprojeto.model.Vaga
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
@@ -33,9 +38,12 @@ class MotoristaFragment : Fragment() {
     private lateinit var adapter: HistoricoReservasAdapter
     private val db = FirebaseFirestore.getInstance()
 
-    // Variáveis para guardar dados da reserva ativa
     private var vagaIdAtiva: String? = null
     private var estacionamentoIdAtivo: String? = null
+    private var buscaReservasJob: Job? = null
+
+    private val estacionamentoCache = mutableMapOf<String, String>()
+    private val vagaCache = mutableMapOf<String, Vaga>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -46,10 +54,37 @@ class MotoristaFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.rvReservationHistory.layoutManager = GridLayoutManager(requireContext(), 1)
 
-        // Clique para abrir a reserva ativa
-        binding.btnViewReservation.setOnClickListener {
+        setupRecyclerView()
+        setupClickListeners()
+        mostrarLoadingGeral()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        buscarReservasOtimizado()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        buscaReservasJob?.cancel()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        buscaReservasJob?.cancel()
+        _binding = null
+    }
+
+    private fun setupRecyclerView() {
+        binding.rvHistoricoRecente.layoutManager = LinearLayoutManager(requireContext())
+        binding.rvHistoricoRecente.setHasFixedSize(true)
+    }
+
+    private fun setupClickListeners() {
+        binding.btnVerReserva.setOnClickListener {
+            if (!isAdded || context == null) return@setOnClickListener
+
             if (vagaIdAtiva != null && estacionamentoIdAtivo != null) {
                 val intent = Intent(requireContext(), ReservaActivity::class.java)
                 intent.putExtra("vagaId", vagaIdAtiva)
@@ -60,92 +95,244 @@ class MotoristaFragment : Fragment() {
             }
         }
 
-        // Clique para abrir a página de vagas
-        binding.txvNoReservation.setOnClickListener {
-            abrirPaginaDeVagas()
+        binding.cardNoReservation.setOnClickListener {
+            abrirPaginaDeEstacionamentos()
         }
-        buscarReservasComCoroutines()
     }
 
-    private fun abrirPaginaDeVagas() {
-        val intent = Intent(requireContext(), VagaActivity::class.java)
-        startActivity(intent)
-        Toast.makeText(requireContext(), "Abrir página de vagas", Toast.LENGTH_SHORT).show()
+    private fun mostrarLoadingGeral() {
+        binding.loadingState.visibility = View.VISIBLE
+        binding.contentState.visibility = View.GONE
     }
 
-    @SuppressLint("SetTextI18n")
-    private fun buscarReservasComCoroutines() {
+    private fun esconderLoadingGeral() {
+        binding.loadingState.visibility = View.GONE
+        binding.contentState.visibility = View.VISIBLE
+    }
+
+    private fun buscarReservasOtimizado() {
         val uidLogado = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
-        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+        buscaReservasJob?.cancel()
+
+        buscaReservasJob = viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
             try {
-                val reservas = db.collection("reserva").whereEqualTo("usuarioId", uidLogado).get().await()
+                if (!isAdded || context == null) return@launch
 
-                var totalHoras = 0L
-                val historico = mutableListOf<ReservaHistorico>()
-                val totalReservas = reservas.size()
+                val reservasSnapshot = db.collection("reserva")
+                    .whereEqualTo("usuarioId", uidLogado)
+                    .get()
+                    .await()
 
-                var temReservaAtiva = false
+                if (!isAdded || context == null) return@launch
 
-                for (doc in reservas) {
-                    val status = doc.getString("status")
-                    val vagaId = doc.getString("vagaId") ?: continue
-                    val estacionamentoId = doc.getString("estacionamentoId") ?: "" // pegar estacionamentoId
-                    val inicio = doc.getTimestamp("inicioReserva")?.toDate()
-                    val fim = doc.getTimestamp("fimReserva")?.toDate()
+                val resultado = processarReservasEmParalelo(reservasSnapshot)
 
-                    if (inicio != null && fim != null) {
-                        totalHoras += (fim.time - inicio.time)
-                    }
+                if (isAdded && context != null) {
+                    esconderLoadingGeral()
+                    atualizarUI(resultado)
+                }
 
-                    val vagaDoc = db.collection("vaga").document(vagaId).get().await()
-                    val vaga = Vaga(
-                        numero = vagaDoc.getString("numero") ?: "-",
-                        localizacao = vagaDoc.getString("localizacao") ?: "-"
+            } catch (e: Exception) {
+                if (isAdded && context != null) {
+                    Log.e("MotoristaFragment", "Erro ao carregar reservas", e)
+                    esconderLoadingGeral()
+                    Toast.makeText(requireContext(), "Erro ao carregar reservas", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private suspend fun processarReservasEmParalelo(reservasSnapshot: com.google.firebase.firestore.QuerySnapshot): ProcessamentoResultado {
+        return viewLifecycleOwner.lifecycleScope.async(Dispatchers.IO) {
+            var totalHoras = 0L
+            val historico = mutableListOf<ReservaHistorico>()
+            var temReservaAtiva = false
+            var reservaAtiva: ReservaAtiva? = null
+
+            val vagaIds = reservasSnapshot.documents.mapNotNull { it.getString("vagaId") }.toSet()
+            val vagasMap = buscarVagasBatch(vagaIds)
+
+            val estacionamentoIds = reservasSnapshot.documents.mapNotNull { it.getString("estacionamentoId") }.toSet()
+            val estacionamentosMap = buscarEstacionamentosBatch(estacionamentoIds)
+
+            for (doc in reservasSnapshot) {
+                val status = doc.getString("status") ?: continue
+                val vagaId = doc.getString("vagaId") ?: continue
+                val estacionamentoId = doc.getString("estacionamentoId") ?: ""
+                val estacionamentoNome = doc.getString("estacionamentoNome") ?: estacionamentosMap[estacionamentoId] ?: "Estacionamento"
+                val inicio = doc.getTimestamp("inicioReserva")?.toDate()
+                val fim = doc.getTimestamp("fimReserva")?.toDate()
+
+                if (status != "ativa" && inicio != null && fim != null) {
+                    totalHoras += (fim.time - inicio.time)
+                }
+
+                val vaga = vagasMap[vagaId] ?: Vaga(numero = "-", localizacao = "-")
+
+                if (status == "ativa") {
+                    temReservaAtiva = true
+                    reservaAtiva = ReservaAtiva(
+                        vaga = vaga,
+                        vagaId = vagaId,
+                        estacionamentoId = estacionamentoId,
+                        estacionamentoNome = estacionamentoNome,
+                        inicio = inicio,
+                        fim = fim
                     )
-
-                    if (status == "ativa") {
-                        temReservaAtiva = true
-                        binding.cardReservaAtual.visibility = View.VISIBLE
-                        binding.txvNoReservation.visibility = View.GONE
-
-                        binding.txvSpotLetter.text = vaga.numero
-                        binding.txvLocation.text = "Local: ${vaga.localizacao}"
-                        binding.txvTimeRange.text = formatarHorario(inicio, fim)
-                        binding.txvTimeRemaining.text = "Reserva ativa"
-
-                        // Guardar os dados para abrir depois
-                        vagaIdAtiva = vagaId
-                        estacionamentoIdAtivo = estacionamentoId
-                    } else {
+                } else {
+                    if (inicio != null) {
                         historico.add(
                             ReservaHistorico(
-                                vaga.numero,
-                                SimpleDateFormat("dd/MM", Locale.getDefault()).format(inicio!!),
-                                formatarHorario(inicio, fim)
+                                vaga = vaga.numero,
+                                data = SimpleDateFormat("dd/MM", Locale.getDefault()).format(inicio),
+                                horario = formatarHorario(inicio, fim),
+                                estacionamentoNome = estacionamentoNome
                             )
                         )
                     }
                 }
-
-                if (!temReservaAtiva) {
-                    binding.cardReservaAtual.visibility = View.GONE
-                    binding.txvNoReservation.visibility = View.VISIBLE
-                    // Limpa os dados da reserva ativa caso não tenha
-                    vagaIdAtiva = null
-                    estacionamentoIdAtivo = null
-                }
-
-                binding.txvTotalReservations.text = totalReservas.toString()
-                val horasTotais = TimeUnit.MILLISECONDS.toHours(totalHoras)
-                binding.txvTotalHours.text = "${horasTotais}h"
-
-                adapter = HistoricoReservasAdapter(historico)
-                binding.rvReservationHistory.adapter = adapter
-
-            } catch (e: Exception) {
-                e.printStackTrace()
             }
+
+            val historicoLimitado = historico.takeLast(10).reversed()
+
+            return@async ProcessamentoResultado(
+                totalHoras = totalHoras,
+                historico = historicoLimitado,
+                temReservaAtiva = temReservaAtiva,
+                totalReservas = reservasSnapshot.size(),
+                reservaAtiva = reservaAtiva
+            )
+        }.await()
+    }
+
+    private suspend fun buscarVagasBatch(vagaIds: Set<String>): Map<String, Vaga> {
+        if (vagaIds.isEmpty()) return emptyMap()
+
+        return try {
+            val vagasMap = mutableMapOf<String, Vaga>()
+
+            val idsParaBuscar = vagaIds.filter { !vagaCache.containsKey(it) }
+
+            if (idsParaBuscar.isNotEmpty()) {
+                val vagasSnapshot = db.collection("vaga")
+                    .whereIn(com.google.firebase.firestore.FieldPath.documentId(), idsParaBuscar)
+                    .get()
+                    .await()
+
+                for (doc in vagasSnapshot) {
+                    val vaga = Vaga(
+                        numero = doc.getString("numero") ?: "-",
+                        localizacao = doc.getString("localizacao") ?: "-"
+                    )
+                    vagasMap[doc.id] = vaga
+                    vagaCache[doc.id] = vaga
+                }
+            }
+
+            vagaIds.forEach { id ->
+                vagaCache[id]?.let { vagasMap[id] = it }
+            }
+
+            vagasMap
+        } catch (e: Exception) {
+            Log.e("MotoristaFragment", "Erro ao buscar vagas em batch", e)
+            emptyMap()
+        }
+    }
+
+    private suspend fun buscarEstacionamentosBatch(estacionamentoIds: Set<String>): Map<String, String> {
+        if (estacionamentoIds.isEmpty()) return emptyMap()
+
+        return try {
+            val estacionamentosMap = mutableMapOf<String, String>()
+
+            val idsParaBuscar = estacionamentoIds.filter { !estacionamentoCache.containsKey(it) }
+
+            if (idsParaBuscar.isNotEmpty()) {
+                val estacionamentosSnapshot = db.collection("estacionamento")
+                    .whereIn(com.google.firebase.firestore.FieldPath.documentId(), idsParaBuscar)
+                    .get()
+                    .await()
+
+                for (doc in estacionamentosSnapshot) {
+                    val nome = doc.getString("nome") ?: "Estacionamento"
+                    estacionamentosMap[doc.id] = nome
+                    estacionamentoCache[doc.id] = nome
+                }
+            }
+
+            estacionamentoIds.forEach { id ->
+                estacionamentoCache[id]?.let { estacionamentosMap[id] = it }
+            }
+
+            estacionamentosMap
+        } catch (e: Exception) {
+            Log.e("MotoristaFragment", "Erro ao buscar estacionamentos em batch", e)
+            emptyMap()
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private suspend fun atualizarUI(resultado: ProcessamentoResultado) {
+        binding.txvTotalReservas.text = resultado.totalReservas.toString()
+        val horasTotais = TimeUnit.MILLISECONDS.toHours(resultado.totalHoras)
+        binding.txvTempoTotal.text = "${horasTotais}h"
+
+        adapter = HistoricoReservasAdapter(resultado.historico)
+        binding.rvHistoricoRecente.adapter = adapter
+
+        if (resultado.temReservaAtiva && resultado.reservaAtiva != null) {
+            binding.cardReservaAtual.visibility = View.VISIBLE
+            binding.cardNoReservation.visibility = View.GONE
+
+            val reserva = resultado.reservaAtiva
+            binding.txvNumeroVaga.text = reserva.vaga.numero
+            binding.txvLocalizacao.text = "Local: ${reserva.vaga.localizacao}"
+            binding.txvDuracao.text = formatarHorario(reserva.inicio, reserva.fim)
+            binding.txvTempoRestante.text = "Reserva ativa"
+            binding.txvEstacionamento.text = reserva.estacionamentoNome
+
+            vagaIdAtiva = encontrarVagaIdPorNumero(reserva.vaga.numero, resultado.reservaAtiva.estacionamentoId)
+            estacionamentoIdAtivo = reserva.estacionamentoId
+
+            Log.d("MotoristaFragment", "Reserva ativa - VagaId: $vagaIdAtiva, EstacionamentoId: $estacionamentoIdAtivo")
+        } else {
+            binding.cardReservaAtual.visibility = View.GONE
+            binding.cardNoReservation.visibility = View.VISIBLE
+            vagaIdAtiva = null
+            estacionamentoIdAtivo = null
+        }
+    }
+
+    private suspend fun encontrarVagaIdPorNumero(numeroVaga: String, estacionamentoId: String): String? {
+        return try {
+            val vagaSnapshot = db.collection("vaga")
+                .whereEqualTo("numero", numeroVaga)
+                .whereEqualTo("estacionamentoId", estacionamentoId)
+                .limit(1)
+                .get()
+                .await()
+
+            if (!vagaSnapshot.isEmpty) {
+                vagaSnapshot.documents.first().id
+            } else {
+                Log.e("MotoristaFragment", "Vaga não encontrada: $numeroVaga no estacionamento $estacionamentoId")
+                null
+            }
+        } catch (e: Exception) {
+            Log.e("MotoristaFragment", "Erro ao buscar vagaId: ${e.message}")
+            null
+        }
+    }
+
+    private fun abrirPaginaDeEstacionamentos() {
+        if (!isAdded || activity == null) return
+
+        val dashboardActivity = activity as? DashboardBase
+        dashboardActivity?.let {
+            val bottomNav = it.findViewById<BottomNavigationView>(R.id.bottom_navigation)
+            bottomNav.selectedItemId = R.id.nav_spots
         }
     }
 
@@ -154,9 +341,20 @@ class MotoristaFragment : Fragment() {
         return if (inicio != null && fim != null) "${formato.format(inicio)} - ${formato.format(fim)}" else ""
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
-}
+    private data class ProcessamentoResultado(
+        val totalHoras: Long,
+        val historico: List<ReservaHistorico>,
+        val temReservaAtiva: Boolean,
+        val totalReservas: Int,
+        val reservaAtiva: ReservaAtiva?
+    )
 
+    private data class ReservaAtiva(
+        val vaga: Vaga,
+        val vagaId: String,
+        val estacionamentoId: String,
+        val estacionamentoNome: String,
+        val inicio: Date?,
+        val fim: Date?
+    )
+}

@@ -1,67 +1,66 @@
 package br.edu.fatecpg.valletprojeto.adapter
 
-import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import br.edu.fatecpg.valletprojeto.R
-import br.edu.fatecpg.valletprojeto.ReservaActivity
+import br.edu.fatecpg.valletprojeto.databinding.ItemVagaBinding
 import br.edu.fatecpg.valletprojeto.model.Vaga
 
 class VagasAdapter(
-    private val listaVagas: List<Vaga>,
     private val isAdmin: Boolean,
     private val onEditClick: (Vaga) -> Unit,
-    private val onDeleteClick: (Vaga) -> Unit
-) : RecyclerView.Adapter<VagasAdapter.VagaViewHolder>() {
+    private val onDeleteClick: (Vaga) -> Unit,
+    private val onVagaClick: (Vaga) -> Unit
+) : ListAdapter<Vaga, VagasAdapter.VagaViewHolder>(DiffCallback) {
+    inner class VagaViewHolder(private val binding: ItemVagaBinding) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(vaga: Vaga) {
+            binding.tvTitulo.text = "${vaga.numero}"
+            binding.tvLocalizacao.text = vaga.localizacao
+            binding.tvPreco.text = "R$ %.2f/h".format(vaga.preco)
 
-    inner class VagaViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val titulo: TextView = itemView.findViewById(R.id.tvTitulo)
-        val localizacao: TextView = itemView.findViewById(R.id.tvLocalizacao)
-        val preco: TextView = itemView.findViewById(R.id.tvSalario)
-        val btnEdit: Button = itemView.findViewById(R.id.btn_edit)
-        val btnExcluir: Button = itemView.findViewById(R.id.btn_excluir)
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VagaViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_vaga, parent, false)
-        return VagaViewHolder(view)
-    }
-
-    override fun onBindViewHolder(holder: VagaViewHolder, position: Int) {
-        val vaga = listaVagas[position]
-
-        holder.titulo.text = vaga.numero
-        holder.localizacao.text = vaga.localizacao
-        holder.preco.text = "R$ ${vaga.preco}"
-
-        if (isAdmin) {
-            holder.btnEdit.visibility = View.VISIBLE
-            holder.btnExcluir.visibility = View.VISIBLE
-
-            holder.btnEdit.setOnClickListener { onEditClick(vaga) }
-            holder.btnExcluir.setOnClickListener { onDeleteClick(vaga) }
-        } else {
-            holder.btnEdit.visibility = View.GONE
-            holder.btnExcluir.visibility = View.GONE
-
-            holder.itemView.setOnClickListener {
-                val context = holder.itemView.context
-                val intent = Intent(context,ReservaActivity::class.java).apply {
-                    putExtra("vagaId", vaga.id)
-                    putExtra("numero", vaga.numero)
-                    putExtra("preco", vaga.preco)
-                    putExtra("tipo", vaga.tipo)
-                    putExtra("estacionamentoId", vaga.estacionamentoId)
+            if (isAdmin) {
+                binding.btnEdit.visibility = View.VISIBLE
+                binding.btnExcluir.visibility = View.VISIBLE
+                binding.btnEdit.setOnClickListener { onEditClick(vaga) }
+                binding.btnExcluir.setOnClickListener { onDeleteClick(vaga) }
+                binding.root.setOnClickListener(null)
+            } else {
+                binding.btnEdit.visibility = View.GONE
+                binding.btnExcluir.visibility = View.GONE
+                binding.root.setOnClickListener {
+                    onVagaClick(vaga)
                 }
-                context.startActivity(intent)
             }
+
         }
     }
 
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VagaViewHolder {
+        val binding = ItemVagaBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return VagaViewHolder(binding)
+    }
 
-    override fun getItemCount(): Int = listaVagas.size
+    override fun onBindViewHolder(holder: VagaViewHolder, position: Int) {
+        val vaga = getItem(position)
+        holder.bind(vaga)
+
+    }
+
+    companion object {
+        private val DiffCallback = object : DiffUtil.ItemCallback<Vaga>() {
+            override fun areItemsTheSame(oldItem: Vaga, newItem: Vaga): Boolean {
+                return oldItem.id == newItem.id
+            }
+
+            override fun areContentsTheSame(oldItem: Vaga, newItem: Vaga): Boolean {
+                return oldItem == newItem &&
+                        oldItem.disponivel == newItem.disponivel &&
+                        oldItem.numero == newItem.numero &&
+                        oldItem.preco == newItem.preco
+            }
+        }
+    }
 }

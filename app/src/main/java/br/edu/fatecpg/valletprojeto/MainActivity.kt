@@ -1,21 +1,37 @@
 package br.edu.fatecpg.valletprojeto
 
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.work.WorkManager
 import br.edu.fatecpg.valletprojeto.databinding.ActivityIntroBinding
+import br.edu.fatecpg.valletprojeto.worker.NotificationUtils
+import br.edu.fatecpg.valletprojeto.worker.VerificarReservasExpiradasWorker
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityIntroBinding
     private lateinit var auth: FirebaseAuth
     private val db = Firebase.firestore
+    private val requestNotificationPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (granted) {
+                NotificationUtils.createNotificationChannel(this)
+            } else {
+                Log.d("usuario","Otario")
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,13 +42,24 @@ class MainActivity : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance()
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestNotificationPermission.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            } else {
+                NotificationUtils.createNotificationChannel(this)
+            }
+        } else {
+            NotificationUtils.createNotificationChannel(this)
+        }
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
-        // Mostra o carregamento enquanto verifica login
         binding.progressOverlay.visibility = View.VISIBLE
         binding.btnIniciar.visibility = View.GONE
 
@@ -40,7 +67,6 @@ class MainActivity : AppCompatActivity() {
         if (user != null) {
             checkUserTypeAndRedirect(user.uid, user.email ?: "")
         } else {
-            // Se não há usuário logado, esconde o loading e mostra o botão
             binding.progressOverlay.visibility = View.GONE
             binding.btnIniciar.visibility = View.VISIBLE
 
@@ -63,7 +89,6 @@ class MainActivity : AppCompatActivity() {
                         redirectToHome(tipoUser, email)
                     }
                 } else {
-                    // Usuário não encontrado → força login novamente
                     auth.signOut()
                     goToLogin()
                 }
@@ -93,18 +118,24 @@ class MainActivity : AppCompatActivity() {
                 finish()
             }
     }
+    // No seu Application class ou MainActivity
+    private fun configurarVerificacaoPeriodica() {
+        val constraints = androidx.work.Constraints.Builder()
+            .setRequiredNetworkType(androidx.work.NetworkType.CONNECTED)
+            .build()
 
-    private fun redirectToIntro(tipoUser: String, email: String) {
-        val intent = if (tipoUser == "admin") {
-            Intent(this, IntroCadastroEstacionamento::class.java)
-        } else {
-            Intent(this, VeiculoActivity::class.java)
-        }
-        intent.putExtra("email_usuario", email)
-        startActivity(intent)
-        finish()
+        val periodicWorkRequest = androidx.work.PeriodicWorkRequestBuilder<VerificarReservasExpiradasWorker>(
+            15, TimeUnit.MINUTES // Verifica a cada 15 minutos
+        )
+            .setConstraints(constraints)
+            .build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "verificar_reservas_expiradas",
+            androidx.work.ExistingPeriodicWorkPolicy.KEEP,
+            periodicWorkRequest
+        )
     }
-
     private fun redirectToHome(tipoUser: String, email: String) {
         val intent = Intent(this, DashboardBase::class.java)
         intent.putExtra("email_usuario", email)

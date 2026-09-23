@@ -25,11 +25,8 @@ class IntroCadastroVeiculo : AppCompatActivity() {
 
         val emailUsuario = intent.getStringExtra("email_usuario") ?: "Usuário"
         binding.txtNome.text = emailUsuario
-
-        // Inicializa o Firebase Auth
         auth = Firebase.auth
 
-        // Verifica se o usuário está autenticado
         if (auth.currentUser == null) {
             redirectToLogin()
             return
@@ -56,7 +53,6 @@ class IntroCadastroVeiculo : AppCompatActivity() {
     }
 
     private fun setupButtonListeners() {
-        // Botão para cadastro de veículo
         binding.btnIrParaCadastro.setOnClickListener {
             navigateToCarRegistration()
         }
@@ -77,7 +73,6 @@ class IntroCadastroVeiculo : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        // Verifica novamente se o usuário está autenticado quando a activity retorna ao foco
         if (auth.currentUser == null) {
             redirectToLogin()
         }

@@ -19,17 +19,30 @@ class EditarVeiculoActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         veiculoId = intent.getStringExtra("veiculoId")
+
+        // Recuperar dados do Intent
         val placa = intent.getStringExtra("placa")
         val marca = intent.getStringExtra("marca")
         val modelo = intent.getStringExtra("modelo")
+        val apelido = intent.getStringExtra("apelido")
         val ano = intent.getStringExtra("ano")
         val km = intent.getStringExtra("km")
+        val tipo = intent.getStringExtra("tipo")
 
+        // Preencher os campos
         binding.editPlaca.setText(placa)
         binding.editMarca.setText(marca)
         binding.editModelo.setText(modelo)
+        binding.editApelido.setText(apelido)
         binding.editAno.setText(ano)
         binding.editKM.setText(km)
+
+        // Selecionar o tipo de veículo correto
+        if (tipo.equals("Moto", ignoreCase = true)) {
+            binding.rbMoto.isChecked = true
+        } else {
+            binding.rbCarro.isChecked = true
+        }
 
         binding.btnConfirmar.setOnClickListener { atualizarVeiculo() }
         binding.btnExcluir.setOnClickListener { confirmarExclusao() }
@@ -66,8 +79,10 @@ class EditarVeiculoActivity : AppCompatActivity() {
         val novaPlaca = binding.editPlaca.text.toString()
         val novaMarca = binding.editMarca.text.toString()
         val novoModelo = binding.editModelo.text.toString()
+        val novoApelido = binding.editApelido.text.toString()
         val novoAno = binding.editAno.text.toString()
         val novoKM = binding.editKM.text.toString()
+        val novoTipo = if (binding.rbCarro.isChecked) "Carro" else "Moto"
 
         if (veiculoId.isNullOrEmpty()) {
             Toast.makeText(this, "ID do veículo não encontrado", Toast.LENGTH_SHORT).show()
@@ -78,8 +93,10 @@ class EditarVeiculoActivity : AppCompatActivity() {
             "placa" to novaPlaca,
             "marca" to novaMarca,
             "modelo" to novoModelo,
+            "apelido" to novoApelido,
             "ano" to novoAno,
-            "km" to novoKM
+            "km" to novoKM,
+            "tipo" to novoTipo
         )
 
         db.collection("veiculo").document(veiculoId!!)

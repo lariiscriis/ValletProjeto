@@ -1,158 +1,116 @@
 package br.edu.fatecpg.valletprojeto
 
-import android.Manifest
+import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
+import android.view.View
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import br.edu.fatecpg.valletprojeto.databinding.ActivityReservaBinding
-import br.edu.fatecpg.valletprojeto.model.Estacionamento
-import br.edu.fatecpg.valletprojeto.model.Reserva
-import br.edu.fatecpg.valletprojeto.viewmodel.ReservaState
+import br.edu.fatecpg.valletprojeto.viewmodel.ReservaUIState
 import br.edu.fatecpg.valletprojeto.viewmodel.ReservaViewModel
 import com.bumptech.glide.Glide
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.*
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
-import java.util.concurrent.TimeUnit
 
 class ReservaActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityReservaBinding
     private lateinit var viewModel: ReservaViewModel
+    private val db = FirebaseFirestore.getInstance()
 
-    private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        if (!granted) {
-            Toast.makeText(
-                this,
-                "Permissão para notificações negada. Ative nas configurações do app.",
-                Toast.LENGTH_LONG
-            ).show()
-        }
-    }
+    private var vagaId: String? = null
+    private var estacionamentoId: String? = null
+
+    private var estacionamentoLat: Double? = null
+    private var estacionamentoLon: Double? = null
+    private var estacionamentoNome: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityReservaBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val vagaId = intent.getStringExtra("vagaId") ?: ""
-        val estacionamentoId = intent.getStringExtra("estacionamentoId") ?: ""
-        val fromNotification = intent.getBooleanExtra("FROM_NOTIFICATION", false)
-        val usuarioId = FirebaseAuth.getInstance().currentUser?.uid
+        viewModel = ViewModelProvider(this).get(ReservaViewModel::class.java)
 
-        solicitarPermissaoNotificacao()
-        val checkReservaWork =
-            PeriodicWorkRequestBuilder<br.edu.fatecpg.valletprojeto.worker.CheckReservaWorker>(
-                15, TimeUnit.MINUTES
-            ).build()
+        vagaId = intent.getStringExtra("vagaId")
+        estacionamentoId = intent.getStringExtra("estacionamentoId")
 
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "CheckReservaWorker",
-            androidx.work.ExistingPeriodicWorkPolicy.KEEP,
-            checkReservaWork
-        )
-
-        setupGifAnimation()
-
-        viewModel = ViewModelProvider(this)[ReservaViewModel::class.java]
-
-        if (usuarioId != null) {
-            if (fromNotification) {
-                FirebaseFirestore.getInstance()
-                    .collection("reserva")
-                    .whereEqualTo("usuarioId", usuarioId)
-                    .whereEqualTo("status", "ativa")
-                    .get()
-                    .addOnSuccessListener { docs ->
-                        if (!docs.isEmpty) {
-                            val reserva = docs.first().toObject(Reserva::class.java)
-                            reserva.fimReserva?.toDate()?.let { fim ->
-                                viewModel.retomarReservaAtiva(fim, reserva.vagaId, reserva.estacionamentoId, this)
-                            }
-                            val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
-                            reserva.inicioReserva?.let { inicio ->
-                                reserva.fimReserva?.let { fimRes ->
-                                    val inicioStr = sdf.format(inicio.toDate())
-                                    val fimStr = sdf.format(fimRes.toDate())
-                                    binding.tvHorarioReserva.text = "Horário: das $inicioStr às $fimStr"
-                                }
-                            }
-                            binding.btnReservar.visibility = android.view.View.GONE
-                            binding.btnCancelar.visibility = android.view.View.VISIBLE
-                        }
-                    }
-            } else {
-                mostrarReservaAtual(usuarioId)
-            }
-        }
-
-        if (vagaId.isBlank() || estacionamentoId.isBlank()) {
-            Toast.makeText(this, "Erro ao abrir reserva: dados incompletos", Toast.LENGTH_LONG).show()
+        if (vagaId == null || estacionamentoId == null) {
+            Toast.makeText(this, "Dados da vaga incompletos.", Toast.LENGTH_LONG).show()
             finish()
             return
         }
 
-        var tempoMaxReservaHoras = 2
-        buscarEstacionamento(estacionamentoId) { estacionamento ->
-            if (estacionamento != null) {
-                binding.tvTempoMaximo.text = "Tempo máximo: ${estacionamento.tempoMaxReservaHoras} hora(s)"
-                tempoMaxReservaHoras = estacionamento.tempoMaxReservaHoras
+        buscarDadosEstacionamento(estacionamentoId!!)
+
+        binding.btnVerificarRota.setOnClickListener {
+            if (estacionamentoLat != null && estacionamentoLon != null && estacionamentoNome != null) {
+                abrirRotaParaEstacionamento(
+                    this,
+                    estacionamentoLat!!,
+                    estacionamentoLon!!,
+                    estacionamentoNome!!
+                )
             } else {
-                binding.tvTempoMaximo.text = "Tempo máximo: 2 horas"
+                Toast.makeText(this, "Carregando dados do estacionamento, tente novamente.", Toast.LENGTH_SHORT).show()
             }
         }
 
-        binding.tvVagaId.text = "Vaga: $vagaId"
+        setupGifAnimation()
+        setupListeners()
+        setupObservers()
 
-        // Observadores LiveData
-        viewModel.tempoRestante.observe(this) {
-            binding.tvTimer.text = it
-        }
+        viewModel.carregarDadosIniciais(vagaId!!)
+    }
 
-        viewModel.reservaStatus.observe(this) { state ->
-            when (state) {
-                is ReservaState.Loading -> {
-                    binding.progressBar.visibility = android.view.View.VISIBLE
-                    binding.btnReservar.isEnabled = false
-                }
-                is ReservaState.Success -> {
-                    binding.progressBar.visibility = android.view.View.GONE
-                    binding.btnReservar.visibility = android.view.View.GONE
-                    binding.btnCancelar.visibility = android.view.View.VISIBLE
-                    Toast.makeText(this, "Reserva feita com sucesso!", Toast.LENGTH_SHORT).show()
-                }
-                is ReservaState.Error -> {
-                    binding.progressBar.visibility = android.view.View.GONE
-                    binding.btnReservar.isEnabled = true
-                    Toast.makeText(this, state.message, Toast.LENGTH_LONG).show()
+    private fun buscarDadosEstacionamento(id: String) {
+        db.collection("estacionamento").document(id).get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    estacionamentoLat = document.getDouble("latitude")
+                    estacionamentoLon = document.getDouble("longitude")
+                    estacionamentoNome = document.getString("nome")
+
+                    Log.d("ReservaActivity", "Dados do Estacionamento carregados: $estacionamentoNome")
+                } else {
+                    Toast.makeText(this, "Estacionamento não encontrado.", Toast.LENGTH_LONG).show()
                 }
             }
-        }
+            .addOnFailureListener { e ->
+                Log.e("ReservaActivity", "Erro ao buscar dados do estacionamento", e)
+                Toast.makeText(this, "Erro ao carregar dados do estacionamento.", Toast.LENGTH_LONG).show()
+            }
+    }
 
-        // Botão reservar
-        binding.btnReservar.setOnClickListener {
-            viewModel.iniciarReserva(vagaId, estacionamentoId, tempoMaxReservaHoras, this)
-        }
-
-        // Botão cancelar
-        binding.btnCancelar.setOnClickListener {
-            viewModel.cancelarReserva(this, vagaId, estacionamentoId)
+    fun abrirRotaParaEstacionamento(
+        context: Context,
+        destinoLatitude: Double,
+        destinoLongitude: Double,
+        nomeDestino: String
+    ) {
+        val gmmIntentUri = Uri.parse("google.navigation:q=$destinoLatitude,$destinoLongitude")
+        val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+        mapIntent.setPackage("com.google.android.apps.maps")
+        if (mapIntent.resolveActivity(context.packageManager) != null) {
+            context.startActivity(mapIntent)
+        } else {
+            val webIntent = Intent(
+                Intent.ACTION_VIEW,
+                Uri.parse("https://www.google.com/maps/dir/?api=1&destination=$destinoLatitude,$destinoLongitude&destination_place_id=$nomeDestino" )
+            )
+            if (webIntent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(webIntent)
+            } else {
+                Toast.makeText(context, "Nenhum aplicativo de mapas encontrado.", Toast.LENGTH_LONG).show()
+            }
         }
     }
 
-    // Mostra GIF animado do carro
     private fun setupGifAnimation() {
         Glide.with(this)
             .asGif()
@@ -160,117 +118,78 @@ class ReservaActivity : AppCompatActivity() {
             .into(binding.gifCarro)
     }
 
-    private fun buscarEstacionamento(estacionamentoId: String, onResult: (Estacionamento?) -> Unit) {
-        val db = FirebaseFirestore.getInstance()
-        db.collection("estacionamento").document(estacionamentoId).get()
-            .addOnSuccessListener { doc ->
-                if (doc.exists()) {
-                    val estacionamento = doc.toObject(Estacionamento::class.java)
-                    onResult(estacionamento)
-                } else {
-                    onResult(null)
-                }
-            }
-            .addOnFailureListener {
-                onResult(null)
-            }
-    }
-
-    private fun mostrarReservaAtual(usuarioId: String) {
-        val db = FirebaseFirestore.getInstance()
-        val vagaAtual = intent.getStringExtra("vagaId")
-        val estacionamentoAtual = intent.getStringExtra("estacionamentoId")
-
-        db.collection("reserva")
-            .whereEqualTo("usuarioId", usuarioId)
-            .whereEqualTo("status", "ativa")
-            .get()
-            .addOnSuccessListener { documents ->
-                if (!documents.isEmpty) {
-                    val doc = documents.first()
-                    val reserva = doc.toObject(Reserva::class.java)
-
-                    // ✅ Já está na reserva ativa → não mostrar alerta
-                    if (reserva.vagaId == vagaAtual && reserva.estacionamentoId == estacionamentoAtual) {
-                        val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
-                        reserva.inicioReserva?.let { inicio ->
-                            reserva.fimReserva?.let { fim ->
-                                val inicioStr = sdf.format(inicio.toDate())
-                                val fimStr = sdf.format(fim.toDate())
-                                binding.tvHorarioReserva.text = "Horário: das $inicioStr às $fimStr"
-                            }
-                        }
-                        binding.btnReservar.visibility = android.view.View.GONE
-                        binding.btnCancelar.visibility = android.view.View.VISIBLE
-
-                        reserva.fimReserva?.toDate()?.let { fim ->
-                            viewModel.retomarReservaAtiva(fim, reserva.vagaId, reserva.estacionamentoId, this)
-                        }
-                        reserva.fimReserva?.toDate()?.let { fim ->
-                            viewModel.agendarExpiracaoReserva(this, fim.time)
-                        }
-
-                        return@addOnSuccessListener
-                    }
-
-                    // ⚠️ Caso contrário, mostra alerta
-                    AlertDialog.Builder(this)
-                        .setTitle("Reserva ativa encontrada")
-                        .setMessage("Você já possui uma reserva em andamento. Deseja visualizá-la agora?")
-                        .setPositiveButton("Sim") { _, _ ->
-                            val intent = Intent(this, ReservaActivity::class.java).apply {
-                                putExtra("vagaId", reserva.vagaId)
-                                putExtra("estacionamentoId", reserva.estacionamentoId)
-                                putExtra("FROM_NOTIFICATION", true)
-                            }
-                            startActivity(intent)
-                            finish()
-                        }
-                        .setNegativeButton("Não") { _, _ ->
-                            val intent = Intent(this, DashboardBase::class.java)
-                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-                            startActivity(intent)
-                            finish()
-                        }
-                        .setCancelable(false)
-                        .show()
-
-                    binding.btnReservar.visibility = android.view.View.GONE
-                    binding.btnCancelar.visibility = android.view.View.GONE
-
-                } else {
-                    binding.tvHorarioReserva.text = "Nenhuma reserva ativa encontrada"
-                    binding.btnReservar.visibility = android.view.View.VISIBLE
-                    binding.btnCancelar.visibility = android.view.View.GONE
-                    binding.btnReservar.isEnabled = true
-                }
-            }
-            .addOnFailureListener {
-                Toast.makeText(this, "Erro ao verificar reservas", Toast.LENGTH_LONG).show()
-            }
-    }
-
-    private fun solicitarPermissaoNotificacao() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            when {
-                ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) == PackageManager.PERMISSION_GRANTED -> {
-                    // Permissão ok
-                }
-                shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
-                    Toast.makeText(
-                        this,
-                        "Permissão para notificações é necessária para avisos da reserva",
-                        Toast.LENGTH_LONG
-                    ).show()
-                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                }
-                else -> {
-                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                }
+    private fun setupListeners() {
+        binding.sliderTempo.addOnChangeListener { _, value, _ ->
+            val horas = value.toInt()
+            binding.tvTempoSelecionado.text = String.format("%02d:00", horas)
+        }
+        binding.btnReservar.setOnClickListener {
+            val horasSelecionadas = binding.sliderTempo.value.toInt()
+            if (estacionamentoNome != null) {
+                viewModel.criarReserva(vagaId!!, estacionamentoId!!,
+                    estacionamentoNome!!, horasSelecionadas)
+            } else {
+                Toast.makeText(this, "Nome do estacionamento não carregado. Tente novamente.", Toast.LENGTH_SHORT).show()
             }
         }
     }
+
+    private fun setupObservers() {
+        viewModel.uiState.observe(this) { state ->
+            binding.progressBar.visibility = View.GONE
+            binding.layoutConfigReserva.visibility = View.GONE
+            binding.layoutTimerReserva.visibility = View.GONE
+            binding.btnReservar.visibility = View.GONE
+            binding.btnRenovar.visibility = View.GONE
+            binding.btnCancelar.visibility = View.GONE
+
+            when (state) {
+                is ReservaUIState.Initial, is ReservaUIState.Loading -> {
+                    binding.progressBar.visibility = View.VISIBLE
+                }
+
+                is ReservaUIState.Idle -> {
+                    binding.layoutConfigReserva.visibility = View.VISIBLE
+                    binding.btnReservar.visibility = View.VISIBLE
+
+                    binding.tvVagaNumero.text = "Vaga ${state.vaga.numero}"
+                    binding.tvVagaDetalhes.text = "Tipo: ${state.vaga.tipo} • Local: ${state.vaga.localizacao}"
+                    binding.tvVeiculoInfo.text = "Veículo: ${state.veiculo.modelo} (${state.veiculo.placa})"
+                }
+
+                is ReservaUIState.Active -> {
+                    binding.layoutTimerReserva.visibility = View.VISIBLE
+                    binding.btnRenovar.visibility = View.VISIBLE
+                    binding.btnCancelar.visibility = View.VISIBLE
+
+                    binding.tvVagaNumero.text = "Vaga ${state.vaga.numero}"
+                    binding.tvVagaDetalhes.text = "Tipo: ${state.vaga.tipo} • Local: ${state.vaga.localizacao}"
+                    binding.tvVeiculoInfo.text = "Veículo: ${state.veiculo.modelo} (${state.veiculo.placa})"
+
+                    val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+                    val inicioStr = sdf.format(state.reserva.inicioReserva!!.toDate())
+                    val fimStr = sdf.format(state.reserva.fimReserva!!.toDate())
+                    binding.tvHorarioReserva.text = "Reserva das $inicioStr às $fimStr"
+
+                    binding.btnRenovar.setOnClickListener { viewModel.renovarReserva(state.reserva) }
+                    binding.btnCancelar.setOnClickListener { viewModel.cancelarReserva(state.vaga) }
+                }
+
+                is ReservaUIState.Finished -> {
+                    Toast.makeText(this, state.message, Toast.LENGTH_LONG).show()
+                    finish()
+                }
+
+                is ReservaUIState.Error -> {
+                    Toast.makeText(this, state.message, Toast.LENGTH_LONG).show()
+                    binding.progressBar.visibility = View.GONE
+                }
+            }
+        }
+
+        viewModel.tempoRestante.observe(this) { tempo ->
+            binding.tvTimer.text = tempo
+        }
+    }
+
 }

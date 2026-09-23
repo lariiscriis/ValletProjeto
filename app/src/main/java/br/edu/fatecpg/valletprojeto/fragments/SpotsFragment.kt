@@ -3,44 +3,52 @@ package br.edu.fatecpg.valletprojeto.fragments
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.Location
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.SearchView
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import br.edu.fatecpg.valletprojeto.VagaActivity
 import br.edu.fatecpg.valletprojeto.adapter.FavoriteParkingAdapter
 import br.edu.fatecpg.valletprojeto.adapter.SimpleParkingAdapter
 import br.edu.fatecpg.valletprojeto.databinding.FragmentSpotsBinding
-import br.edu.fatecpg.valletprojeto.model.Estacionamento
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlin.math.roundToInt
+import br.edu.fatecpg.valletprojeto.viewmodel.SpotsViewModel
 
 class SpotsFragment : Fragment() {
 
     private var _binding: FragmentSpotsBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private val db = FirebaseFirestore.getInstance()
-    private val estacionamentos = mutableListOf<Estacionamento>()
-    private lateinit var adapter: SimpleParkingAdapter
+    private val viewModel: SpotsViewModel by viewModels()
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    private lateinit var simpleAdapter: SimpleParkingAdapter
+    private lateinit var favoriteAdapter: FavoriteParkingAdapter
+
+    private val handler = Handler(Looper.getMainLooper())
+    private var currentLoadingStep = ""
+
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+            if (isGranted) {
+                updateLoadingStep("Permissão concedida - Buscando localização...")
+                viewModel.loadData()
+            } else {
+                updateLoadingStep("Permissão negada - Carregando sem localização...")
+                Toast.makeText(requireContext(), "Permissão de localização negada.", Toast.LENGTH_SHORT).show()
+                viewModel.loadData(useLocation = false)
+            }
+        }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentSpotsBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -48,153 +56,174 @@ class SpotsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
+        showLoadingState()
+        updateLoadingStep("Preparando ambiente...")
 
-        // Adapter e RecyclerView
-        adapter = SimpleParkingAdapter { estacionamento ->
-            startActivity(Intent(requireContext(), VagaActivity::class.java).apply {
-                putExtra("estacionamentoId", estacionamento.id)
-            })
-        }
-
-        binding.rvOtherParkings.layoutManager = LinearLayoutManager(requireContext())
-        binding.rvOtherParkings.adapter = adapter
-
-        binding.svSearch.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?) = false
-            override fun onQueryTextChange(newText: String?): Boolean {
-                val termo = newText.orEmpty().trim().lowercase()
-                val listaFiltrada = estacionamentos.filter {
-                    it.nome.lowercase().contains(termo) ||
-                        it.endereco?.lowercase()?.contains(termo) == true
-                }
-                adapter.submitList(listaFiltrada)
-                return true
-            }
-        })
+        setupRecyclerViews()
+        setupSearchView()
+        observeViewModel()
 
         verificarPermissaoLocalizacao()
     }
 
+    private fun showLoadingState() {
+        binding.loadingState.visibility = View.VISIBLE
+        binding.contentState.visibility = View.GONE
+
+        binding.loadingFavorites.visibility = View.VISIBLE
+        binding.loadingOtherParkings.visibility = View.VISIBLE
+
+        binding.rvFavorites.visibility = View.GONE
+        binding.txvFavoritesTitle.visibility = View.GONE
+        binding.rvOtherParkings.visibility = View.GONE
+        binding.txvOtherParkingsTitle.visibility = View.GONE
+    }
+
+    private fun hideLoadingState() {
+        binding.loadingState.visibility = View.GONE
+        binding.contentState.visibility = View.VISIBLE
+    }
+
+    private fun showContentGradually() {
+        handler.postDelayed({
+            if (isAdded) {
+                binding.loadingFavorites.visibility = View.GONE
+                binding.txvFavoritesTitle.visibility = View.VISIBLE
+                binding.rvFavorites.visibility = View.VISIBLE
+            }
+        }, 300)
+
+        handler.postDelayed({
+            if (isAdded) {
+                binding.loadingOtherParkings.visibility = View.GONE
+                binding.txvOtherParkingsTitle.visibility = View.VISIBLE
+                binding.rvOtherParkings.visibility = View.VISIBLE
+            }
+        }, 600)
+    }
+
+    private fun updateLoadingStep(step: String) {
+        currentLoadingStep = step
+        if (isAdded) {
+            binding.txvLoadingStep.text = step
+        }
+    }
+
+    private fun setupRecyclerViews() {
+        simpleAdapter = SimpleParkingAdapter(
+            onFavoriteClicked = { estacionamento ->
+                viewModel.toggleFavoriteStatus(estacionamento)
+            },
+            onItemClicked = { estacionamento ->
+                viewModel.onEstacionamentoClicked(estacionamento)
+            }
+        )
+        binding.rvOtherParkings.layoutManager = LinearLayoutManager(requireContext())
+        binding.rvOtherParkings.adapter = simpleAdapter
+
+        favoriteAdapter = FavoriteParkingAdapter(
+            onFavoriteClicked = { estacionamento ->
+                viewModel.toggleFavoriteStatus(estacionamento)
+            },
+            onItemClicked = { estacionamento ->
+                viewModel.onEstacionamentoClicked(estacionamento)
+            }
+        )
+        binding.rvFavorites.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        binding.rvFavorites.adapter = favoriteAdapter
+    }
+
+    private fun setupSearchView() {
+        binding.svSearch.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean = false
+            override fun onQueryTextChange(newText: String?): Boolean {
+                viewModel.searchParkings(newText.orEmpty())
+                return true
+            }
+        })
+    }
+
+    private fun observeViewModel() {
+        viewModel.isLoading.observe(viewLifecycleOwner, Observer { isLoading ->
+            if (isLoading) {
+            } else {
+                handler.postDelayed({
+                    if (isAdded) {
+                        hideLoadingState()
+                        showContentGradually()
+                    }
+                }, 500)
+            }
+        })
+
+        viewModel.parkings.observe(viewLifecycleOwner, Observer { parkings ->
+            simpleAdapter.submitList(parkings)
+            updateLoadingStep("${parkings.size} estacionamentos carregados")
+
+            if (parkings.isEmpty() && !viewModel.isLoading.value!!) {
+                binding.loadingOtherParkings.visibility = View.GONE
+                binding.txvOtherParkingsTitle.visibility = View.VISIBLE
+                binding.rvOtherParkings.visibility = View.VISIBLE
+            }
+        })
+
+        viewModel.favoriteParkings.observe(viewLifecycleOwner, Observer { favorites ->
+            favoriteAdapter.submitList(favorites)
+            updateLoadingStep("${favorites.size} favoritos carregados")
+
+            if (favorites.isEmpty() && !viewModel.isLoading.value!!) {
+                binding.loadingFavorites.visibility = View.GONE
+                binding.txvFavoritesTitle.visibility = View.GONE
+                binding.rvFavorites.visibility = View.GONE
+            }
+        })
+
+        viewModel.error.observe(viewLifecycleOwner, Observer { errorMessage ->
+            errorMessage?.let {
+                if (isAdded) {
+                    hideLoadingState()
+                    showContentGradually()
+                    Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
+                }
+            }
+        })
+
+        viewModel.toastMessage.observe(viewLifecycleOwner, Observer { event ->
+            event.getContentIfNotHandled()?.let { message ->
+                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+            }
+        })
+
+        viewModel.navigateToVagas.observe(viewLifecycleOwner, Observer { event ->
+            event.getContentIfNotHandled()?.let { estacionamentoId ->
+                val intent = Intent(requireContext(), VagaActivity::class.java)
+                intent.putExtra("estacionamentoId", estacionamentoId)
+                startActivity(intent)
+            }
+        })
+    }
+
     private fun verificarPermissaoLocalizacao() {
-        val context = requireContext()
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-            == PackageManager.PERMISSION_GRANTED
-        ) {
-            carregarLocalizacao()
-        } else {
-            ActivityCompat.requestPermissions(
-                requireActivity(),
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                1001
-            )
-        }
-    }
+        updateLoadingStep("Verificando permissões...")
 
-    private fun carregarLocalizacao() {
-        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED
-        ) {
-            carregarEstacionamentos(null)
-            return
-        }
-
-        fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
-            .addOnSuccessListener { location ->
-                val usuarioId = FirebaseAuth.getInstance().currentUser?.uid
-                carregarFavoritos(usuarioId) { favoritosIds ->
-                    if (!isAdded) return@carregarFavoritos
-                    carregarEstacionamentos(location, favoritosIds)
-                }
+        when {
+            ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                updateLoadingStep("Permissão concedida - Buscando localização...")
+                viewModel.loadData()
             }
-            .addOnFailureListener {
-                context?.let {
-                    Toast.makeText(it, "Erro ao obter localização.", Toast.LENGTH_SHORT).show()
-                }
-                carregarEstacionamentos(null)
+            else -> {
+                updateLoadingStep("Solicitando permissão de localização...")
+                requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
             }
-    }
-
-    private fun carregarFavoritos(usuarioId: String?, callback: (List<String>) -> Unit) {
-        if (usuarioId == null) { callback(emptyList()); return }
-        db.collection("favoritos")
-            .whereEqualTo("usuarioId", usuarioId)
-            .get()
-            .addOnSuccessListener { snapshot ->
-                if (!isAdded) return@addOnSuccessListener
-                val favoritosIds = snapshot.documents.mapNotNull { it.getString("estacionamentoId") }
-                callback(favoritosIds)
-            }
-            .addOnFailureListener { callback(emptyList()) }
-    }
-
-    private fun carregarEstacionamentos(
-        userLocation: Location?,
-        favoritosIds: List<String> = emptyList()
-    ) {
-        db.collection("estacionamento").get()
-            .addOnSuccessListener { snapshot ->
-                if (!isAdded) return@addOnSuccessListener
-                estacionamentos.clear()
-
-                snapshot.documents.forEach { doc ->
-                    val est = doc.toObject(Estacionamento::class.java) ?: return@forEach
-                    val id = doc.id
-                    val lat = doc.getDouble("latitude") ?: doc.getString("latitude")?.toDoubleOrNull()
-                    val lon = doc.getDouble("longitude") ?: doc.getString("longitude")?.toDoubleOrNull()
-
-                    val distanciaMetros = if (lat != null && lon != null && userLocation != null) {
-                        Location("").apply { latitude = lat; longitude = lon }
-                            .let { userLocation.distanceTo(it).roundToInt() }
-                    } else null
-
-
-                    estacionamentos.add(est.copy(
-                        id = id,
-                        distanciaMetros = distanciaMetros
-                    ))
-                }
-
-                val listaOrdenada = if (userLocation != null) {
-                    estacionamentos.sortedBy { it.distanciaMetros ?: Int.MAX_VALUE }
-                } else estacionamentos
-
-                adapter.submitList(listaOrdenada)
-
-                // Atualiza favoritos
-                val favoritos = estacionamentos.filter { it.id in favoritosIds }
-                atualizarFavoritosUI(favoritos)
-            }
-            .addOnFailureListener {
-                context?.let {
-                    Toast.makeText(it, "Erro ao carregar estacionamentos", Toast.LENGTH_SHORT).show()
-                }
-            }
-    }
-
-    private fun atualizarFavoritosUI(favoritos: List<Estacionamento>) {
-        if (!isAdded || _binding == null) return
-        binding.rvFavorites.layoutManager =
-            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-        binding.rvFavorites.adapter = FavoriteParkingAdapter(favoritos) { estacionamento ->
-            startActivity(Intent(requireContext(), VagaActivity::class.java).apply {
-                putExtra("estacionamentoId", estacionamento.id)
-            })
-        }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<String>, grantResults: IntArray
-    ) {
-        if (requestCode == 1001 && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            carregarLocalizacao()
-        } else {
-            carregarEstacionamentos(null)
         }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        handler.removeCallbacksAndMessages(null)
         _binding = null
     }
 }

@@ -16,7 +16,7 @@ class EstacionamentoViewModel : ViewModel() {
         onSuccess: () -> Unit,
         onFailure: (String) -> Unit
     ) {
-        EstacionamentoDao.EstacionamentoDao.cadastrarEstacionamento(est, onSuccess, onFailure)
+        EstacionamentoDao.cadastrarEstacionamento(est, onSuccess, onFailure)
     }
     fun buscarCep(
         cep: String,

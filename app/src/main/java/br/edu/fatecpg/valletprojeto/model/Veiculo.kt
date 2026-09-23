@@ -10,5 +10,8 @@ data class Veiculo(
     val tipo: String="",
     var id: String = "",
     var usuarioEmail: String = "",
-    var dataCadastro: String = ""
+    var dataCadastro: String = "",
+    var padrao: Boolean = false,
+    var usuarioId: String = ""
+
 )
