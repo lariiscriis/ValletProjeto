@@ -404,41 +404,38 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
     }
 
     private fun redirectToHome(uid: String, email: String) {
-        Log.d("LOGIN", "🚀 Iniciando redirecionamento para home")
-        updateLoadingStep("Quase lá...")
+        Log.d("LOGIN", "🚀 Iniciando processo de redirecionamento")
+        updateLoadingStep("Obtendo permissões de notificação...")
 
         binding.contentState.visibility = View.GONE
         binding.loadingState.visibility = View.VISIBLE
-        updateLoadingStep("Preparando sua área de trabalho...")
 
-        Handler(Looper.getMainLooper()).postDelayed({
+        // Gera e salva o token PRIMEIRO; navega apenas quando concluir
+        gerarESalvarTokenFCM(uid) {
             val intent = Intent(this, DashboardBase::class.java)
             intent.putExtra("email_usuario", email)
             startActivity(intent)
             finish()
-        }, 1000)
-
-        gerarESalvarTokenFCM(uid)
+        }
     }
 
-    private fun gerarESalvarTokenFCM(uid: String) {
+    private fun gerarESalvarTokenFCM(uid: String, onComplete: () -> Unit) {
         Log.d("FCM", "🔄 Iniciando geração do token FCM para UID: $uid")
 
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val token = task.result
                 Log.d("FCM", "✅ Token FCM gerado: ${token.take(10)}...")
-                salvarTokenNoFirestore(uid, token)
+                salvarTokenNoFirestore(uid, token, onComplete)
             } else {
                 Log.e("FCM", "❌ Falha ao gerar token FCM", task.exception)
-                Handler(Looper.getMainLooper()).postDelayed({
-                    gerarESalvarTokenFCM(uid)
-                }, 3000)
+                // Mesmo se falhar o token, segue a navegação após o aviso
+                onComplete()
             }
         }
     }
 
-    private fun salvarTokenNoFirestore(uid: String, token: String) {
+    private fun salvarTokenNoFirestore(uid: String, token: String, onComplete: () -> Unit) {
         val db = FirebaseFirestore.getInstance()
         val tokenData = hashMapOf(
             "fcm_token" to token,
@@ -449,13 +446,11 @@ class LoginActivity : AppCompatActivity(), ProviderInstaller.ProviderInstallList
             .set(tokenData, com.google.firebase.firestore.SetOptions.merge())
             .addOnSuccessListener {
                 Log.d("FCM", "✅ Token FCM salvo com sucesso para UID: $uid")
-                verificarTokenSalvo(uid)
+                onComplete()
             }
             .addOnFailureListener { e ->
                 Log.e("FCM", "❌ Erro ao salvar Token FCM", e)
-                Handler(Looper.getMainLooper()).postDelayed({
-                    salvarTokenNoFirestore(uid, token)
-                }, 2000)
+                onComplete() // Garante que o usuário não fique travado na tela de login
             }
     }
 
